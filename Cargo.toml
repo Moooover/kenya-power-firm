@@ -1,0 +1,8 @@
+[workspace]
+
+members = [
+    "use_cases",
+    "strategies/extraction/*",
+    "subscription",
+    "strategies/communication/*"
+]
