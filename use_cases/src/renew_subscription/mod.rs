@@ -1,8 +1,7 @@
 use async_trait::async_trait;
 use std::error::Error;
-use subscription::plans::Plan;
-use subscription::subscriber::SubscriberId;
-use subscription::SubscriberId;
+use subscriptions::plans::Plan;
+use subscriptions::subscriber::SubscriberId;
 
 #[async_trait]
 pub trait RenewSubscriptionInteractor {

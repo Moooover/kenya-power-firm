@@ -29,30 +29,26 @@ pub trait ImportPlannedBlackoutsInteractor {
 }
 
 #[async_trait]
-pub trait SaveBlackOutsRepo {
+pub trait SaveBlackOutsRepo: Send + Sync {
     async fn save_blackouts(&self, data: &ImportInput) -> Result<(), Box<dyn Error>>;
 }
 
 #[async_trait]
-pub trait SubscriberNotifier {
-    async fn send_notifications_to_subscribers(
-        &self,
-        data: Vec<AffectedArea>,
-    ) -> Result<(), Box<dyn Error>>;
+pub trait NotifySubscribersOfAffectedAreas: Send + Sync {
+    async fn notify(&self, data: Vec<AffectedArea>) -> Result<(), Box<dyn Error>>;
 }
 
 pub struct ImportBlackouts {
     repo: Arc<dyn SaveBlackOutsRepo>,
-    notifier: Arc<dyn SubscriberNotifier>,
+    notifier: Arc<dyn NotifySubscribersOfAffectedAreas>,
 }
 
+#[async_trait]
 impl ImportPlannedBlackoutsInteractor for ImportBlackouts {
     async fn import(&self, data: ImportInput) -> Result<(), Box<dyn Error>> {
         // maybe data validation ?
         self.repo.save_blackouts(&data).await?;
         let area_ids = vec![];
-        self.notifier
-            .send_notifications_to_subscribers(area_ids)
-            .await
+        self.notifier.notify(area_ids).await
     }
 }

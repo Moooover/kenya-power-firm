@@ -1,5 +1,5 @@
 [package]
-name = "use_cases"
+name = "notifications"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,6 +7,6 @@ edition = "2021"
 
 [dependencies]
 async-trait = "0.1.64"
-chrono = "0.4.23"
-subscriptions = { path = "../subscriptions" }
+use_cases = { path = "../use_cases" }
 power_interuptions = { path = "../power_interuptions" }
+subscriptions = { path = "../subscriptions" }

@@ -1,4 +1,4 @@
-use chrono::{NaiveDate}, NaiveTime;
+use chrono::{NaiveDate, NaiveTime};
 
 // TODO: Refactor this to UUID later
 
@@ -22,14 +22,13 @@ pub struct Area {
     region: Region,
 }
 
-
 pub struct TimeFrame {
     from: NaiveTime,
-    to: NaiveTime
+    to: NaiveTime,
 }
 
 pub struct AffectedArea {
     area: AreaId,
     date: NaiveDate,
-    time_frame: TimeFrame
+    time_frame: TimeFrame,
 }
