@@ -8,4 +8,5 @@ edition = "2021"
 [dependencies]
 async-trait = "0.1.64"
 chrono = "0.4.23"
-subscription = { path = "../subscription" }
+subscription = { path = "../subscriptions" }
+power_interuptions = { path = "../power_interuptions" }

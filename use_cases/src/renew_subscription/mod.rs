@@ -1,6 +1,7 @@
 use async_trait::async_trait;
 use std::error::Error;
 use subscription::plans::Plan;
+use subscription::subscriber::SubscriberId;
 use subscription::SubscriberId;
 
 #[async_trait]

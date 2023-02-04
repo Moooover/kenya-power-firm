@@ -3,6 +3,7 @@
 members = [
     "use_cases",
     "strategies/extraction/*",
-    "subscription",
-    "strategies/communication/*"
+    "subscriptions",
+    "strategies/communication/*",
+    "power_interuptions"
 ]
