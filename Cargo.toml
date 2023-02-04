@@ -2,9 +2,9 @@
 
 members = [
     "use_cases",
-    "strategies/extraction/*",
+    "plugins/power_interuptions/*",
     "subscriptions",
-    "strategies/communication/*",
+    "plugins/subscriber_notifications/*",
     "power_interuptions",
     "notifications"
 ]

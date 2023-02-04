@@ -9,7 +9,7 @@ use use_cases::import_planned_blackouts::NotifySubscribersOfAffectedAreas;
 
 pub struct Notifier {
     subscriber_repo: Arc<dyn SubscriberRepo>,
-    subscriber_delivery_strategies: Arc<dyn GetPrefferedDeliveryStrategies>,
+    subscriber_delivery_strategies: Arc<dyn GetPreferredDeliveryStrategies>,
 }
 
 #[async_trait]
@@ -21,7 +21,7 @@ pub trait SubscriberRepo: Send + Sync {
 }
 
 #[async_trait]
-pub trait GetPrefferedDeliveryStrategies: Send + Sync {
+pub trait GetPreferredDeliveryStrategies: Send + Sync {
     async fn get_strategies(
         &self,
         subscribers: &[SubscriberId],
