@@ -83,7 +83,8 @@ impl CommentsRemover {
                 None => break,
                 Some(_) => {
                     if filter.does_start_match(&mut tokens) {
-                        self.advance_and_discard_until_end(filter, &mut tokens)
+                        let r = self.advance_and_discard_until_end(filter, &mut tokens);
+                        result.push(r);
                     } else {
                         result.push(tokens.next());
                     }
@@ -97,20 +98,23 @@ impl CommentsRemover {
         &self,
         filter: &Filter,
         tokens: &mut MultiPeek<IntoIter<Token>>,
-    ) {
+    ) -> Option<Token> {
         // TODO: Debug this issue
-        while !filter.does_end_match(tokens) {
+        while filter.does_end_match(tokens) {
+            for _ in filter.end.iter() {
+                tokens.next();
+            }
             tokens.next();
         }
-
-        tokens.next();
+        tokens.next()
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::filter_out_comments::CommentsRemover;
+    use crate::parser::filter_out_comments::{CommentsRemover, Filter};
     use crate::scanner::Token;
+    use multipeek::multipeek;
 
     #[test]
     fn test_comment_removal() {
@@ -132,5 +136,19 @@ mod tests {
         let result = comment_remover.remove_comments(tokens);
 
         println!("{:?}", result)
+    }
+
+    #[test]
+    fn test_filter_end() {
+        let tokens = vec![
+            Token::Identifier("Interruption".to_owned()),
+            Token::Identifier("test".to_owned()),
+            Token::Identifier("not".to_owned()),
+        ];
+        let filter = Filter::new(vec![Token::FullStop], tokens.clone());
+
+        let mut iter = multipeek(tokens.into_iter());
+
+        println!("{}", filter.does_end_match(&mut iter));
     }
 }
