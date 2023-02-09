@@ -19,7 +19,7 @@ impl Filter {
                 .start
                 .iter()
                 .enumerate()
-                .all(|(i, token)| matches!(tokens.peek_nth(i), Some(token))),
+                .all(|(i, token)| tokens.peek_nth(i) == Some(token)),
         }
     }
 
@@ -30,7 +30,7 @@ impl Filter {
                 .end
                 .iter()
                 .enumerate()
-                .all(|(i, token)| matches!(tokens.peek_nth(i), Some(token))),
+                .all(|(i, token)| tokens.peek_nth(i) == Some(token)),
         }
     }
 }
@@ -71,26 +71,14 @@ impl CommentsRemover {
     fn remove_comments_per_filter(&self, filter: &Filter, tokens: Vec<Token>) -> Vec<Token> {
         let mut result: Vec<Option<Token>> = Vec::new();
         let mut tokens = multipeek(tokens.into_iter());
-        // while tokens.peek().is_some() {
-        //     if filter.does_start_match(&mut tokens) {
-        //         self.advance_and_discard_until_end(filter, &mut tokens)
-        //     } else {
-        //         result.push(tokens.next());
-        //     }
-        // }
-        loop {
-            match tokens.peek() {
-                None => break,
-                Some(_) => {
-                    if filter.does_start_match(&mut tokens) {
-                        let r = self.advance_and_discard_until_end(filter, &mut tokens);
-                        result.push(r);
-                    } else {
-                        result.push(tokens.next());
-                    }
-                }
+        while tokens.peek().is_some() {
+            if filter.does_start_match(&mut tokens) {
+                self.advance_and_discard_until_end(filter, &mut tokens)
+            } else {
+                result.push(tokens.next());
             }
         }
+
         result.into_iter().flatten().collect()
     }
 
@@ -98,15 +86,17 @@ impl CommentsRemover {
         &self,
         filter: &Filter,
         tokens: &mut MultiPeek<IntoIter<Token>>,
-    ) -> Option<Token> {
-        // TODO: Debug this issue
-        while filter.does_end_match(tokens) {
-            for _ in filter.end.iter() {
-                tokens.next();
-            }
+    ) {
+        for _ in filter.start.iter() {
+            println!("start -> {:?}", tokens.next());
+        }
+
+        while !filter.does_end_match(tokens) {
             tokens.next();
         }
-        tokens.next()
+        for _ in filter.end.iter() {
+            println!("does_end_match -> {:?}", tokens.next());
+        }
     }
 }
 
@@ -130,6 +120,7 @@ mod tests {
             Token::Identifier("etc".to_owned()),
             Token::FullStop,
             Token::CloseBracket,
+            Token::Identifier("Yes".to_owned()),
         ];
         let comment_remover = CommentsRemover::new();
 
@@ -147,7 +138,12 @@ mod tests {
         ];
         let filter = Filter::new(vec![Token::FullStop], tokens.clone());
 
-        let mut iter = multipeek(tokens.into_iter());
+        let t = vec![
+            Token::Identifier("Interruptions".to_owned()),
+            Token::Identifier("test".to_owned()),
+            Token::Identifier("not".to_owned()),
+        ];
+        let mut iter = multipeek(t.into_iter());
 
         println!("{}", filter.does_end_match(&mut iter));
     }

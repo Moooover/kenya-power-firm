@@ -8,7 +8,7 @@ lazy_static! {
     static ref LINE_BREAK_REMOVING_REGEX: Regex = Regex::new(r"[\r\n]+").unwrap();
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Token {
     Colon,
     FullStop,
