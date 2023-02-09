@@ -6,6 +6,6 @@ pub struct Area {
     pins: Vec<String>,
 }
 
-pub enum FileAst {
+pub enum Ast {
     Region(Vec<Area>),
 }
