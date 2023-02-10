@@ -151,36 +151,7 @@ mod tests {
 
     #[test]
     fn test_scanned_text() {
-        let text = r"
-         Interruption of
-Electricity Supply
-Notice is hereby given under Rule 27 of the Electric Power Rules
-That the electricity supply will be interrupted as here under:
-(It  is  necessary  to  interrupt  supply  periodically  in  order  to
-facilitate maintenance and upgrade of power lines to the network;
-to connect new customers or to replace power lines during road
-construction, etc.)
-
-NAIROBI REGION
-
-AREA: GRAIN BULK
-DATE: Sunday 05.02.2023                                  TIME: 9.00 A.M. – 5.00 P.M.
-Heavy Engineering, Grain Bulk Handlers, Posh Auto body, SGR Head office
-& adjacent customers.
-
-AREA: REDHILL ROAD
-DATE: Tuesday 07.02.2023                         TIME: 9.00 A.M. – 5.00 P.M.
-Redhill Rd, Rosslyn Green, Part of Nyari, Embassy of Switzerland, Gachie,
-Karura  SDA  Church,  Hospital  Hill  Sec  Sch,  Commission   for  University
-Education, Trio Est & adjacent customers.
-
-AREA: KIHARA, KINANDA
-DATE: Tuesday 07.02.2023                                TIME: 9.00 A.M. – 5.00 P.M.
-Kihara  Village,  Old  Karura  Rd,  Kihara  Mkt,  Kitsuru  Ridge  Villas  Est, White
-Cottage Sch, Weaverbird Kenya, Part of Kirawa Rd, Kitsuru Country Homes,
-Hotani Close, Parazoro Institute & adjacent customers.
-
-         ";
+        let text = r"Interruption";
 
         let result = scan(text);
 

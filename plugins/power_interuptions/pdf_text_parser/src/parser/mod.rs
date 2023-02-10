@@ -1,3 +1,4 @@
+use crate::parser::filter_out_comments::CommentsRemover;
 use crate::scanner::Token;
 use crate::token::Ast;
 use multipeek::{multipeek, MultiPeek};
@@ -21,6 +22,8 @@ pub enum ParseError {
 
 impl Parser {
     pub fn new(tokens: Vec<Token>) -> Self {
+        let comments_remover = CommentsRemover::new();
+        let tokens = comments_remover.remove_comments(tokens);
         Self {
             tokens: multipeek(tokens.into_iter()),
         }
