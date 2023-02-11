@@ -390,7 +390,7 @@ Academy, Part of Mtwapa Town & adjacent customers.
 For further information, contact
 the nearest Kenya Power office
   Interruption notices may be viewed at
-www.kplc.co.ke ";
+www.kplc.co.ke";
     #[tokio::test]
     async fn test_extraction() {
         let extractor = TextExtractorImpl {};

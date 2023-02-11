@@ -92,7 +92,7 @@ mod tests {
     async fn test_working() {
         let extractor = PdfExtractorImpl;
         let links = vec![Url(
-            "https://www.kplc.co.ke/img/full/Interruptions%20-%2002.02.2023.pdf".to_owned(),
+            "https://www.kplc.co.ke/img/Interruptions%20-%2009.02.2023.pdf".to_owned(),
         )];
         let res = extractor.extract(links).await.expect("Expected result");
     }
