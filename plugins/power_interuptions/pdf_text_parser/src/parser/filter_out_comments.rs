@@ -34,67 +34,32 @@ impl Filter {
         }
     }
 
-    fn is_contained_in_tokens(&self, tokens: &mut MultiPeek<IntoIter<Token>>) -> bool {
-        self.is_start_in_tokens(&mut tokens.clone()) && self.is_end_in_tokens(&mut tokens.clone())
-    }
-
-    fn is_start_in_tokens(&self, tokens: &mut MultiPeek<IntoIter<Token>>) -> bool {
-        let mut result = false;
-
-        while tokens.peek().is_some() {
-            let did_start_start = self.does_start_match(tokens);
-            tokens.next();
-            if did_start_start {
-                result = true;
-                break;
-            }
-        }
-        result
-    }
-
-    fn is_end_in_tokens(&self, tokens: &mut MultiPeek<IntoIter<Token>>) -> bool {
-        let mut result = false;
-
-        while tokens.peek().is_some() {
-            let did_end_match = self.does_end_match(tokens);
-            tokens.next();
-            if did_end_match {
-                result = true;
-                break;
-            }
-        }
-        result
-    }
-
     fn remove_comments(&self, tokens: Vec<Token>) -> Vec<Token> {
+        let reset = tokens.clone();
         let mut tokens = multipeek(tokens.into_iter());
 
-        println!("{}", self.is_contained_in_tokens(&mut tokens.clone()));
-        if self.is_contained_in_tokens(&mut tokens.clone()) {
-            let mut result = vec![];
-
-            while tokens.peek().is_some() {
-                if self.does_start_match(&mut tokens) {
-                    for _ in self.start.iter() {
-                        tokens.next();
-                    }
-                    while !self.does_end_match(&mut tokens) {
-                        tokens.next();
-                    }
-
-                    if tokens.peek().is_some() {
-                        for _ in self.end.iter() {
-                            tokens.next();
-                        }
-                    }
-                } else {
-                    result.push(tokens.next());
-                }
+        let mut result = vec![];
+        while tokens.peek().is_some() {
+            if !self.does_start_match(&mut tokens) {
+                result.push(tokens.next());
+                continue;
             }
-            result.into_iter().flatten().collect()
-        } else {
-            tokens.into_iter().collect()
+            for _ in self.start.iter() {
+                tokens.next();
+            }
+            while !self.does_end_match(&mut tokens) && tokens.peek().is_some() {
+                tokens.next();
+            }
+            // the end wasn't in the tokens so just the initial tokens.
+            if tokens.peek().is_none() {
+                return reset;
+            }
+
+            for _ in self.end.iter() {
+                tokens.next();
+            }
         }
+        result.into_iter().flatten().collect()
     }
 }
 
@@ -110,7 +75,10 @@ impl CommentsRemover {
             scan("Interruption notices may be viewed at www.kplc.co.ke"),
         );
 
-        let interruptions = Filter::new(scan("Interruption"), scan("construction"));
+        let interruptions = Filter::new(
+            scan("Interruption of Electricity Supply"),
+            scan("road construction, etc.)"),
+        );
 
         Self {
             filters: vec![communications_filter, interruptions],
@@ -132,29 +100,6 @@ mod tests {
     use crate::parser::filter_out_comments::{CommentsRemover, Filter};
     use crate::scanner::Token;
     use multipeek::multipeek;
-
-    #[test]
-    fn test_comment_removal() {
-        let tokens = vec![
-            Token::Identifier("Interruption".to_owned()),
-            Token::Identifier("test".to_owned()),
-            Token::Identifier("not".to_owned()),
-            Token::Identifier("removed".to_owned()),
-            Token::Identifier("during".to_owned()),
-            Token::Identifier("road".to_owned()),
-            Token::Identifier("construction".to_owned()),
-            Token::Comma,
-            Token::Identifier("etc".to_owned()),
-            Token::FullStop,
-            Token::CloseBracket,
-            Token::Identifier("Yes".to_owned()),
-        ];
-        let comment_remover = CommentsRemover::new();
-
-        let result = comment_remover.remove_comments(tokens);
-
-        println!("{:?}", result)
-    }
 
     #[test]
     fn test_filter_end() {
