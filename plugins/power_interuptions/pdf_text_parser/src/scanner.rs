@@ -9,7 +9,7 @@ use regex::{Regex, RegexBuilder};
 
 lazy_static! {
     static ref MATCH_ADJUSCENT_CUSTOMERS: Regex =
-        RegexBuilder::new(r"&[\n\r\s]+adjacent[\n\r\s]+customers\.*")
+        RegexBuilder::new(r"(&|and)[\n\r\s]+adjacent[\n\r\s]+customers?\.*")
             .case_insensitive(true)
             .build()
             .expect("Expected MATCH_ADJUSCENT_CUSTOMERS regex to compile ");
@@ -58,7 +58,7 @@ fn is_digit(c: char) -> bool {
 fn is_alpha(c: char) -> bool {
     ('a'..='z').contains(&c)
         || ('A'..='Z').contains(&c)
-        || ['.', '-', '&', ':', '(', ')', '’', '\''].contains(&c)
+        || ['.', '-', '&', ':', ';', '(', ')', '’', '\''].contains(&c)
 }
 
 fn is_alphanumeric(c: char) -> bool {
@@ -138,7 +138,7 @@ impl<'a> Scanner<'a> {
         let token = match self.current_lexeme.as_ref() {
             "DATE:" => Token::Date(self.date()),
             "TIME:" => Token::Time(self.time()),
-            "AREA:" => Token::Area(self.area()),
+            "AREA:" | "AREA;" => Token::Area(self.area()),
             END_OF_PINS => Token::Keyword(KeyWords::EndOfAreaPins),
             _ => self
                 .peek_and_check_for_region_or_county()
@@ -162,6 +162,8 @@ impl<'a> Scanner<'a> {
             position = position + 1;
         }
 
+        let buffer = buffer.trim();
+
         if buffer.ends_with("REGION") {
             let whole_match = format!("{} {}", &self.current_lexeme, buffer);
             self.advance_n_times_and_clear_lexeme(position);
@@ -180,7 +182,7 @@ impl<'a> Scanner<'a> {
     fn date(&mut self) -> Date {
         self.current_lexeme.clear();
         self.advance_but_discard(&is_whitespace);
-        self.advance_while(&is_alphanumeric);
+        self.advance_while(&is_alpha);
         let day_of_the_week = self.current_lexeme.clone();
         self.current_lexeme.clear();
         self.advance_but_discard(&is_white_space_or_new_line);
