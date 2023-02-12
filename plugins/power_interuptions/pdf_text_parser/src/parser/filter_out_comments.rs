@@ -100,23 +100,4 @@ mod tests {
     use crate::parser::filter_out_comments::{CommentsRemover, Filter};
     use crate::scanner::Token;
     use multipeek::multipeek;
-
-    #[test]
-    fn test_filter_end() {
-        let tokens = vec![
-            Token::Identifier("Interruption".to_owned()),
-            Token::Identifier("test".to_owned()),
-            Token::Identifier("not".to_owned()),
-        ];
-        let filter = Filter::new(vec![Token::FullStop], tokens.clone());
-
-        let t = vec![
-            Token::Identifier("Interruptions".to_owned()),
-            Token::Identifier("test".to_owned()),
-            Token::Identifier("not".to_owned()),
-        ];
-        let mut iter = multipeek(t.into_iter());
-
-        println!("{}", filter.does_end_match(&mut iter));
-    }
 }

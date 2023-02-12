@@ -58,7 +58,7 @@ fn is_digit(c: char) -> bool {
 fn is_alpha(c: char) -> bool {
     ('a'..='z').contains(&c)
         || ('A'..='Z').contains(&c)
-        || ['.', '-', '&', ':', '(', ')', '’'].contains(&c)
+        || ['.', '-', '&', ':', '(', ')', '’', '\''].contains(&c)
 }
 
 fn is_alphanumeric(c: char) -> bool {
@@ -78,7 +78,7 @@ fn is_white_space_or_new_line(c: char) -> bool {
 }
 
 fn is_not_dash(c: char) -> bool {
-    c != '–'
+    ['-', '–'].contains(&c)
 }
 
 fn is_not_new_line(c: char) -> bool {
@@ -88,7 +88,11 @@ fn is_not_new_line(c: char) -> bool {
 fn add_nairobi_county_to_text(raw_text: &str) -> String {
     let nairobi_region = "NAIROBI REGION";
     let nairobi_county = "PARTS OF NAIROBI COUNTY";
-    let nairobi_region_and_country = format!(r"{nairobi_region} \n \n {nairobi_county} \n \n");
+    let nairobi_region_and_country = format!(
+        r"{nairobi_region}
+           {nairobi_county}
+        "
+    );
     raw_text.replacen(nairobi_region, &nairobi_region_and_country, 1)
 }
 
@@ -166,6 +170,7 @@ impl<'a> Scanner<'a> {
 
         if buffer.ends_with("COUNTY") {
             let whole_match = format!("{} {}", &self.current_lexeme, buffer);
+            self.advance_n_times_and_clear_lexeme(position);
             return Some(Token::County(whole_match));
         }
 
@@ -174,6 +179,7 @@ impl<'a> Scanner<'a> {
 
     fn date(&mut self) -> Date {
         self.current_lexeme.clear();
+        self.advance_but_discard(&is_whitespace);
         self.advance_while(&is_alphanumeric);
         let day_of_the_week = self.current_lexeme.clone();
         self.current_lexeme.clear();
@@ -653,5 +659,9 @@ the nearest Kenya Power office
   Interruption notices may be viewed at 
 www.kplc.co.ke 
         ";
+
+        let result = scan(r);
+
+        println!("{result:?}")
     }
 }
