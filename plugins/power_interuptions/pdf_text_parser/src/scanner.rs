@@ -78,7 +78,7 @@ fn is_white_space_or_new_line(c: char) -> bool {
 }
 
 fn is_not_dash(c: char) -> bool {
-    ['-', '–'].contains(&c)
+    !['-', '–'].contains(&c)
 }
 
 fn is_not_new_line(c: char) -> bool {
