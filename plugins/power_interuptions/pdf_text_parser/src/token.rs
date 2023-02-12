@@ -1,14 +1,16 @@
+use crate::scanner::{Date, Time};
+
 pub struct Area {
     // not so sure about this name, but it makes the most sense right now.
-    lines: Vec<String>,
-    date: String,
-    time: String,
-    pins: Vec<String>,
+    pub lines: Vec<String>,
+    pub date: Date,
+    pub time: Time,
+    pub pins: Vec<String>,
 }
 
 pub struct County {
-    name: String,
-    areas: Vec<Area>,
+    pub name: String,
+    pub areas: Vec<Area>,
 }
 
 pub struct Region {

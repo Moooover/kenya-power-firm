@@ -16,16 +16,20 @@ lazy_static! {
 }
 const END_OF_PINS: &str = "ENDOFPINS";
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+
 pub struct Time {
     from: String,
     to: String,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Date {
     day_of_the_week: String,
     date: String,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum KeyWords {
     EndOfAreaPins,
 }
@@ -90,8 +94,6 @@ fn add_nairobi_county_to_text(raw_text: &str) -> String {
 
 impl<'a> Scanner<'a> {
     fn new(raw_text: &'a str) -> Self {
-        let raw_text = add_nairobi_county_to_text(raw_text);
-        let raw_text = MATCH_ADJUSCENT_CUSTOMERS.replace_all(&raw_text, END_OF_PINS);
         let source = multipeek(raw_text.chars());
         Self {
             source,
@@ -188,6 +190,8 @@ impl<'a> Scanner<'a> {
     fn time(&mut self) -> Time {
         self.current_lexeme.clear();
         self.advance_while(&is_not_dash);
+        // skip the dash
+        self.source.next();
         let from = self.current_lexeme.trim().to_owned();
         self.current_lexeme.clear();
         self.advance_while(&is_not_new_line);
@@ -215,7 +219,7 @@ impl<'a> Scanner<'a> {
 
         let token = match next_char {
             ',' => Token::Comma,
-            _ => self.identifier_or_keyword(),
+            _ => self.identifier_or_keyword()?,
         };
 
         Some(token)
@@ -223,8 +227,10 @@ impl<'a> Scanner<'a> {
 }
 
 pub fn scan(text: &str) -> Vec<Token> {
+    let raw_text = add_nairobi_county_to_text(text);
+    let text = MATCH_ADJUSCENT_CUSTOMERS.replace_all(&raw_text, END_OF_PINS);
     let scanner = ScannerIter {
-        scanner: Scanner::new(text),
+        scanner: Scanner::new(&text),
     };
     scanner.into_iter().collect()
 }
