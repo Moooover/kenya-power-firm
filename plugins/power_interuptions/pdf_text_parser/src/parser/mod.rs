@@ -7,11 +7,6 @@ use std::vec::IntoIter;
 
 mod filter_out_comments;
 
-fn parse(tokens: Vec<Token>) -> Vec<Region> {
-    let peekable = tokens.into_iter();
-    todo!()
-}
-
 struct Parser {
     tokens: MultiPeek<IntoIter<Token>>,
 }
@@ -132,11 +127,13 @@ impl Parser {
     }
 
     fn area(&mut self) -> Result<Area, ParseError> {
-        // the interpreter will split this into different lines by applying rules
         let area_lines = consume_expected_token!(
             self.tokens,
             Token::Area(literal),
-            literal,
+            literal
+                .split(",")
+                .map(|line| line.trim().to_string())
+                .collect(),
             "Area".to_string()
         )?;
         let date =
@@ -163,11 +160,12 @@ impl Parser {
 
         while !end_of_pins(self.tokens.peek()) {
             let token = self.tokens.next().ok_or(ParseError::UnexpectedEndOfFile)?;
+
             match token {
+                Token::Comma if self.digit_after_comma() => pin_buffer.push_str(","),
                 Token::Comma => {
                     results.push(pin_buffer.clone());
                     pin_buffer.clear();
-                    continue;
                 }
                 Token::Identifier(identifier) => {
                     pin_buffer.push_str(" ");
@@ -182,10 +180,17 @@ impl Parser {
             }
         }
 
+        results.push(pin_buffer);
+
         // consume the end of pins keyword
         self.tokens.next();
 
         Ok(results)
+    }
+
+    fn digit_after_comma(&mut self) -> bool {
+        let peeked = self.tokens.peek();
+        matches!(peeked, Some(&Token::Identifier(ref ident)) if ident.clone().trim().parse::<usize>().is_ok())
     }
 }
 
@@ -580,7 +585,6 @@ www.kplc.co.ke
         ";
 
         let results = scan(r);
-        println!("{:?}", results);
         let mut parser = Parser::new(results);
 
         let parsed_results = parser.parse();
