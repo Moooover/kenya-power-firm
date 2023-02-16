@@ -59,8 +59,9 @@ impl AreaInterpreter {
         Area {
             lines: area.lines,
             date: area.date,
-            time: area.time,
+            start: area.start,
             pins,
+            end: area.end,
         }
     }
 }

@@ -1,10 +1,12 @@
 use crate::parser::filter_out_comments::CommentsRemover;
-use crate::scanner::{KeyWords, Token};
+use crate::scanner::{Date, KeyWords, Time, Token};
 use crate::token::{Area, County, Region};
 use multipeek::{multipeek, MultiPeek};
 use std::iter;
 use std::vec::IntoIter;
 
+use anyhow::{Context, Error};
+use chrono::{NaiveDate, NaiveTime};
 mod filter_out_comments;
 
 struct Parser {
@@ -17,8 +19,29 @@ pub struct UnexpectedToken {
     expected: String,
 }
 
+impl Time {
+    fn parse(&self) -> Result<(NaiveTime, NaiveTime), ParseError> {
+        let parsed_start = self.parse_time(&self.start)?;
+        let parsed_end = self.parse_time(&self.end)?;
+
+        Ok((parsed_start, parsed_end))
+    }
+
+    fn format_am_or_pm(&self, value: &str) -> String {
+        value.replace("P.M.", "PM").replace("A.M.", "AM")
+    }
+
+    fn parse_time(&self, value: &str) -> Result<NaiveTime, ParseError> {
+        let value = self.format_am_or_pm(value);
+        NaiveTime::parse_from_str(&value, "%I.%M %p")
+            .with_context(|| format!("Failed to parse {}", value))
+            .map_err(ParseError::ValidationError)
+    }
+}
+
 #[derive(Debug)]
 pub enum ParseError {
+    ValidationError(anyhow::Error),
     UnexpectedEndOfFile,
     UnexpectedToken(UnexpectedToken),
 }
@@ -28,7 +51,6 @@ macro_rules! consume_expected_token {
         match $tokens.next() {
             Some($expected) => Ok($transform_token),
             Some(token) => {
-                println!("{:?}", token);
                 let unexpected_token = UnexpectedToken {
                     found: token.clone(),
                     expected: $required_element,
@@ -136,16 +158,28 @@ impl Parser {
                 .collect(),
             "Area".to_string()
         )?;
-        let date =
-            consume_expected_token!(self.tokens, Token::Date(date), date, "Date".to_owned())?;
-        let time =
-            consume_expected_token!(self.tokens, Token::Time(time), time, "Time".to_owned())?;
+
+        let date = consume_expected_token!(
+            self.tokens,
+            Token::Date(Date { date, .. }),
+            NaiveDate::parse_from_str(&date, "%d.%m.%Y")
+                .context("Failed to parse the Date.")
+                .map_err(ParseError::ValidationError),
+            "Date".to_owned()
+        )??;
+        let (start, end) = consume_expected_token!(
+            self.tokens,
+            Token::Time(time),
+            time.parse(),
+            "Time".to_owned()
+        )??;
         let pins = self.pins()?;
 
         Ok(Area {
             lines: area_lines,
             date,
-            time,
+            start,
+            end,
             pins,
         })
     }

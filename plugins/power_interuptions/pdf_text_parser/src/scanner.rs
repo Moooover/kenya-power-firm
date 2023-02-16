@@ -19,14 +19,14 @@ const END_OF_PINS: &str = "ENDOFPINS";
 #[derive(Debug, Clone, PartialEq, Eq)]
 
 pub struct Time {
-    from: String,
-    to: String,
+    pub start: String,
+    pub end: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Date {
     day_of_the_week: String,
-    date: String,
+    pub date: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -205,7 +205,10 @@ impl<'a> Scanner<'a> {
         self.advance_while(&is_not_new_line);
         let to = self.current_lexeme.trim().to_owned();
 
-        Time { from, to }
+        Time {
+            start: from,
+            end: to,
+        }
     }
 
     fn area(&mut self) -> String {

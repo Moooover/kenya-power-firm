@@ -1,10 +1,12 @@
 use crate::scanner::{Date, Time};
+use chrono::{NaiveDate, NaiveTime};
 
 #[derive(Debug)]
 pub struct Area {
     pub lines: Vec<String>,
-    pub date: Date,
-    pub time: Time,
+    pub date: NaiveDate,
+    pub start: NaiveTime,
+    pub end: NaiveTime,
     pub pins: Vec<String>,
 }
 
