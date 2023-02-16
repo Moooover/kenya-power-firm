@@ -1,5 +1,4 @@
-mod pdf_extractor;
-mod text_extractor;
+pub mod pdf_extractor;
 
 use anyhow::Context;
 use async_trait::async_trait;
@@ -7,7 +6,7 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::sync::Arc;
 use use_cases::import_planned_blackouts::{
-    Area, ImportInput, ImportPlannedBlackoutsInteractor, Url,
+    Area, ImportInput, ImportPlannedBlackoutsInteractor, Region, Url,
 };
 
 struct WebPageExtractor {
@@ -23,7 +22,7 @@ pub trait FileOperations: Send + Sync {
 
 #[async_trait]
 pub trait PdfExtractor: Send + Sync {
-    async fn extract(&self, links: Vec<Url>) -> anyhow::Result<HashMap<Url, Vec<Area>>>;
+    async fn extract(&self, links: Vec<Url>) -> anyhow::Result<HashMap<Url, Vec<Region>>>;
 }
 
 impl WebPageExtractor {

@@ -8,7 +8,7 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::path::Path;
 use std::sync::Arc;
-use use_cases::import_planned_blackouts::{Area, Url};
+use use_cases::import_planned_blackouts::{Area, Region, Url};
 
 lazy_static! {
     static ref FORWARD_SLASH: Regex =
@@ -17,14 +17,14 @@ lazy_static! {
 
 #[async_trait]
 pub trait TextExtractor: Send + Sync {
-    async fn extract(&self, text: String) -> anyhow::Result<Vec<Area>>;
+    async fn extract(&self, text: String) -> anyhow::Result<Vec<Region>>;
 }
 
 struct PdfExtractorImpl;
 
 #[async_trait]
 impl PdfExtractor for PdfExtractorImpl {
-    async fn extract(&self, links: Vec<Url>) -> anyhow::Result<HashMap<Url, Vec<Area>>> {
+    async fn extract(&self, links: Vec<Url>) -> anyhow::Result<HashMap<Url, Vec<Region>>> {
         for link in &links {
             let res = reqwest::get(&link.0)
                 .await

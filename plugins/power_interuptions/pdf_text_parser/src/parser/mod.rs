@@ -5,11 +5,15 @@ use multipeek::{multipeek, MultiPeek};
 use std::iter;
 use std::vec::IntoIter;
 
+use regex::Regex;
+
 use anyhow::{Context, Error};
 use chrono::{NaiveDate, NaiveTime};
+use lazy_static::lazy_static;
+
 mod filter_out_comments;
 
-struct Parser {
+pub struct Parser {
     tokens: MultiPeek<IntoIter<Token>>,
 }
 
@@ -41,7 +45,7 @@ impl Time {
 
 #[derive(Debug)]
 pub enum ParseError {
-    ValidationError(anyhow::Error),
+    ValidationError(Error),
     UnexpectedEndOfFile,
     UnexpectedToken(UnexpectedToken),
 }
@@ -219,12 +223,41 @@ impl Parser {
         // consume the end of pins keyword
         self.tokens.next();
 
-        Ok(results)
+        Ok(results
+            .into_iter()
+            .map(|pin| self.parse_pin(pin))
+            .flatten()
+            .collect())
     }
 
     fn digit_after_comma(&mut self) -> bool {
         let peeked = self.tokens.peek();
         matches!(peeked, Some(&Token::Identifier(ref ident)) if ident.clone().trim().parse::<usize>().is_ok())
+    }
+
+    fn parse_pin(&self, pin: String) -> Vec<String> {
+        lazy_static! {
+            static ref PHASE: Regex =
+                Regex::new(r"\d{1,}[\n\r\s]+[,&]+[\n\r\s]+\d{1,}").expect("PHASE regex to compile");
+            static ref PHASE_NAME: Regex =
+                Regex::new(r"([a-zA-Z]+[\n\r\s]+)").expect("PHASE_NAME regex to compile");
+            static ref PHASE_NUMBERS: Regex =
+                Regex::new(r"\d{1,}").expect("PHASE_NUMBERS regex to compile");
+        }
+        if PHASE.is_match(&pin) {
+            let phase_name = PHASE_NAME
+                .captures_iter(&pin)
+                .into_iter()
+                .map(|capture| format!("{}", &capture[0]))
+                .collect::<String>();
+
+            return PHASE_NUMBERS
+                .captures_iter(&pin)
+                .into_iter()
+                .map(|capture| format!("{} {}", &phase_name.trim(), &capture[0].trim()))
+                .collect::<Vec<_>>();
+        }
+        vec![pin]
     }
 }
 

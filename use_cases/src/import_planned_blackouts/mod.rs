@@ -6,25 +6,30 @@ use power_interuptions::location::{AffectedArea, AreaId};
 use std::collections::HashMap;
 use std::error::Error;
 use std::sync::Arc;
-pub struct Pin(String);
 
-pub struct Region {
-    region: String,
-    part: String,
+#[derive(Debug)]
+pub struct Area {
+    pub lines: Vec<String>,
+    pub date: NaiveDate,
+    pub start: NaiveTime,
+    pub end: NaiveTime,
+    pub pins: Vec<String>,
 }
 
-pub struct Area {
-    name: String,
-    date: NaiveDate,
-    start: NaiveTime,
-    end: NaiveTime,
-    pins: Vec<Pin>,
-    region: Region,
+#[derive(Debug)]
+pub struct County {
+    pub name: String,
+    pub areas: Vec<Area>,
+}
+#[derive(Debug)]
+pub struct Region {
+    pub name: String,
+    pub counties: Vec<County>,
 }
 
 pub struct Url(pub String);
 
-pub struct ImportInput(pub HashMap<Url, Vec<Area>>);
+pub struct ImportInput(pub HashMap<Url, Vec<Region>>);
 
 #[async_trait]
 pub trait ImportPlannedBlackoutsInteractor {
