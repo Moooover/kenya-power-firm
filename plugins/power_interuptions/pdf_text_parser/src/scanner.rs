@@ -147,8 +147,8 @@ impl<'a> Scanner<'a> {
             ("mkt", "Market"),
         ]);
         let token = match self.current_lexeme.as_ref() {
-            "DATE:" => Token::Date(self.date()),
-            "TIME:" => Token::Time(self.time()),
+            "DATE:" | "DATE;" => Token::Date(self.date()),
+            "TIME:" | "TIME;" => Token::Time(self.time()),
             "AREA:" | "AREA;" => Token::Area(self.area()),
             END_OF_PINS => Token::Keyword(KeyWords::EndOfAreaPins),
             _ => self
