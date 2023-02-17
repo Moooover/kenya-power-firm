@@ -1,4 +1,5 @@
 use multipeek::{multipeek, MultiPeek};
+use std::collections::HashMap;
 use std::iter;
 use std::str::Chars;
 use std::vec::IntoIter;
@@ -134,7 +135,17 @@ impl<'a> Scanner<'a> {
 
     fn identifier_or_keyword(&mut self) -> Option<Token> {
         self.advance_while(&is_alphanumeric);
-
+        let acronym_map = HashMap::from([
+            ("pri", "Primary"),
+            ("rd", "Road"),
+            ("est", "Estate"),
+            ("sch", "School"),
+            ("sec", "Secondary"),
+            ("stn", "Station"),
+            ("apts", "Apartment"),
+            ("hqtrs", "Headquaters"),
+            ("mkt", "Market"),
+        ]);
         let token = match self.current_lexeme.as_ref() {
             "DATE:" => Token::Date(self.date()),
             "TIME:" => Token::Time(self.time()),
@@ -142,7 +153,15 @@ impl<'a> Scanner<'a> {
             END_OF_PINS => Token::Keyword(KeyWords::EndOfAreaPins),
             _ => self
                 .peek_and_check_for_region_or_county()
-                .unwrap_or(Token::Identifier(self.current_lexeme.clone())),
+                .unwrap_or_else(|| {
+                    let current_lexeme = self.current_lexeme.clone();
+                    let identifier = acronym_map
+                        .get(current_lexeme.to_ascii_lowercase().as_str())
+                        .cloned()
+                        .unwrap_or(&current_lexeme)
+                        .to_string();
+                    Token::Identifier(identifier)
+                }),
         };
 
         Some(token)

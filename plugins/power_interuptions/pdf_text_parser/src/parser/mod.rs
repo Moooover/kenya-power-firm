@@ -2,10 +2,11 @@ use crate::parser::filter_out_comments::CommentsRemover;
 use crate::scanner::{Date, KeyWords, Time, Token};
 use crate::token::{Area, County, Region};
 use multipeek::{multipeek, MultiPeek};
+use std::collections::HashMap;
 use std::iter;
 use std::vec::IntoIter;
 
-use regex::Regex;
+use regex::{Regex, RegexBuilder};
 
 use anyhow::{Context, Error};
 use chrono::{NaiveDate, NaiveTime};
@@ -94,7 +95,48 @@ impl Parser {
         if let Some(error) = error {
             return Err(error);
         }
-        Ok(regions)
+        Ok(regions
+            .into_iter()
+            .map(|region| self.sanitize_region(region))
+            .collect())
+    }
+
+    fn sanitize_region(&self, region: Region) -> Region {
+        lazy_static! {
+            static ref WORDS_TO_REMOVE: Regex =
+                RegexBuilder::new(r"(Parts? of)|(Whole of)|(Region)|(County)")
+                    .case_insensitive(true)
+                    .build()
+                    .expect("WORDS_TO_REMOVE to have been built successfully");
+        }
+
+        fn sanitize(value: String) -> String {
+            WORDS_TO_REMOVE.replace_all(&value, "").trim().to_string()
+        }
+
+        let name = sanitize(region.name);
+        let counties = region
+            .counties
+            .into_iter()
+            .map(|county| {
+                let name = sanitize(county.name);
+                let areas = county
+                    .areas
+                    .into_iter()
+                    .map(|area| {
+                        let lines = area.lines.into_iter().map(sanitize).collect();
+                        let pins = area.pins.into_iter().map(sanitize).collect();
+                        Area {
+                            lines,
+                            pins,
+                            ..area
+                        }
+                    })
+                    .collect();
+                County { name, areas }
+            })
+            .collect();
+        Region { name, counties }
     }
 
     fn parse_region(&mut self) -> Result<Region, ParseError> {
@@ -225,7 +267,7 @@ impl Parser {
 
         Ok(results
             .into_iter()
-            .map(|pin| self.parse_pin(pin))
+            .map(|pin| self.extract_and_construct_pin_phases(pin))
             .flatten()
             .collect())
     }
@@ -235,7 +277,8 @@ impl Parser {
         matches!(peeked, Some(&Token::Identifier(ref ident)) if ident.clone().trim().parse::<usize>().is_ok())
     }
 
-    fn parse_pin(&self, pin: String) -> Vec<String> {
+    /// Eg: "Dandora Phase 1 & 2" becomes -> ["Dandora Phase 1", "Dandora Phase 2"]
+    fn extract_and_construct_pin_phases(&self, pin: String) -> Vec<String> {
         lazy_static! {
             static ref PHASE: Regex =
                 Regex::new(r"\d{1,}[\n\r\s]+[,&]+[\n\r\s]+\d{1,}").expect("PHASE regex to compile");
