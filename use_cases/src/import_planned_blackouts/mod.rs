@@ -6,6 +6,7 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::sync::Arc;
 
+use crate::actor::{Actor, Permission};
 use power_interuptions::location::County as DomainCounty;
 use power_interuptions::location::Region as DomainRegion;
 use power_interuptions::location::Url as DomainUrl;
@@ -39,7 +40,7 @@ pub struct ImportInput(pub HashMap<Url, Vec<Region>>);
 
 #[async_trait]
 pub trait ImportPlannedBlackoutsInteractor {
-    async fn import(&self, data: ImportInput) -> anyhow::Result<()>;
+    async fn import(&self, actor: &dyn Actor, data: ImportInput) -> anyhow::Result<()>;
 }
 
 #[async_trait]
@@ -59,7 +60,9 @@ pub struct ImportBlackouts {
 
 #[async_trait]
 impl ImportPlannedBlackoutsInteractor for ImportBlackouts {
-    async fn import(&self, data: ImportInput) -> anyhow::Result<()> {
+    async fn import(&self, actor: &dyn Actor, data: ImportInput) -> anyhow::Result<()> {
+        actor.check_for_permission(Permission::ImportAffectedAreas)?;
+
         let data = data
             .0
             .into_iter()
@@ -108,7 +111,7 @@ impl TryFrom<County> for DomainCounty<FutureOrCurrentDate> {
             .collect::<Result<_, _>>()?;
         Ok(DomainCounty {
             name: value.name,
-            areas: areas,
+            areas,
         })
     }
 }
