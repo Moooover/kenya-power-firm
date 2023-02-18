@@ -43,7 +43,7 @@ pub trait SaveBlackOutsRepo: Send + Sync {
 
 #[async_trait]
 pub trait NotifySubscribersOfAffectedAreas: Send + Sync {
-    async fn notify(&self, data: Vec<AffectedArea>) -> Result<(), Box<dyn Error>>;
+    async fn notify(&self, data: Vec<AffectedArea>) -> anyhow::Result<()>;
 }
 
 pub struct ImportBlackouts {

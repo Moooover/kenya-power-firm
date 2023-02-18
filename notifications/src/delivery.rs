@@ -1,12 +1,12 @@
 use async_trait::async_trait;
-use power_interuptions::location::AffectedArea;
-use subscriptions::subscriber::SubscriberId;
+use power_interuptions::location::{AffectedArea, LocationWithDateAndTime};
+use subscriptions::subscriber::{AffectedSubscriber, SubscriberId};
 
 pub struct Notification {
-    subscriber: SubscriberId,
-    areas_affected: Vec<AffectedArea>,
+    pub subscriber: AffectedSubscriber,
+    pub locations: Vec<LocationWithDateAndTime>,
 }
 #[async_trait]
 pub trait DeliveryStrategy: Send + Sync {
-    async fn deliver(&self, notifications: Vec<Notification>);
+    async fn deliver(&self, notifications: Vec<Notification>) -> anyhow::Result<()>;
 }

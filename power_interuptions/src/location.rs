@@ -22,6 +22,7 @@ pub struct Area {
     region: Region,
 }
 
+#[derive(Clone)]
 pub struct TimeFrame {
     from: NaiveTime,
     to: NaiveTime,
@@ -29,6 +30,15 @@ pub struct TimeFrame {
 
 pub struct AffectedArea {
     area: AreaId,
+    date: NaiveDate,
+    time_frame: TimeFrame,
+}
+
+#[derive(Clone)]
+pub struct LocationWithDateAndTime {
+    location: String,
+    area: String,
+    county: String,
     date: NaiveDate,
     time_frame: TimeFrame,
 }
