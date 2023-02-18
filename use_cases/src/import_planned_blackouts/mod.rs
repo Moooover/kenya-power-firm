@@ -55,7 +55,9 @@ pub struct ImportBlackouts {
 #[async_trait]
 impl ImportPlannedBlackoutsInteractor for ImportBlackouts {
     async fn import(&self, data: ImportInput) -> anyhow::Result<()> {
-        // maybe data validation ?
+        // maybe data validation... yes check the dates, filter out the dates that passed
+        // The how, use try_from and pass the input to domain entities that will only get constructured if the date is valid
+        // pass the domain entities to the save_blackouts and nofify services..
         self.repo
             .save_blackouts(&data)
             .await
