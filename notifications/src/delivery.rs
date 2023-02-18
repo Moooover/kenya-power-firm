@@ -1,7 +1,6 @@
 use async_trait::async_trait;
-use power_interuptions::location::LocationWithDateAndTime;
+use power_interuptions::location::{LocationWithDateAndTime, Url};
 use subscriptions::subscriber::{AffectedSubscriber, SubscriberId};
-use use_cases::import_planned_blackouts::Url;
 
 pub struct Notification {
     pub url: Url,

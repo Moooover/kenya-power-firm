@@ -6,6 +6,12 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::sync::Arc;
 
+use power_interuptions::location::County as DomainCounty;
+use power_interuptions::location::Region as DomainRegion;
+use power_interuptions::location::Url as DomainUrl;
+use power_interuptions::location::{Area as DomainArea, FutureOrCurrentDate};
+use power_interuptions::location::{ImportInput as DomainImportInput, TimeFrame};
+
 #[derive(Debug)]
 pub struct Area {
     pub lines: Vec<String>,
@@ -38,12 +44,12 @@ pub trait ImportPlannedBlackoutsInteractor {
 
 #[async_trait]
 pub trait SaveBlackOutsRepo: Send + Sync {
-    async fn save_blackouts(&self, data: &ImportInput) -> Result<(), Box<dyn Error>>;
+    async fn save_blackouts(&self, data: &DomainImportInput) -> Result<(), Box<dyn Error>>;
 }
 
 #[async_trait]
 pub trait NotifySubscribersOfAffectedAreas: Send + Sync {
-    async fn notify(&self, data: ImportInput) -> anyhow::Result<()>;
+    async fn notify(&self, data: DomainImportInput) -> anyhow::Result<()>;
 }
 
 pub struct ImportBlackouts {
@@ -54,13 +60,72 @@ pub struct ImportBlackouts {
 #[async_trait]
 impl ImportPlannedBlackoutsInteractor for ImportBlackouts {
     async fn import(&self, data: ImportInput) -> anyhow::Result<()> {
-        // maybe data validation... yes check the dates, filter out the dates that passed
-        // The how, use try_from and pass the input to domain entities that will only get constructured if the date is valid
-        // pass the domain entities to the save_blackouts and nofify services..
+        let data = data
+            .0
+            .into_iter()
+            .map(|(url, regions)| {
+                regions
+                    .into_iter()
+                    .map(TryFrom::try_from)
+                    .collect::<Result<_, _>>()
+                    .map(|regions| (DomainUrl(url.0), regions))
+            })
+            .collect::<Result<_, _>>()
+            .map_err(|err: String| anyhow!(err))?;
+        let data = DomainImportInput(data);
         self.repo
             .save_blackouts(&data)
             .await
             .map_err(|err| anyhow!("{:?}", err))?;
         self.notifier.notify(data).await
+    }
+}
+
+impl TryFrom<Region> for DomainRegion<FutureOrCurrentDate> {
+    type Error = String;
+
+    fn try_from(value: Region) -> Result<Self, Self::Error> {
+        let counties = value
+            .counties
+            .into_iter()
+            .map(TryFrom::try_from)
+            .collect::<Result<_, _>>()?;
+        Ok(Self {
+            region: value.name,
+            counties,
+        })
+    }
+}
+
+impl TryFrom<County> for DomainCounty<FutureOrCurrentDate> {
+    type Error = String;
+
+    fn try_from(value: County) -> Result<Self, Self::Error> {
+        let areas = value
+            .areas
+            .into_iter()
+            .map(TryFrom::try_from)
+            .collect::<Result<_, _>>()?;
+        Ok(DomainCounty {
+            name: value.name,
+            areas: areas,
+        })
+    }
+}
+
+impl TryFrom<Area> for DomainArea<FutureOrCurrentDate> {
+    type Error = String;
+
+    fn try_from(value: Area) -> Result<Self, Self::Error> {
+        let date = FutureOrCurrentDate::try_from(value.date)?;
+        Ok(DomainArea {
+            lines: value.lines,
+            date,
+            time_frame: TimeFrame {
+                from: value.start,
+                to: value.end,
+            },
+            locations: value.locations,
+        })
     }
 }

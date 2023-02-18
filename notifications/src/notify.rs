@@ -2,15 +2,13 @@ use crate::delivery::{DeliveryStrategy, Notification};
 use async_trait::async_trait;
 use futures::stream::FuturesUnordered;
 use futures::StreamExt;
-use power_interuptions::location::LocationWithDateAndTime;
+use power_interuptions::location::{ImportInput, LocationWithDateAndTime, Region, Url};
 use std::collections::HashMap;
 use std::error::Error;
 use std::sync::Arc;
 
 use subscriptions::subscriber::{AffectedSubscriber, SubscriberId};
-use use_cases::import_planned_blackouts::{
-    ImportInput, NotifySubscribersOfAffectedAreas, Region, Url,
-};
+use use_cases::import_planned_blackouts::NotifySubscribersOfAffectedAreas;
 
 pub struct Notifier {
     subscriber_repo: Arc<dyn SubscriberRepo>,
