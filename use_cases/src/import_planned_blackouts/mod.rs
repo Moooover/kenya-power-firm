@@ -2,7 +2,6 @@ use anyhow::anyhow;
 use async_trait::async_trait;
 use chrono::naive::NaiveTime;
 use chrono::NaiveDate;
-use power_interuptions::location::{AffectedArea, AreaId};
 use std::collections::HashMap;
 use std::error::Error;
 use std::sync::Arc;

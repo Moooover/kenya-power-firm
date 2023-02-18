@@ -2,7 +2,7 @@ use crate::delivery::{DeliveryStrategy, Notification};
 use async_trait::async_trait;
 use futures::stream::FuturesUnordered;
 use futures::StreamExt;
-use power_interuptions::location::{AffectedArea, AreaId, LocationWithDateAndTime};
+use power_interuptions::location::LocationWithDateAndTime;
 use std::collections::HashMap;
 use std::error::Error;
 use std::sync::Arc;
