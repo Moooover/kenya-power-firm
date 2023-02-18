@@ -10,7 +10,7 @@ pub struct Region<T> {
     counties: Vec<County<T>>,
 }
 
-pub struct FutureDate(NaiveDate);
+pub struct FutureOrCurrentDate(NaiveDate);
 
 pub struct Area<T> {
     lines: Vec<String>,
@@ -19,7 +19,7 @@ pub struct Area<T> {
     locations: Vec<String>,
 }
 
-impl TryFrom<Area<NaiveDate>> for Area<FutureDate> {
+impl TryFrom<Area<NaiveDate>> for Area<FutureOrCurrentDate> {
     type Error = String;
 
     fn try_from(value: Area<NaiveDate>) -> Result<Self, Self::Error> {
@@ -33,7 +33,7 @@ impl TryFrom<Area<NaiveDate>> for Area<FutureDate> {
         }
         Ok(Area {
             lines: value.lines,
-            date: FutureDate(provided_date),
+            date: FutureOrCurrentDate(provided_date),
             time_frame: TimeFrame {
                 from: value.time_frame.from,
                 to: value.time_frame.to,
