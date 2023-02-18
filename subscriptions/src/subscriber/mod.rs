@@ -1,7 +1,8 @@
 use crate::plans::Plan;
+use uuid::Uuid;
 
-#[derive(Clone, Eq, PartialEq, Hash)]
-pub struct SubscriberId(String);
+#[derive(Clone, Copy, Eq, PartialEq, Hash)]
+pub struct SubscriberId(Uuid);
 
 pub struct Subscriber {
     id: SubscriberId,

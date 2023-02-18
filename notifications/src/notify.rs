@@ -8,7 +8,9 @@ use std::error::Error;
 use std::sync::Arc;
 
 use subscriptions::subscriber::{AffectedSubscriber, SubscriberId};
-use use_cases::import_planned_blackouts::NotifySubscribersOfAffectedAreas;
+use use_cases::import_planned_blackouts::{
+    ImportInput, NotifySubscribersOfAffectedAreas, Region, Url,
+};
 
 pub struct Notifier {
     subscriber_repo: Arc<dyn SubscriberRepo>,
@@ -25,7 +27,7 @@ pub struct SubscriberWithLocations {
 pub trait SubscriberRepo: Send + Sync {
     async fn get_subscribers_from_affected_locations(
         &self,
-        areas: &[AreaId],
+        regions: &[Region],
     ) -> anyhow::Result<HashMap<AffectedSubscriber, Vec<LocationWithDateAndTime>>>;
 }
 
@@ -33,20 +35,50 @@ pub trait SubscriberRepo: Send + Sync {
 pub trait GetPreferredDeliveryStrategies: Send + Sync {
     async fn get_strategies(
         &self,
-        subscribers: &[SubscriberId],
+        subscribers: Vec<SubscriberId>,
     ) -> anyhow::Result<HashMap<Arc<dyn DeliveryStrategy>, Vec<SubscriberId>>>;
 }
 
 #[async_trait]
 impl NotifySubscribersOfAffectedAreas for Notifier {
-    async fn notify(&self, data: Vec<AffectedArea>) -> anyhow::Result<()> {
+    async fn notify(&self, data: ImportInput) -> anyhow::Result<()> {
+        let mut futures: FuturesUnordered<_> = data
+            .0
+            .iter()
+            .map(|(url, regions)| self.notify_subscribers_in_regions(url.clone(), regions))
+            .collect();
+
+        while let Some(result) = futures.next().await {
+            if let Err(e) = result {
+                // TODO: Setup logging
+                // error!("Error sending notification: {:?}", e);
+                println!("Error notifying subscribers: {e:?}")
+            }
+        }
+
+        Ok(())
+    }
+}
+
+impl Notifier {
+    async fn notify_subscribers_in_regions(
+        &self,
+        url: Url,
+        regions: &[Region],
+    ) -> anyhow::Result<()> {
         let mapping_of_subscriber_to_locations = self
             .subscriber_repo
-            .get_subscribers_from_affected_locations(&[])
+            .get_subscribers_from_affected_locations(regions)
             .await?;
+
+        let subscriber_ids = mapping_of_subscriber_to_locations
+            .keys()
+            .map(|key| key.id())
+            .collect::<Vec<_>>();
+
         let strategies_with_subscribers = self
             .subscriber_delivery_strategies
-            .get_strategies(&[])
+            .get_strategies(subscriber_ids)
             .await?;
 
         let mapping_of_subscriber_to_locations = mapping_of_subscriber_to_locations
@@ -72,6 +104,7 @@ impl NotifySubscribersOfAffectedAreas for Notifier {
                             .get(subscriber)
                             .cloned()
                             .map(|data| Notification {
+                                url: url.clone(),
                                 subscriber: data.subscriber,
                                 locations: data.locations,
                             })

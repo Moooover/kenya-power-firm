@@ -27,6 +27,7 @@ pub struct Region {
     pub counties: Vec<County>,
 }
 
+#[derive(Clone)]
 pub struct Url(pub String);
 
 pub struct ImportInput(pub HashMap<Url, Vec<Region>>);
@@ -43,7 +44,7 @@ pub trait SaveBlackOutsRepo: Send + Sync {
 
 #[async_trait]
 pub trait NotifySubscribersOfAffectedAreas: Send + Sync {
-    async fn notify(&self, data: Vec<AffectedArea>) -> anyhow::Result<()>;
+    async fn notify(&self, data: ImportInput) -> anyhow::Result<()>;
 }
 
 pub struct ImportBlackouts {
@@ -59,10 +60,6 @@ impl ImportPlannedBlackoutsInteractor for ImportBlackouts {
             .save_blackouts(&data)
             .await
             .map_err(|err| anyhow!("{:?}", err))?;
-        let area_ids = vec![];
-        self.notifier
-            .notify(area_ids)
-            .await
-            .map_err(|err| anyhow!("{:?}", err))
+        self.notifier.notify(data).await
     }
 }
