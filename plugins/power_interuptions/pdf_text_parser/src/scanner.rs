@@ -15,7 +15,7 @@ lazy_static! {
             .build()
             .expect("Expected MATCH_ADJUSCENT_CUSTOMERS regex to compile ");
 }
-const END_OF_PINS: &str = "ENDOFPINS";
+const END_OF_LOCATIONS: &str = "END_OF_LOCATIONS";
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 
@@ -32,7 +32,7 @@ pub struct Date {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum KeyWords {
-    EndOfAreaPins,
+    EndOfAreaLocations,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -150,7 +150,7 @@ impl<'a> Scanner<'a> {
             "DATE:" | "DATE;" => Token::Date(self.date()),
             "TIME:" | "TIME;" => Token::Time(self.time()),
             "AREA:" | "AREA;" => Token::Area(self.area()),
-            END_OF_PINS => Token::Keyword(KeyWords::EndOfAreaPins),
+            END_OF_LOCATIONS => Token::Keyword(KeyWords::EndOfAreaLocations),
             _ => self
                 .peek_and_check_for_region_or_county()
                 .unwrap_or_else(|| {
@@ -258,7 +258,7 @@ impl<'a> Scanner<'a> {
 
 pub fn scan(text: &str) -> Vec<Token> {
     let raw_text = add_nairobi_county_to_text(text);
-    let text = MATCH_ADJUSCENT_CUSTOMERS.replace_all(&raw_text, END_OF_PINS);
+    let text = MATCH_ADJUSCENT_CUSTOMERS.replace_all(&raw_text, END_OF_LOCATIONS);
     let scanner = ScannerIter {
         scanner: Scanner::new(&text),
     };

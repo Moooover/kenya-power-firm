@@ -48,7 +48,7 @@ impl From<TokenArea> for Area {
             date: value.date,
             start: value.start,
             end: value.end,
-            pins: value.pins,
+            locations: value.locations,
         }
     }
 }

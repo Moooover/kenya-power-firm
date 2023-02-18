@@ -125,10 +125,10 @@ impl Parser {
                     .into_iter()
                     .map(|area| {
                         let lines = area.lines.into_iter().map(sanitize).collect();
-                        let pins = area.pins.into_iter().map(sanitize).collect();
+                        let locations = area.locations.into_iter().map(sanitize).collect();
                         Area {
                             lines,
-                            pins,
+                            locations,
                             ..area
                         }
                     })
@@ -219,37 +219,37 @@ impl Parser {
             time.parse(),
             "Time".to_owned()
         )??;
-        let pins = self.pins()?;
+        let pins = self.locations()?;
 
         Ok(Area {
             lines: area_lines,
             date,
             start,
             end,
-            pins,
+            locations: pins,
         })
     }
 
-    fn pins(&mut self) -> Result<Vec<String>, ParseError> {
+    fn locations(&mut self) -> Result<Vec<String>, ParseError> {
         let mut results = vec![];
-        fn end_of_pins(token: Option<&Token>) -> bool {
-            matches!(token, Some(&Token::Keyword(KeyWords::EndOfAreaPins)))
+        fn end_of_locations(token: Option<&Token>) -> bool {
+            matches!(token, Some(&Token::Keyword(KeyWords::EndOfAreaLocations)))
         }
 
-        let mut pin_buffer = String::new();
+        let mut location_buffer = String::new();
 
-        while !end_of_pins(self.tokens.peek()) {
+        while !end_of_locations(self.tokens.peek()) {
             let token = self.tokens.next().ok_or(ParseError::UnexpectedEndOfFile)?;
 
             match token {
-                Token::Comma if self.digit_after_comma() => pin_buffer.push_str(","),
+                Token::Comma if self.digit_after_comma() => location_buffer.push_str(","),
                 Token::Comma => {
-                    results.push(pin_buffer.clone());
-                    pin_buffer.clear();
+                    results.push(location_buffer.clone());
+                    location_buffer.clear();
                 }
                 Token::Identifier(identifier) => {
-                    pin_buffer.push_str(" ");
-                    pin_buffer.push_str(&identifier);
+                    location_buffer.push_str(" ");
+                    location_buffer.push_str(&identifier);
                 }
                 token => {
                     return Err(ParseError::UnexpectedToken(UnexpectedToken {
@@ -260,14 +260,14 @@ impl Parser {
             }
         }
 
-        results.push(pin_buffer);
+        results.push(location_buffer);
 
         // consume the end of pins keyword
         self.tokens.next();
 
         Ok(results
             .into_iter()
-            .map(|pin| self.extract_and_construct_pin_phases(pin))
+            .map(|pin| self.extract_and_construct_location_phases(pin))
             .flatten()
             .collect())
     }
@@ -278,7 +278,7 @@ impl Parser {
     }
 
     /// Eg: "Dandora Phase 1 & 2" becomes -> ["Dandora Phase 1", "Dandora Phase 2"]
-    fn extract_and_construct_pin_phases(&self, pin: String) -> Vec<String> {
+    fn extract_and_construct_location_phases(&self, location: String) -> Vec<String> {
         lazy_static! {
             static ref PHASE: Regex =
                 Regex::new(r"\d{1,}[\n\r\s]+[,&]+[\n\r\s]+\d{1,}").expect("PHASE regex to compile");
@@ -287,20 +287,20 @@ impl Parser {
             static ref PHASE_NUMBERS: Regex =
                 Regex::new(r"\d{1,}").expect("PHASE_NUMBERS regex to compile");
         }
-        if PHASE.is_match(&pin) {
+        if PHASE.is_match(&location) {
             let phase_name = PHASE_NAME
-                .captures_iter(&pin)
+                .captures_iter(&location)
                 .into_iter()
                 .map(|capture| format!("{}", &capture[0]))
                 .collect::<String>();
 
             return PHASE_NUMBERS
-                .captures_iter(&pin)
+                .captures_iter(&location)
                 .into_iter()
                 .map(|capture| format!("{} {}", &phase_name.trim(), &capture[0].trim()))
                 .collect::<Vec<_>>();
         }
-        vec![pin]
+        vec![location]
     }
 }
 

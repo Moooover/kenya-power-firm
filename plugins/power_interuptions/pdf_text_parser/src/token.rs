@@ -7,7 +7,7 @@ pub struct Area {
     pub date: NaiveDate,
     pub start: NaiveTime,
     pub end: NaiveTime,
-    pub pins: Vec<String>,
+    pub locations: Vec<String>,
 }
 
 #[derive(Debug)]
