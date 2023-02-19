@@ -1,4 +1,4 @@
-use anyhow::anyhow;
+use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use chrono::naive::NaiveTime;
 use chrono::NaiveDate;
@@ -95,14 +95,15 @@ impl ImportPlannedBlackoutsInteractor for ImportBlackouts {
 }
 
 impl TryFrom<Region> for DomainRegion<FutureOrCurrentDate> {
-    type Error = String;
+    type Error = anyhow::Error;
 
     fn try_from(value: Region) -> Result<Self, Self::Error> {
         let counties = value
             .counties
             .into_iter()
             .map(TryFrom::try_from)
-            .collect::<Result<_, _>>()?;
+            .collect::<Result<_, _>>()
+            .with_context(|| format!("Region {}", value.name))?;
         Ok(Self {
             region: value.name,
             counties,
@@ -111,14 +112,15 @@ impl TryFrom<Region> for DomainRegion<FutureOrCurrentDate> {
 }
 
 impl TryFrom<County> for DomainCounty<FutureOrCurrentDate> {
-    type Error = String;
+    type Error = anyhow::Error;
 
     fn try_from(value: County) -> Result<Self, Self::Error> {
         let areas = value
             .areas
             .into_iter()
             .map(TryFrom::try_from)
-            .collect::<Result<_, _>>()?;
+            .collect::<Result<_, _>>()
+            .with_context(|| format!("County {}", value.name))?;
         Ok(DomainCounty {
             name: value.name,
             areas,
@@ -127,10 +129,10 @@ impl TryFrom<County> for DomainCounty<FutureOrCurrentDate> {
 }
 
 impl TryFrom<Area> for DomainArea<FutureOrCurrentDate> {
-    type Error = String;
+    type Error = anyhow::Error;
 
     fn try_from(value: Area) -> Result<Self, Self::Error> {
-        let date = FutureOrCurrentDate::try_from(value.date)?;
+        let date = FutureOrCurrentDate::try_from(value.date).map_err(|error| anyhow!(error))?;
         Ok(DomainArea {
             lines: value.lines,
             date,
