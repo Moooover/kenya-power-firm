@@ -71,7 +71,8 @@ impl ImportPlannedBlackoutsInteractor for ImportBlackouts {
                     .into_iter()
                     .map(TryFrom::try_from)
                     .collect::<Result<_, _>>()
-                    .map(|regions| (DomainUrl(url.0), regions))
+                    .map(|regions| (DomainUrl(url.0.clone()), regions))
+                    .with_context(|| format!("URL where data was extracted from is {}", url.0))
             })
             .partition(Result::is_ok);
 
