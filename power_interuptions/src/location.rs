@@ -1,18 +1,22 @@
 use chrono::{Datelike, Days, NaiveDate, NaiveTime, Utc};
 use std::collections::HashMap;
 
+#[derive(Debug)]
 pub struct County<T> {
     pub name: String,
     pub areas: Vec<Area<T>>,
 }
 
+#[derive(Debug)]
 pub struct Region<T = FutureOrCurrentDate> {
     pub region: String,
     pub counties: Vec<County<T>>,
 }
 
+#[derive(Debug)]
 pub struct FutureOrCurrentDate(NaiveDate);
 
+#[derive(Debug)]
 pub struct Area<T> {
     pub lines: Vec<String>,
     pub date: T,
@@ -20,7 +24,7 @@ pub struct Area<T> {
     pub locations: Vec<String>,
 }
 
-#[derive(Clone, Hash, Eq, PartialEq)]
+#[derive(Clone, Hash, Eq, PartialEq, Debug)]
 pub struct Url(pub String);
 
 pub struct ImportInput(pub HashMap<Url, Vec<Region<FutureOrCurrentDate>>>);
@@ -40,7 +44,7 @@ impl TryFrom<NaiveDate> for FutureOrCurrentDate {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct TimeFrame {
     pub from: NaiveTime,
     pub to: NaiveTime,

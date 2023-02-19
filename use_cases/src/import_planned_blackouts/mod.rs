@@ -63,7 +63,7 @@ impl ImportPlannedBlackoutsInteractor for ImportBlackouts {
     async fn import(&self, actor: &dyn Actor, data: ImportInput) -> anyhow::Result<()> {
         actor.check_for_permission(Permission::ImportAffectedAreas)?;
 
-        let data = data
+        let (data, errors): (Vec<_>, _) = data
             .0
             .into_iter()
             .map(|(url, regions)| {
@@ -73,8 +73,18 @@ impl ImportPlannedBlackoutsInteractor for ImportBlackouts {
                     .collect::<Result<_, _>>()
                     .map(|regions| (DomainUrl(url.0), regions))
             })
-            .collect::<Result<_, _>>()
-            .map_err(|err: String| anyhow!(err))?;
+            .partition(Result::is_ok);
+
+        let data = data.into_iter().map(Result::unwrap).collect();
+        let errors = errors
+            .into_iter()
+            .map(Result::unwrap_err)
+            .collect::<Vec<_>>();
+
+        if errors.len() > 0 {
+            // TODO: Log the errors here
+            println!("{errors:?}")
+        }
         let data = DomainImportInput(data);
         self.repo
             .save_blackouts(&data)
