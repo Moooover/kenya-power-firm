@@ -1,5 +1,7 @@
 use anyhow::anyhow;
 use std::collections::HashSet;
+use subscriptions::subscriber::SubscriberId;
+use uuid::Uuid;
 
 pub struct Permissions {
     permissions: HashSet<Permission>,
@@ -17,6 +19,8 @@ pub enum Permission {
 }
 pub trait Actor {
     fn permissions(&self) -> Permissions;
+
+    fn id(&self) -> SubscriberId;
 
     fn check_for_permission(&self, permission: Permission) -> anyhow::Result<()> {
         match self.permissions().contains(permission) {

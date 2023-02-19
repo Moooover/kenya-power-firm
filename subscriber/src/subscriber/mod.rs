@@ -4,6 +4,12 @@ use uuid::Uuid;
 #[derive(Clone, Copy, Eq, PartialEq, Hash)]
 pub struct SubscriberId(Uuid);
 
+impl SubscriberId {
+    pub fn new(id: Uuid) -> Self {
+        Self(id)
+    }
+}
+
 pub struct Subscriber {
     id: SubscriberId,
     current_plan: Option<Plan>,

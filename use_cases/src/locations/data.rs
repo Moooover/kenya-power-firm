@@ -5,7 +5,9 @@ pub struct Location {
     nearby_locations: Vec<String>,
 }
 
+pub struct LocationId(Uuid);
+
 pub struct LocationWithId {
-    id: Uuid,
-    location: Location,
+    pub id: LocationId,
+    pub location: Location,
 }
