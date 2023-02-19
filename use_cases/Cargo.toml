@@ -10,8 +10,8 @@ anyhow = "1.0.69"
 async-trait = "0.1.64"
 chrono = "0.4.23"
 subscriptions = { path = "../subscriber" }
+thiserror = "1.0.38"
 power_interuptions = { path = "../power_interuptions" }
 [dependencies.uuid]
 version = "1.3.0"
 features = ["v4"]
-thiserror = "1.0.38"

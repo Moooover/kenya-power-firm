@@ -4,14 +4,15 @@ use crate::locations::subscribe_to_location::CreateLocationRepo;
 use async_trait::async_trait;
 use std::sync::Arc;
 use subscriptions::subscriber::SubscriberId;
+use thiserror::Error;
 
 #[async_trait]
-pub trait EditLocationInteractor {
-    fn edit(
+pub trait EditLocationInteractor: Send + Sync {
+    async fn edit(
         &self,
         actor: &dyn Actor,
-        location_change: LocationChange<LocationId>,
-    ) -> anyhow::Result<LocationWithId>;
+        location_change: LocationChange<Location>,
+    ) -> Result<LocationWithId, EditLocationError>;
 }
 
 pub struct LocationChange<T> {
@@ -19,6 +20,7 @@ pub struct LocationChange<T> {
     pub new_location: T,
 }
 
+#[derive(Debug, Error)]
 pub enum EditLocationError {
     #[error("{0}")]
     Validation(String),
@@ -27,18 +29,12 @@ pub enum EditLocationError {
 }
 
 #[async_trait]
-pub trait EditLocationRepo {
+pub trait EditLocationRepo: Send + Sync {
     async fn edit(
         &self,
         subscriber: SubscriberId,
         location_change: LocationChange<LocationId>,
     ) -> Result<LocationWithId, EditLocationError>;
-
-    async fn create_or_return_existing_location(
-        &self,
-        subscriber_id: SubscriberId,
-        location: Location,
-    ) -> anyhow::Result<LocationWithId>;
 }
 
 #[async_trait]

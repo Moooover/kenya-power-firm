@@ -17,13 +17,13 @@ pub enum CreateAccountError {
 }
 
 #[async_trait]
-pub trait UserRegistrationRepo {
+pub trait UserRegistrationRepo: Send + Sync {
     async fn save_user(&self, user: NewUser) -> Result<(), CreateAccountError>;
 }
 
 #[async_trait]
-pub trait CreateAccountInteractor {
-    async fn create_account(&self, user: NewUser) -> anyhow::Result<()>;
+pub trait CreateAccountInteractor: Send + Sync {
+    async fn create_account(&self, user: NewUser) -> Result<(), CreateAccountError>;
 }
 
 pub struct CreateAccountImpl {

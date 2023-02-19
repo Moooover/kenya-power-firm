@@ -5,6 +5,7 @@ use async_trait::async_trait;
 use std::collections::HashMap;
 use std::error::Error;
 use std::sync::Arc;
+use use_cases::actor::Actor;
 use use_cases::import_planned_blackouts::{
     Area, ImportInput, ImportPlannedBlackoutsInteractor, Region, Url,
 };
@@ -26,7 +27,7 @@ pub trait PdfExtractor: Send + Sync {
 }
 
 impl WebPageExtractor {
-    pub async fn run(&self) -> anyhow::Result<()> {
+    pub async fn run(&self, actor: &dyn Actor) -> anyhow::Result<()> {
         let page_content = get_page_contents().await?;
         let pdf_links = get_pdf_links(page_content);
 
@@ -37,7 +38,7 @@ impl WebPageExtractor {
 
         let result = self.pdf_reader.extract(unprocessed_files).await?;
 
-        self.importer.import(ImportInput(result)).await
+        self.importer.import(actor, ImportInput(result)).await
     }
 }
 

@@ -13,11 +13,11 @@ impl Permissions {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Hash, Eq, PartialEq)]
 pub enum Permission {
     ImportAffectedAreas,
 }
-pub trait Actor {
+pub trait Actor: Send + Sync {
     fn permissions(&self) -> Permissions;
 
     fn id(&self) -> SubscriberId;
@@ -25,9 +25,7 @@ pub trait Actor {
     fn check_for_permission(&self, permission: Permission) -> anyhow::Result<()> {
         match self.permissions().contains(permission) {
             true => Ok(()),
-            false => {
-                anyhow!("Unauthorized")
-            }
+            false => Err(anyhow!("Unauthorized")),
         }
     }
 }

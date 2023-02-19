@@ -5,12 +5,12 @@ use std::sync::Arc;
 use subscriptions::subscriber::SubscriberId;
 
 #[async_trait]
-pub trait SubscribeToLocationInteractor {
+pub trait SubscribeToLocationInteractor: Send + Sync {
     async fn subscribe(&self, actor: &dyn Actor, location: Location) -> anyhow::Result<()>;
 }
 
 #[async_trait]
-pub trait CreateLocationRepo {
+pub trait CreateLocationRepo: Send + Sync {
     async fn create_or_return_existing_location(
         &self,
         subscriber_id: SubscriberId,
@@ -19,7 +19,7 @@ pub trait CreateLocationRepo {
 }
 
 #[async_trait]
-pub trait SubscribeToLocationRepo {
+pub trait SubscribeToLocationRepo: Send + Sync {
     async fn subscribe(&self, subscriber: SubscriberId, location: LocationId)
         -> anyhow::Result<()>;
 }

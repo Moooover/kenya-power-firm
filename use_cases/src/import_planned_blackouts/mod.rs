@@ -39,7 +39,7 @@ pub struct Url(pub String);
 pub struct ImportInput(pub HashMap<Url, Vec<Region>>);
 
 #[async_trait]
-pub trait ImportPlannedBlackoutsInteractor {
+pub trait ImportPlannedBlackoutsInteractor: Send + Sync {
     async fn import(&self, actor: &dyn Actor, data: ImportInput) -> anyhow::Result<()>;
 }
 

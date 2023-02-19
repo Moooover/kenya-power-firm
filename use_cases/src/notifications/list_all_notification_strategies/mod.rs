@@ -5,7 +5,7 @@ use std::sync::Arc;
 use subscriptions::subscriber::SubscriberId;
 use uuid::Uuid;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Hash, Eq, PartialEq)]
 pub struct StrategyId(Uuid);
 
 pub struct Strategy {
@@ -20,7 +20,7 @@ pub struct StrategyWithIsActive {
 
 #[async_trait]
 pub trait ListAllNotificationStrategiesInteractor: Send + Sync {
-    async fn list(&self, actor: &dyn Actor) -> anyhow::Result<Vec<Strategy>>;
+    async fn list(&self, actor: &dyn Actor) -> anyhow::Result<Vec<StrategyWithIsActive>>;
 }
 
 #[async_trait]

@@ -1,12 +1,13 @@
 use async_trait::async_trait;
 use std::sync::Arc;
+use thiserror::Error;
 
 pub struct User {
     pub external_id: String,
 }
 
 #[async_trait]
-pub trait LoginInteractor {
+pub trait LoginInteractor: Send + Sync {
     async fn login(&self, user: User) -> Result<(), LoginError>;
 }
 
@@ -19,7 +20,7 @@ pub enum LoginError {
 }
 
 #[async_trait]
-pub trait UserLoginRepo {
+pub trait UserLoginRepo: Send + Sync {
     async fn login(&self, user: User) -> Result<(), LoginError>;
 }
 

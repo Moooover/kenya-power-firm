@@ -6,7 +6,7 @@ use subscriptions::subscriber::SubscriberId;
 use uuid::Uuid;
 
 #[async_trait]
-pub trait ListSubscribedLocations {
+pub trait ListSubscribedLocations: Send + Sync {
     async fn list(&self, actor: &dyn Actor) -> anyhow::Result<Vec<LocationWithId>>;
 }
 
@@ -15,7 +15,7 @@ pub struct ListSubscribedLocationsImpl {
 }
 
 #[async_trait]
-pub trait LocationsSubscribedRepo {
+pub trait LocationsSubscribedRepo: Send + Sync {
     async fn list(&self, id: SubscriberId) -> anyhow::Result<Vec<LocationWithId>>;
 }
 
