@@ -58,7 +58,9 @@ impl WebPageExtractor {
 }
 
 async fn get_page_contents() -> anyhow::Result<String> {
-    reqwest::get("https://kplc.co.ke/category/view/50/planned-power-interruptions")
+    CLIENT
+        .get("https://kplc.co.ke/category/view/50/planned-power-interruptions")
+        .send()
         .await?
         .text()
         .await
