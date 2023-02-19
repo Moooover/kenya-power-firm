@@ -33,7 +33,7 @@ pub struct Region {
     pub counties: Vec<County>,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Url(pub String);
 
 pub struct ImportInput(pub HashMap<Url, Vec<Region>>);
