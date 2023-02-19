@@ -17,7 +17,7 @@ pub enum CreateAccountError {
 }
 
 #[async_trait]
-pub trait UserRepo {
+pub trait UserRegistrationRepo {
     async fn save_user(&self, user: NewUser) -> Result<(), CreateAccountError>;
 }
 
@@ -27,7 +27,7 @@ pub trait CreateAccountInteractor {
 }
 
 pub struct CreateAccountImpl {
-    repo: Arc<dyn UserRepo>,
+    repo: Arc<dyn UserRegistrationRepo>,
 }
 
 #[async_trait]
