@@ -1,4 +1,6 @@
 pub mod pdf_extractor;
+use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
+use reqwest_retry::{policies::ExponentialBackoff, RetryTransientMiddleware};
 
 use anyhow::Context;
 use async_trait::async_trait;
@@ -12,6 +14,17 @@ use use_cases::import_planned_blackouts::{
 };
 
 use regex::Regex;
+
+lazy_static! {
+    static ref CLIENT: ClientWithMiddleware =   {
+        let retry_policy = ExponentialBackoff::builder().build_with_max_retries(3);
+    ClientBuilder::new(reqwest::Client::new())
+        // Retry failed requests.
+        .with(RetryTransientMiddleware::new_with_policy(retry_policy))
+        .build()
+
+    };
+}
 
 struct WebPageExtractor {
     importer: Arc<dyn ImportPlannedBlackoutsInteractor>,
