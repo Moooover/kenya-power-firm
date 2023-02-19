@@ -12,4 +12,4 @@ futures = "0.3"
 tokio = { version = "1.25.0", features = ["full"] }
 use_cases = { path = "../use_cases" }
 power_interuptions = { path = "../power_interuptions" }
-subscriptions = { path = "../subscriptions" }
+subscriptions = { path = "../subscriber" }

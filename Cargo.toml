@@ -3,7 +3,7 @@
 members = [
     "use_cases",
     "plugins/power_interuptions/*",
-    "subscriptions",
+    "subscriber",
     "plugins/subscriber_notifications/*",
     "power_interuptions",
     "notifications"
