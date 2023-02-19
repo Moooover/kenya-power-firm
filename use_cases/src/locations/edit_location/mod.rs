@@ -1,5 +1,6 @@
 use crate::actor::Actor;
 use crate::locations::data::{Location, LocationId, LocationWithId};
+use crate::locations::subscribe_to_location::CreateLocationRepo;
 use async_trait::async_trait;
 use std::sync::Arc;
 use subscriptions::subscriber::SubscriberId;
@@ -40,8 +41,11 @@ pub trait EditLocationRepo {
     ) -> anyhow::Result<LocationWithId>;
 }
 
+#[async_trait]
+pub trait CreateAndEditLocationRepo: EditLocationRepo + CreateLocationRepo {}
+
 pub struct EditLocationInteractorImpl {
-    location_repo: Arc<dyn EditLocationRepo>,
+    location_repo: Arc<dyn CreateAndEditLocationRepo>,
 }
 
 #[async_trait]
