@@ -1,14 +1,19 @@
 use crate::PdfExtractor;
-use anyhow::Context;
+use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use chrono::{NaiveDate, NaiveTime};
+use futures::stream::FuturesUnordered;
+use futures::StreamExt;
 use lazy_static::lazy_static;
 use regex::Regex;
 use std::collections::HashMap;
 use std::error::Error;
 use std::path::Path;
 use std::sync::Arc;
-use use_cases::import_planned_blackouts::{Area, Region, Url};
+use url::Url;
+
+use crate::http_client::HttpClient;
+use use_cases::import_planned_blackouts::{Area, Region};
 
 lazy_static! {
     static ref FORWARD_SLASH: Regex =
@@ -20,27 +25,55 @@ pub trait TextExtractor: Send + Sync {
     async fn extract(&self, text: String) -> anyhow::Result<Vec<Region>>;
 }
 
-struct PdfExtractorImpl;
+struct PdfExtractorImpl {
+    text_extractor: Arc<dyn TextExtractor>,
+}
+
+impl PdfExtractorImpl {
+    async fn fetch_and_extract(&self, url: Url) -> anyhow::Result<(Url, Vec<Region>)> {
+        let res = HttpClient::get_bytes(url.clone()).await?;
+        let text = resolve_text_from_file(&url, &res).await?;
+        let regions = self.text_extractor.extract(text).await?;
+
+        Ok((url, regions))
+    }
+}
 
 #[async_trait]
 impl PdfExtractor for PdfExtractorImpl {
     async fn extract(&self, links: Vec<Url>) -> anyhow::Result<HashMap<Url, Vec<Region>>> {
-        for link in &links {
-            let res = reqwest::get(&link.0)
-                .await
-                .context("Failed to fetch link")?
-                .bytes()
-                .await
-                .context("Failed to convert to bytes")?;
-            let text = resolve_text_from_file(&link.0, &res).await?;
-            println!("{text}")
+        let number_of_links = links.len();
+
+        let mut futures: FuturesUnordered<_> = links
+            .into_iter()
+            .map(|url| self.fetch_and_extract(url))
+            .collect();
+
+        let mut errors = vec![];
+        let mut results = HashMap::with_capacity(number_of_links);
+
+        while let Some(result) = futures.next().await {
+            match result {
+                Ok((url, regions)) => {
+                    results.insert(url, regions);
+                }
+                Err(error) => errors.push(error),
+            }
         }
 
-        Ok(HashMap::new())
+        if !errors.is_empty() {
+            // TODO: Setup logging
+            println!("{errors:?}")
+        }
+        if results.is_empty() && !errors.is_empty() {
+            return Err(anyhow!("{errors:?}"));
+        }
+
+        Ok(results)
     }
 }
 
-async fn resolve_text_from_file(url: &str, file_bytes: &[u8]) -> anyhow::Result<String> {
+async fn resolve_text_from_file(url: &Url, file_bytes: &[u8]) -> anyhow::Result<String> {
     use pdf_extract::extract_text;
     use std::env;
     use tokio::fs::remove_file;
@@ -49,7 +82,7 @@ async fn resolve_text_from_file(url: &str, file_bytes: &[u8]) -> anyhow::Result<
     use tokio::io::AsyncWriteExt;
 
     let path = env::current_dir().context("Cannot read current_dir")?;
-    let normalized_url = FORWARD_SLASH.replace_all(url, "_");
+    let normalized_url = FORWARD_SLASH.replace_all(url.as_str(), "_");
     let file_path = format!("{}/pdf_dump/pdf-{}", path.display(), normalized_url);
     println!("{file_path}");
     let mut file = OpenOptions::new()

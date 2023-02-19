@@ -1,6 +1,6 @@
 use chrono::{Datelike, Days, NaiveDate, NaiveTime, Utc};
 use std::collections::HashMap;
-
+use url::Url;
 #[derive(Debug)]
 pub struct County<T> {
     pub name: String,
@@ -23,9 +23,6 @@ pub struct Area<T> {
     pub time_frame: TimeFrame,
     pub locations: Vec<String>,
 }
-
-#[derive(Clone, Hash, Eq, PartialEq, Debug)]
-pub struct Url(pub String);
 
 pub struct ImportInput(pub HashMap<Url, Vec<Region<FutureOrCurrentDate>>>);
 

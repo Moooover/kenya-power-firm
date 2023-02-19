@@ -5,11 +5,11 @@ use chrono::NaiveDate;
 use std::collections::HashMap;
 use std::error::Error;
 use std::sync::Arc;
+use url::Url;
 
 use crate::actor::{Actor, Permission};
 use power_interuptions::location::County as DomainCounty;
 use power_interuptions::location::Region as DomainRegion;
-use power_interuptions::location::Url as DomainUrl;
 use power_interuptions::location::{Area as DomainArea, FutureOrCurrentDate};
 use power_interuptions::location::{ImportInput as DomainImportInput, TimeFrame};
 
@@ -32,9 +32,6 @@ pub struct Region {
     pub name: String,
     pub counties: Vec<County>,
 }
-
-#[derive(Clone, Debug)]
-pub struct Url(pub String);
 
 pub struct ImportInput(pub HashMap<Url, Vec<Region>>);
 
@@ -71,8 +68,8 @@ impl ImportPlannedBlackoutsInteractor for ImportBlackouts {
                     .into_iter()
                     .map(TryFrom::try_from)
                     .collect::<Result<_, _>>()
-                    .map(|regions| (DomainUrl(url.0.clone()), regions))
-                    .with_context(|| format!("URL where data was extracted from is {}", url.0))
+                    .map(|regions| (url.clone(), regions))
+                    .with_context(|| format!("URL where data was extracted from is {}", url))
             })
             .partition(Result::is_ok);
 
