@@ -1,4 +1,5 @@
-use crate::authentication::AuthenticationInteractor;
+use crate::authentication::{AuthenticationInteractor, AuthenticationInteractorImpl};
+use crate::repositories::Repository;
 use std::sync::Arc;
 
 pub mod actor;
@@ -6,6 +7,7 @@ pub mod authentication;
 pub mod import_planned_blackouts;
 pub mod locations;
 pub mod notifications;
+mod repositories;
 
 pub trait App {
     fn authentication(&self) -> &dyn AuthenticationInteractor;
@@ -22,7 +24,12 @@ impl App for AppImpl {
 }
 
 impl AppImpl {
-    pub fn new(authentication: Arc<dyn AuthenticationInteractor>) -> Self {
-        Self { authentication }
+    pub fn new<R: Repository + 'static>(repo: R) -> Self {
+        let repository = Arc::new(repo);
+        let authentication_interactor = AuthenticationInteractorImpl::new(repository.clone());
+
+        Self {
+            authentication: Arc::new(authentication_interactor),
+        }
     }
 }
