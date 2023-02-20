@@ -5,5 +5,6 @@ members = [
     "subscriber",
     "plugins/subscriber_notification_strategies/*",
     "power_interuptions",
-    "notifications"
+    "notifications",
+    "plugins/storage/*"
 ]
