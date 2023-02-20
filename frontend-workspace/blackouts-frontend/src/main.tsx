@@ -11,7 +11,8 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
         domain="blackouts-development.eu.auth0.com"
         clientId="AvpZjg5KXcdiZip56F2tYt69lM1GiABm"
         authorizationParams={{
-          redirect_uri: window.location.origin
+          redirect_uri: `${window.location.origin}/authenticated`,
+            audience: "https://blackouts.co.ke"
         }}
       >
         <App />
