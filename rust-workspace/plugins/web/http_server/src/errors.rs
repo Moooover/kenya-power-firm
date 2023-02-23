@@ -12,16 +12,20 @@ use thiserror::Error;
 pub enum ApiError {
     #[error("Internal server error")]
     InternalServerError(#[from] anyhow::Error),
+    #[error("Unauthorized request")]
+    Unauthorized(String),
 }
 
 impl error::ResponseError for ApiError {
     fn status_code(&self) -> StatusCode {
         match *self {
             ApiError::InternalServerError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            ApiError::Unauthorized(_) => StatusCode::UNAUTHORIZED,
         }
     }
 
     fn error_response(&self) -> HttpResponse {
+        println!("{self:?}");
         let err_json = json!({ "error": self.to_string() });
         HttpResponse::build(self.status_code())
             .insert_header(ContentType::json())

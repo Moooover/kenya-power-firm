@@ -3,6 +3,7 @@ use actix_web::{web, App, HttpServer};
 use mock_store::store::Repository;
 use use_cases::AppImpl;
 
+mod authentication;
 mod errors;
 mod routes;
 mod use_case_app_container;

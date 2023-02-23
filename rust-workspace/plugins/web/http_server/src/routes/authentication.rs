@@ -1,6 +1,7 @@
+use crate::authentication::AuthenticatedUserInfo;
 use crate::errors::ApiError;
 use crate::use_case_app_container::UseCaseAppContainer;
-use actix_web::{web, HttpResponse};
+use actix_web::{web, HttpRequest, HttpResponse};
 use serde::{Deserialize, Serialize};
 use use_cases::authentication::User;
 
@@ -14,7 +15,11 @@ struct UserRequest {
 async fn authentication(
     user_details: web::Json<UserRequest>,
     app: web::Data<UseCaseAppContainer>,
+    req: HttpRequest,
 ) -> Result<HttpResponse, ApiError> {
+    let user: AuthenticatedUserInfo = (&req).try_into()?;
+
+    println!("{user:?}");
     let UserRequest {
         name,
         email,

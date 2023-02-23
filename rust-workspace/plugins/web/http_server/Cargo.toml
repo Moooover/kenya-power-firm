@@ -7,11 +7,14 @@ edition = "2021"
 
 [dependencies]
 actix-web = "4"
+actix-web-httpauth = "0.8.0"
 anyhow = "1.0.69"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1"
 thiserror = "1.0.38"
 tokio = { version = "1.17.0", features = ["full"] }
-
+jsonwebtoken = "8.2.0"
+lazy_static = "1.4.0"
+ureq = { version = "2.6", features = ["json"] }
 use_cases = { path = "../../../use_cases" }
 mock_store = { path = "../../storage/mock_store" }
