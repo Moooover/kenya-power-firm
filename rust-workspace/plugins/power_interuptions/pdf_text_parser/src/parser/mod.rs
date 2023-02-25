@@ -224,8 +224,14 @@ impl Parser {
             "Area".to_string()
         )?;
 
-        let date =
-            consume_expected_token!(self.tokens, Token::Date(date), date, "Date".to_owned())?;
+        let date = consume_expected_token!(
+            self.tokens,
+            Token::Date(Date { date, .. }),
+            NaiveDate::parse_from_str(&date, "%d.%m.%Y")
+                .context("Failed to parse the Date.")
+                .map_err(ParseError::ValidationError),
+            "Date".to_owned()
+        )??;
 
         let (start, end) = consume_expected_token!(
             self.tokens,
@@ -234,8 +240,14 @@ impl Parser {
             "Time".to_owned()
         )??;
 
-        let from = date.to_nairobi_date_time(start)?;
-        let to = date.to_nairobi_date_time(end)?;
+        let from = date
+            .and_time(start)
+            .try_into()
+            .map_err(|err| ParseError::ValidationError(anyhow!("{err}")))?;
+        let to = date
+            .and_time(end)
+            .try_into()
+            .map_err(|err| ParseError::ValidationError(anyhow!("{err}")))?;
         let pins = self.locations()?;
 
         Ok(Area {

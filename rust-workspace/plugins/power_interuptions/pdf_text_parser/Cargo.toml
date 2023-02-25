@@ -14,4 +14,5 @@ regex = "1"
 multipeek = "0.1.2"
 lazy_static = "1.4.0"
 web_page_extractor = { path = "../web_page_extractor" }
+power_interuptions = { path = "../../../power_interuptions" }
 use_cases = { path = "../../../use_cases" }
