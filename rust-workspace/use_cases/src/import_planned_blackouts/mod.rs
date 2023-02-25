@@ -1,7 +1,8 @@
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use chrono::naive::NaiveTime;
-use chrono::NaiveDate;
+use chrono::{DateTime, NaiveDate};
+use chrono_tz::Tz;
 use std::collections::HashMap;
 use std::error::Error;
 use std::sync::Arc;
@@ -16,9 +17,8 @@ use power_interuptions::location::{ImportInput as DomainImportInput, TimeFrame};
 #[derive(Debug)]
 pub struct Area {
     pub lines: Vec<String>,
-    pub date: NaiveDate,
-    pub start: NaiveTime,
-    pub end: NaiveTime,
+    pub from: DateTime<Tz>,
+    pub to: DateTime<Tz>,
     pub locations: Vec<String>,
 }
 
@@ -130,14 +130,11 @@ impl TryFrom<Area> for DomainArea<FutureOrCurrentDate> {
     type Error = anyhow::Error;
 
     fn try_from(value: Area) -> Result<Self, Self::Error> {
-        let date = FutureOrCurrentDate::try_from(value.date).map_err(|error| anyhow!(error))?;
+        let from = FutureOrCurrentDate::try_from(value.from).map_err(|error| anyhow!(error))?;
+        let to = FutureOrCurrentDate::try_from(value.to).map_err(|err| anyhow!(err))?;
         Ok(DomainArea {
             lines: value.lines,
-            date,
-            time_frame: TimeFrame {
-                from: value.start,
-                to: value.end,
-            },
+            time_frame: TimeFrame { from, to },
             locations: value.locations,
         })
     }

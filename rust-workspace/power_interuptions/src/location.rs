@@ -1,4 +1,6 @@
-use chrono::{Datelike, Days, NaiveDate, NaiveTime, Utc};
+use chrono::{DateTime, Datelike, Days, NaiveDate, NaiveTime, TimeZone, Utc};
+use chrono_tz::Africa::Nairobi;
+use chrono_tz::Tz;
 use std::collections::HashMap;
 use url::Url;
 #[derive(Debug)]
@@ -14,23 +16,28 @@ pub struct Region<T = FutureOrCurrentDate> {
 }
 
 #[derive(Debug)]
-pub struct FutureOrCurrentDate(NaiveDate);
+pub struct FutureOrCurrentDate(DateTime<Tz>);
 
 #[derive(Debug)]
 pub struct Area<T> {
     pub lines: Vec<String>,
-    pub date: T,
-    pub time_frame: TimeFrame,
+    pub time_frame: TimeFrame<T>,
     pub locations: Vec<String>,
 }
 
 pub struct ImportInput(pub HashMap<Url, Vec<Region<FutureOrCurrentDate>>>);
 
-impl TryFrom<NaiveDate> for FutureOrCurrentDate {
+impl TryFrom<DateTime<Tz>> for FutureOrCurrentDate {
     type Error = String;
 
-    fn try_from(provided_date: NaiveDate) -> Result<Self, Self::Error> {
-        let today = Utc::now().date_naive();
+    fn try_from(provided_date: DateTime<Tz>) -> Result<Self, Self::Error> {
+        use chrono_tz::Africa::Nairobi;
+
+        let today = Utc::now().naive_utc();
+        let today = Nairobi
+            .from_local_datetime(&today)
+            .single()
+            .ok_or_else(|| format!("Failed to convert {provided_date} to Nairobi datetime"))?;
         if provided_date < today {
             return Err(format!(
                 "The date provided already passed {}",
@@ -42,16 +49,15 @@ impl TryFrom<NaiveDate> for FutureOrCurrentDate {
 }
 
 #[derive(Clone, Debug)]
-pub struct TimeFrame {
-    pub from: NaiveTime,
-    pub to: NaiveTime,
+pub struct TimeFrame<T> {
+    pub from: T,
+    pub to: T,
 }
 
 #[derive(Clone)]
-pub struct LocationWithDateAndTime {
+pub struct LocationWithDateAndTime<T = DateTime<Tz>> {
     location: String,
     area: String,
     county: String,
-    date: NaiveDate,
-    time_frame: TimeFrame,
+    time_frame: TimeFrame<T>,
 }
