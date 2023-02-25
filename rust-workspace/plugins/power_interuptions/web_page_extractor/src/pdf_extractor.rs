@@ -117,16 +117,34 @@ async fn delete_file(path: String) {
 
 #[cfg(test)]
 mod tests {
-    use crate::pdf_extractor::PdfExtractorImpl;
+    use crate::pdf_extractor::{PdfExtractorImpl, TextExtractor};
     use crate::PdfExtractor;
-    use use_cases::import_planned_blackouts::Url;
+    use async_trait::async_trait;
+    use std::sync::Arc;
+    use url::Url;
+    use use_cases::import_planned_blackouts::Region;
+
+    struct TestExtractor;
+
+    #[async_trait]
+    impl TextExtractor for TestExtractor {
+        async fn extract(&self, text: String) -> anyhow::Result<Vec<Region>> {
+            println!("{text}");
+
+            Ok(vec![])
+        }
+    }
 
     #[tokio::test]
     async fn test_working() {
-        let extractor = PdfExtractorImpl;
-        let links = vec![Url(
-            "https://www.kplc.co.ke/img/Interruptions%20-%2009.02.2023.pdf".to_owned(),
-        )];
+        let extractor = PdfExtractorImpl {
+            text_extractor: Arc::new(TestExtractor),
+        };
+        let links =
+            vec![
+                Url::parse("https://www.kplc.co.ke/img/full/Interruptions%20-%2023.02.2023.pdf")
+                    .unwrap(),
+            ];
         let res = extractor.extract(links).await.expect("Expected result");
     }
 }

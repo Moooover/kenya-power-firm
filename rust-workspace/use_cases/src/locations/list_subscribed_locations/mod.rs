@@ -1,4 +1,5 @@
 use crate::actor::Actor;
+use crate::authentication::subscriber::SubscriberResolverInteractor;
 use crate::locations::data::LocationWithId;
 use async_trait::async_trait;
 use std::sync::Arc;
@@ -12,6 +13,7 @@ pub trait ListSubscribedLocations: Send + Sync {
 
 pub struct ListSubscribedLocationsImpl {
     repo: Arc<dyn LocationsSubscribedRepo>,
+    subscriber_resolver: Arc<dyn SubscriberResolverInteractor>,
 }
 
 #[async_trait]
@@ -22,7 +24,7 @@ pub trait LocationsSubscribedRepo: Send + Sync {
 #[async_trait]
 impl ListSubscribedLocations for ListSubscribedLocationsImpl {
     async fn list(&self, actor: &dyn Actor) -> anyhow::Result<Vec<LocationWithId>> {
-        let id = actor.id();
+        let id = self.subscriber_resolver.resolve_from_actor(actor).await?;
 
         self.repo.list(id).await
     }

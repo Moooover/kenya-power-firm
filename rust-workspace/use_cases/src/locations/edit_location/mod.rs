@@ -1,4 +1,5 @@
 use crate::actor::Actor;
+use crate::authentication::subscriber::SubscriberResolverInteractor;
 use crate::locations::data::{Location, LocationId, LocationWithId};
 use crate::locations::subscribe_to_location::CreateLocationRepo;
 use async_trait::async_trait;
@@ -42,6 +43,7 @@ pub trait CreateAndEditLocationRepo: EditLocationRepo + CreateLocationRepo {}
 
 pub struct EditLocationInteractorImpl {
     location_repo: Arc<dyn CreateAndEditLocationRepo>,
+    subscriber_resolver: Arc<dyn SubscriberResolverInteractor>,
 }
 
 #[async_trait]
@@ -51,7 +53,11 @@ impl EditLocationInteractor for EditLocationInteractorImpl {
         actor: &dyn Actor,
         location_change: LocationChange<Location>,
     ) -> Result<LocationWithId, EditLocationError> {
-        let id = actor.id();
+        let id = self
+            .subscriber_resolver
+            .resolve_from_actor(actor)
+            .await
+            .map_err(EditLocationError::InternalServerError)?;
         let new_location = self
             .location_repo
             .create_or_return_existing_location(id, location_change.new_location)

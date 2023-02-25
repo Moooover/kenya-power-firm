@@ -1,4 +1,5 @@
 use crate::actor::Actor;
+use crate::authentication::subscriber::SubscriberResolverInteractor;
 use async_trait::async_trait;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
@@ -40,14 +41,15 @@ pub trait Strategies: SubscriberStrategyRepo + StrategiesRepo {}
 
 pub struct ListAllNotificationsStrategiesImpl {
     repo: Arc<dyn Strategies>,
+    subscriber_resolver: Arc<dyn SubscriberResolverInteractor>,
 }
 
 #[async_trait]
 impl ListAllNotificationStrategiesInteractor for ListAllNotificationsStrategiesImpl {
     async fn list(&self, actor: &dyn Actor) -> anyhow::Result<Vec<StrategyWithIsActive>> {
         let all_strategies = self.repo.strategies().await?;
-
-        let subscriber_strategies = self.repo.subscriber_strategies(actor.id()).await?;
+        let id = self.subscriber_resolver.resolve_from_actor(actor).await?;
+        let subscriber_strategies = self.repo.subscriber_strategies(id).await?;
 
         Ok(all_strategies
             .into_iter()

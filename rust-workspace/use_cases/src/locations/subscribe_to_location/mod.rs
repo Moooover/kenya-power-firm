@@ -1,4 +1,5 @@
 use crate::actor::Actor;
+use crate::authentication::subscriber::SubscriberResolverInteractor;
 use crate::locations::data::{Location, LocationId, LocationWithId};
 use async_trait::async_trait;
 use std::sync::Arc;
@@ -28,12 +29,13 @@ pub trait CreateLocationAndSubscribeRepo: SubscribeToLocationRepo + CreateLocati
 
 pub struct SubscribeToLocationImpl {
     repo: Arc<dyn CreateLocationAndSubscribeRepo>,
+    subscriber_resolver: Arc<dyn SubscriberResolverInteractor>,
 }
 
 #[async_trait]
 impl SubscribeToLocationInteractor for SubscribeToLocationImpl {
     async fn subscribe(&self, actor: &dyn Actor, location: Location) -> anyhow::Result<()> {
-        let id = actor.id();
+        let id = self.subscriber_resolver.resolve_from_actor(actor).await?;
         let location = self
             .repo
             .create_or_return_existing_location(id, location)
