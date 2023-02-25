@@ -312,7 +312,7 @@ mod tests {
     #[test]
     fn test_parser() {
         let r = r"
-        Interruption of 
+Interruption of 
 Electricity Supply 
 Notice is hereby given under Rule 27 of the Electric Power Rules 
 That the electricity supply will be interrupted as here under: 
@@ -320,178 +320,176 @@ That the electricity supply will be interrupted as here under:
 facilitate maintenance and upgrade of power lines to the network; 
 to connect new customers or to replace power lines during road 
 construction, etc.) 
- 
-NAIROBI REGION 
 
-AREA: DANDORA 
-DATE: Sunday 12.02.2023                                        TIME: 9.00 A.M. – 5.00 P.M. 
-Dandora Phase 3, 4 & 5, HZ & Co. Ltd & adjacent customers. 
+NAIROBI REGION 
  
-AREA: PART OF DANDORA 
-DATE: Sunday 12.02.2023                                        TIME: 9.00 A.M. – 5.00 P.M. 
-Dandora  Phase  1  &  2,  Dandora  Mkt,  Korogocho,  Kamunde  Rd  &  adjacent 
+AREA: NORTH AIRPORT ROAD 
+DATE: Sunday 26.02.2023                                        TIME: 9.00 A.M. – 5.00 P.M. 
+G4S,  Starbright,  Amiran  Kenya,  Co-op  Bank,  Equity  Bank,  North  Airport  Rd, 
+Kitchen  Professionals,  Masai  Cables,  Alleluia  Ministries,  Axel  Engineering,  DK 
+Engineering, Tri Clover Industries, Embakasi Village Crafts, Cabanas Stage, Feil, 
+Green Forest, Barabara Plaza, Horticultural Produce Dev & adjacent customers.  
+ 
+AREA: PARTS OF JKIA 
+DATE: Sunday 26.02.2023                                        TIME: 9.00 A.M. – 5.00 P.M. 
+Mitchell Cotts, Freight Complex, Kenya Airways Cargo, Signon, Acceller, Global 
+Freight,  NAS Airport, Freight Terminals, Kenya Ports Authority, Crowne Plaza, 
+Four  Points,  Shalimar  Flowers,  Kuehne  Nagel,  Airflo,  DHL  Global &  adjacent 
 customers. 
  
-AREA: PART OF UMOJA 3 
-DATE: Sunday 12.02.2023                                        TIME: 9.00 A.M. – 5.00 P.M. 
-KCC, Part of Umoja 3 & adjacent customers. 
- 
-AREA: KOMAROCK 
-DATE: Sunday 12.02.2023                                        TIME: 9.00 A.M. – 5.00 P.M. 
-Komarock Est, Part of Mowlem, Part of Mungetho & adjacent customers. 
- 
-AREA: PART OF ROAD C 
-DATE: Sunday 12.02.2023                                         TIME: 9.00 A.M. - 3.00 P.M.   
-Candy Kenya, Spectore, Eagle Plain Est, St. Bakhita Sch, Odds & Ends C & P, 
-Vitafoam & adjacent customers.         
- 
-AREA: EASTLEGIH 1ST, 3RD AVENUE 
-DATE: Tuesday 14.02.2023                                       TIME: 9.00 A.M. – 5.00 P.M. 
-Sewage Works, 1st Ave, California Est, Highrise Est, Madina Mall, Zawadi Pri Sch, 
-Section 3 Eastleigh, 1st  Avenue Eastleigh & adjacent customers. 
- 
-AREA: BAHATI, SHAURI MOYO 
-DATE: Tuesday 14.02.2023                                       TIME: 9.00 A.M. – 5.00 P.M. 
-Bahati S/Center, Ambira Rd, KBC Est Shauri Moyo, True Food Ltd, Kaloleni Est, 
-Undugu Society & adjacent customers. 
- 
-AREA: JERUSALEM, JERICHO 
-DATE: Tuesday 14.02.2023                                       TIME: 9.00 A.M. – 5.00 P.M. 
-Jerusalem Health Centre, Uhuru Est, Ofafa Jericho Pri Est, Kiambiu & adjacent 
-customers. 
- 
-AREA: PART OF KAREN  
-DATE: Tuesday 14.02.2023                                       TIME: 9.00 A.M. – 5.00 P.M. 
-Langata South Rd, Comboni Rd, Tangaza College, Bogani Rd, Part of Silanga 
-Rd, JKUAT Karen, Kipevu Rd, Kifaru Rd, Ndalat Rd, Kuro Rd, Kenya School of 
-Law & adjacent customers.  
+AREA: KAYOLE MATOPENI 
+DATE: Monday 27.02.2023                                        TIME: 9.00 A.M. – 5.00 P.M. 
+Part of Kayole Matopeni, Kayole North Pri Sch & adjacent customers. 
  
 AREA: PARTS OF UMOJA INNERCORE 
-DATE: Tuesday 14.02.2023                                       TIME: 9.00 A.M. - 3.00 P.M.   
+DATE: Tuesday 28.02.2023                                       TIME: 9.00 A.M. – 5.00 P.M. 
 Oloibon  Hotel,  Unity  Pri,  Cathsam  Sch,  Inner  Core  Sango,  Kwa  Chief  Umoja 
 Office, Umoja 2 Mkt & adjacent customers. 
- 
-AREA: SOUTH B  
-DATE: Wednesday 15.03.2023                                  TIME: 9.00 A.M. - 3.00 P.M. 
-South B S/Centre, Balozi Est, Mater Hosp, Mariakani Est, Daidai Rd, Kapiti Rd, 
-Part of  Golden  Gate  Est,  Highway  Sec  Sch,  Elimu  Sacco,  South  B Police  Stn, 
-KIMC,  Our  Lady  of  Mercy  Catholic  Church,  Kenol,  Kobil  Petrol  Stn  &  adjacent 
-customers.  
- 
-AREA: DONHOLM, SAVANNAH 
-DATE: Thursday 16.02.2023                                     TIME: 9.00 A.M. – 5.00 P.M. 
-Whole  of  Donholm  Phase  VIII,  Donholm  Phase  V,  New  Donholm  Est,  Old 
-Donholm  Est,  Kioi  Plaza,  Donholm  Total  Petrol  Stn,  Donholm  Equity  Bank, 
-Donholm Co-op Bank, Greenspan Est, Jacaranda Est, Harambee Sacco, Sunrise 
-Est, Greenfield Est, Savannah Est, Parts of Soweto, Carmelvale Pri Sch, Edelvale 
-Sch & adjacent customers. 
- 
-AREA: METAMETA 
-DATE: Thursday 16.02.2023                                     TIME: 9.00 A.M. – 5.00 P.M. 
-Mathare 4A, Mathare Area 1, 2 & 3 & adjacent customers. 
- 
-AREA: MIREMA 
-DATE: Thursday 16.02.2023                                     TIME: 9.00 A.M. – 5.00 P.M. 
-Mirema  Rd,  Farmers  Choice,  St.  Mary’s  Pri,  Mother  Teresa  Church,  Medas 
-Academy, Mirema Service Apts Hotel & adjacent customers. 
- 
-AREA: PART OF PARKLANDS 
-DATE: Thursday 16.02.2023                                     TIME: 9.00 A.M. – 5.00 P.M. 
-Stima  Lane,  Bidwood  Suites,  Blue  Ridge,  Westgate,  3rd  Parklands  Avenue, 
-Mpaka Rd., Citam Church, Ngao Rd. and  adjacent customers 
- 
-AREA: PART OF WAIYAKI WAY 
-DATE: Thursday 16.02.2023                                     TIME: 9.00 A.M. – 5.00 P.M. 
-White Field Place, Safaricom House, School Lane & adjacent customers. 
- 
-AREA: KYUNA 
-DATE: Thursday 16.02.2023                                     TIME: 9.00 A.M. – 5.00 P.M. 
-Brookside Drive, Lower Kabete Rd, Shanzu Rd, Kyuna Rd, Hillview Est, Loresho 
-Ridge Rd, Kibagare Rd & adjacent customers. 
-   
-AREA: PEPONI 
-DATE: Thursday 16.02.2023                                     TIME: 9.00 A.M. – 5.00 P.M. 
-Gulam's Mohammed, Mwanzi Rd, Gen Mathenge Drive, Peponi Gardens, Peponi 
-Rd, Howard Humphrey, Pinewood Est, Pushpark Development Ltd, Portfolio Ltd 
-& adjacent customers. 
- 
-AREA: PART OF WESTLANDS 
-DATE: Thursday 16.02.2023                                     TIME: 9.00 A.M. – 5.00 P.M. 
-Sarit,  Sky  Park  Plaza,  Kipro  Centre,  Garden  Properties,  Bishop  Properties, 
-Carbon  Ltd,  New  Rehema  House,  Canon  Aluminum  Fabricators  Ltd,  Telkom 
-Kenya, Ravine Development Ltd, Madina Homes,  
-Raphta Rd, St. Michael Rd & adjacent customers. 
- 
-AREA: THOME, GITHURAI, CLAYWORKS 
-DATE: Sunday 19.02.2023                                        TIME: 9.00 A.M. – 5.00 P.M. 
-KBL  HQ,  Baptist  Mission,  Indigo  Garments,  Ngumba,  GSU  HQ,  Drive-Inn  Est, 
-ICIPE HQtrs, KENHA, Whole of Kasarani, Clay City Est, Warren, Lumumba Drive, 
-Roysambu,  Safari  Park  Hotel,  Mountain  View  Roysambu,  USIU,  Ruaraka, 
-Kasarani Sports Complex,  Printing Press, Ruaraka Housing Est, NIM Ltd, Andela 
-Kenya  Ltd,  Thome,  Mirema  Rd,  Top  Quality  Garage,  Wankan  Zimmerman, 
-Zimmerman,  Kahawa  Barracks,  Farmers  Choice,  Congo,  Kahawa  West  & 
+
+AREA: KIWANJA 
+DATE: Tuesday 28.02.2023                                       TIME: 9.00 A.M. – 5.00 P.M. 
+Part of Kiwanja, Njurinjeke Hostel, Peponi Hostel, The Grace Hostels, Booster & 
 adjacent customers. 
  
-PARTS OF MACHAKOS COUNTY 
-AREA: TALA MARKET 
-DATE: Wednesday 15.02.2023                                 TIME: 9.00 A.M. – 5.00 P.M. 
-Tala Mkt, Kangundo Mkt, Kathui, Koivaani, Kangundo Level 4 Hosp, Katwanyaa, 
-Kambusu, Kyekoyo, Kinyui Girls & adjacent customers. 
+AREA: EASTLEIGH 1ST AVENUE 
+DATE: Tuesday 28.02.2023                                       TIME: 9.00 A.M. – 5.00 P.M. 
+Part of General Waruinge, Part of 1st Ave & adjacent customers. 
+ 
+AREA: LORESHO 
+DATE: Tuesday 28.02.2023                                       TIME: 9.00 A.M. – 5.00 P.M. 
+Kaptagat Rd, KARI, Coopers, Syinyalu, Kaoumoni, Part of Loresho Ridge, Thego 
+Rd, Qaribu Inn, Loresho Green Apts, Kabete Vetlab, Part of Waiyaki Way, UoN 
+Kabete Campus, New Loresho Est & adjacent customers. 
+ 
+AREA: MAMLAKA ROAD 
+DATE: Tuesday 28.02.2023                                       TIME: 9.00 A.M. – 5.00 P.M. 
+UoN Hostels, State House Girls, Arboretum, Radisson Blue Hotel, Mamlaka Rd, 
+Mamlaka  Hall,  Mamlaka  Court,  Mamlaka  Hostels,  Ufungamano  House, 
+Permanent Presidential Music Commission & adjacent customers. 
+ 
+AREA: MUKOMA ROAD 
+DATE: Tuesday 28.02.2023                                       TIME: 9.00 A.M. – 5.00 P.M. 
+Mukoma Rd, Multimedia Univ, Ndorobo Rd, Giraffe Centre, KWS, Parliamentary 
+Studies, Kikeni Rd & adjacent customers. 
+ 
+AREA: PART OF LANGATA, NAIROBI WEST 
+DATE: Tuesday 28.02.2023                                       TIME: 9.00 A.M. – 5.00 P.M. 
+Airport View, Part of Dam Est, Uhuru Monument, Total Petrol Stn Mbagathi Way, 
+Blue Sky Est, Jonathan Glog, Deliverance Church, Dam 2 Est, Langata S/Centre, 
+Nairobi  Sailing  Club,  Jehovah  Witness  Langata,  Funguo  Est,  Akila  1  Est,  AP 
+Police  Camp,  Langata  Paradise,  Royal  Apt,  Choice Apt,  Chelsea  Marina,  Nula 
+Apt, Texas Cancer Centre & adjacent customers. 
+ 
+AREA: MUKURU KAYABA, HAZINA 
+DATE: Wednesday 01.03.2023                                  TIME: 9.00 A.M. - 3.00 P.M. 
+Mukuru Kayaba,  Hazina  Est,  Part of  Railway  Training  Institute,  Nerkwo,  Balozi 
+Est,  Our  Lady  of  Mercy  Sec,  Naivas  South  B,  Aoko  Rd,  Railway  Training, 
+Riverbank Phase 1 & 2, Kariba Est, Part of Golden Gate, Part of Kapiti Rd, South 
+B Mosque & adjacent customers.  
+ 
+AREA: PART OF KAMAE 
+DATE: Thursday 02.03.2023                                     TIME: 9.00 A.M. – 5.00 P.M. 
+Part of Kamae, Shell and Total Petrol Stns & adjacent customers. 
+ 
+AREA: MAASAI WEST ROAD 
+DATE: Thursday 02.03.2023                                     TIME: 9.00 A.M. – 5.00 P.M. 
+Maasai West Rd, Maasai Rd, Ushirika Rd, Cooperative College, Twiga Rd, Hardy 
+S/Centre, Koitobos Rd, Lamwia Rd & adjacent customers. 
+ 
+AREA: PART OF LANGATA ROAD 
+DATE: Thursday 02.03.2023                                     TIME: 9.00 A.M. – 5.00 P.M. 
+Part of Wilson Airport, Sunshine Sec, Maasai Est, Jonathan Ngeno, Breeze Est, 
+Part of Uhuru Monument, Part of Dam Est & adjacent customers. 
+ 
+AREA: PARTS OF UMOJA 1, INNERCORE 
+DATE: Thursday 02.03.2023                                     TIME: 9.00 A.M. – 5.00 P.M. 
+Umoja 1 H, J, K, L, M, N, P & Q, Co-op Bank Umoja, Umoja 1 Mkt, Egesa, Buru 
+Buru Phase 4, EAST & adjacent customers. 
   
-AREA: PART OF WOTE ROAD 
-DATE: Wednesday 15.02.2023                                 TIME: 9.00 A.M. – 5.00 P.M. 
-Kimutwa  Sisters,  Kwa  Kavoo,  Yaitha,  Mbondoni,  Mbembani,  Kyawalia, 
-Kyamuthinza,  Kitonyini,  Muumandu,  Ngiini,  Kamuuani,  Kavyuni,  Katuaa,  Iiyuni, 
-Mutulani, Kola & adjacent customers. 
+PARTS OF MACHAKOS COUNTY 
+AREA: PART OF MUA ROAD  
+DATE: Tuesday 28.02.2023                                       TIME: 9.00 A.M. – 5.00 P.M. 
+Catholic  Training  Institute,  Kitanga  Booster,  Kitanga  Pri,  Kivani  Pri,  Kwa  Muli 
+Ranch & adjacent customers. 
  
-AREA: KATHIANI 
-DATE: Thursday 16.02.2023                                     TIME: 9.00 A.M. – 5.00 P.M. 
-Kathiani,  Ngoleni,  Kaviani,  Mbee,  Kauti,  Kaiani,  Lumbwa,  Isyukoni, 
-Kusyomuomo, Tendelyani & adjacent customers. 
+AREA: PART OF KANGUNDO ROAD 
+DATE: Wednesday 01.03.2023                                 TIME: 9.00 A.M. – 5.00 P.M. 
+Mua  Ikumbini,  Mua  Girls,  KOL,  AIC  Wathia,  Kyasila,  Muthwani  &  adjacent 
+customers. 
  
-AREA: KOMA MARKET, JOSKA MARKET 
-DATE: Thursday 16.02.2023                                     TIME: 9.00 A.M. – 5.00 P.M. 
-Koma Mkt, Kantafu Mkt, Malaa Mkt, Kware, Joska Mkt & adjacent customers. 
+PARTS OF KAJIADO COUNTY 
+AREA: KITENGELA, ISINYA 
+DATE: Saturday 25.02.2023                                      TIME: 9.00 A.M. – 5.00 P.M.  
+Milimani  Oloitikosh,  Kwa  Mohammed,  Golden  Plains  Academy  &  adjacent 
+customers.  
+ 
+AREA: ILPOLOSAT, KONZA 
+DATE: Wednesday 01.03.2023                                  TIME: 9.00 A.M. – 5.00 P.M.  
+Konza  Borehole,  New  Data  Center,  Konza  Cereal  Board,  Konza  ABC  Sec, 
+Ilpolosat  Pri  &  Sec,  Konza  Town,  Kwa  Mumo  Matemo,  Naserian,  Ilmamen  & 
+adjacent customers.  
+ 
+PARTS OF MAKUENI COUNTY 
+AREA: KAUMONI 
+DATE: Wednesday 01.03.2023                                 TIME: 9.00 A.M. – 5.00 P.M. 
+Kaumoni Mkt, Mbumbuni, No Nyanya, Ndumbi, Kisau, Mba, Itangini, Tawa Mkts, 
+Uvaani,  Kikima,  Tuvilani,  Ngele,  Mavindu,  Kyuu,  Emale  Mbooni  Boys  &  Girls, 
+Mbooni DC’s Office & Hospital & adjacent customers. 
+ 
+CENTRAL RIFT REGION 
+
+PARTS OF NAKURU COUNTY 
+AREA: WHOLE OF BARNABAS  
+DATE: Thursday 02.03.2023                 TIME: 8.30 A.M. - 2.00 P.M. 
+Whole of Barnabas, Machine, Proto Energy, Ecorific Ltd, Royal Est, Buraha 
+Zenoni, Mbaruk, Kwa Senior, Green Steads, Shiners Boys, Part of Pipeline & 
+adjacent customers. 
+ 
+AREA: WHOLE OF KIAMUNYI 
+DATE: Thursday 02.03.2023                              TIME: 10.00 A.M. - 3.00 P.M. 
+Whole of Zaburi S/Centre,  Olive Inn, Edma Est, Muiru Center,  Baraka Est, 
+London Est, Part of Ngata, Mercy Njeri, Makiki Bore Hole, Madrugada Farm 
+& adjacent customers. 
  
 NORTH RIFT REGION 
  
 PARTS OF UASIN GISHU COUNTY 
+AREA: KAPKOI, BAYETE 
+DATE: Tuesday 28.02.2023                                       TIME: 9.00 A.M. – 4.00 P.M. 
+Cheptiret Pri, Kapkoi, Bayete, Lorian, Ndunguru, Burnt Forest, Kondoo, Ngarua, 
+Soliat, Kitingia, Chereber, Cherus, Ainabkoi & adjacent customers. 
+ 
+AREA: TUGEN ESTATE, TOROCHMOI 
+DATE: Tuesday 28.02.2023                                     TIME: 10.00 A.M. – 4.00 P.M. 
+Tugen  Estate  Pri,  Kaburgei  Pri,  Chebarus  Pri,  Mosop,  Karo  Farm  &  adjacent 
+customers. 
+ 
+AREA: KAPTINGA, LEMOOK 
+DATE: Wednesday 01.03.2023                                 TIME: 9.00 A.M. – 4.00 P.M. 
+Eldoret  Sewage,  Kipkenyo,  Kaptinga,  Simat  Lemmok,  Tuiyo  Kamotong  & 
+adjacent customers. 
+ 
+AREA: OASIS BIBLE COLLEGE 
+DATE: Friday 03.03.2023                                         TIME: 10.00 A.M. – 4.00 P.M. 
+Oasis  Bible  College,  Annex  Buzeki,  Mti  Moja,  Kambi  Nguruwe  &  adjacent 
+customers.  
+ 
 AREA: KAPTAGAT, WONIFOUR, LENGWAI 
-DATE: Wednesday 15.02.2023                                  TIME: 9.00 A.M. – 4.00 P.M. 
+DATE: Friday 03.03.2023                        TIME: 9.00 A.M. – 4.00 P.M. 
 Kaptagat, Strawberg, Flax, Plateau, Kileges, Kipkabus, Chuiyat, Uhuru, Elgeiyo 
 Border,  Tendwo,  Chirchir,  Bindura,  Sirwo,  Tilol,  Cheroreget,  Kapsuneiywo, 
 Naiberi & adjacent customers. 
  
-AREA: KAPKOI, KONDOO 
-DATE: Friday 17.02.2023                                           TIME: 9.00 A.M. – 4.00 P.M. 
-Cheptiret Pri, Kapko, Bayete, Lorian, Ndunguru, Burnt Forest, Kondoo, Ngarua, 
-Soliat, Kitingia, Chereber, Cherus, Ainabkoi & adjacent customers. 
+AREA: PART OF ELDORET TOWN 
+DATE: Sunday 05.03.2023                                        TIME: 9.00 A.M. – 4.00 P.M. 
+UG  Sec,  Asis  Hotel,  Eagles  Hardware,  Sugarland  Plaza,  Naivas  Sokoni,  Siro 
+Properties & adjacent customers.  
  
-WESTERN REGION 
- 
-PARTS OF KISUMU COUNTY 
-AREA: KBC, RED CROSS 
-DATE: Tuesday 14.02.2023                                     TIME: 10.00 A.M. – 3.00 P.M. 
-Red  Cross,  KBC,  LPASO  Restaurant,  Tumaini,  G4s  Headquarters,  JOUST  & 
-adjacent customers. 
- 
-AREA: KISUMU LAW COURT 
-DATE: Wednesday 15.02.2023                                TIME: 10.00 A.M. – 3.00 P.M. 
-Nightngale, Whirlspring Hotel, Jaralam, Jumbo Apts, Kisumu Law Courts, K-City, 
-DIRI, Ayoti Distributors, Lands Offices & adjacent customers. 
- 
-PARTS OF VIHIGA COUNTY 
-AREA: GRAND ROYAL SWIZ HOTEL 
-DATE: Wednesday 15.02.2023                                  TIME: 8.30 A.M. – 5.00 P.M. 
-Grand  Royal  Swiz  Hotel,  Farm  Engineering,  Kiboswa  Mkt,  Kibowsa  Safaricom 
-Boosters, Boyani, Jebkoyai, Givole & adjacent customers. 
- 
-PARTS OF BUNGOMA COUNTY 
-AREA: KIMILILI CBD, KAPSOKWONY 
-DATE: Saturday 11.02.2023                                    TIME: 9.00 A.M. – 12.00 P.M. 
-Bahai Mkt, Matili Tech, Kimilili CBD, Bituyu, Lutonyi, Chebukwabi, Kuywa, Kitayi, 
-Maeni Girls, Mukulima, Kumusinga Schs, Kamutiongo Water, Dream Land Hosp, 
-Kapsokwony CBD, Kamuneru, Sambocho, Kimobo & adjacent customers. 
+PARTS OF WEST POKOT COUNTY 
+AREA: ORTUM 
+DATE: Tuesday 28.02.2023                                       TIME: 9.00 A.M. – 5.00 P.M. 
+Ortum, Cemtech, Kerelwa, Sina, Murpus, Chepkorniswo, Sebit, Wakor, Marich, 
+Sekerr, Sigor, Lomut, Sarmach, Kainuk & adjacent customers. 
  
  
 
@@ -503,7 +501,8 @@ the nearest Kenya Power office
 www.kplc.co.ke 
                                                                                                           
 
-Interruption of 
+ 
+Interruption of  
 Electricity Supply 
 Notice is hereby given under Rule 27 of the Electric Power Rules 
 That the electricity supply will be interrupted as here under: 
@@ -511,180 +510,173 @@ That the electricity supply will be interrupted as here under:
 maintenance and upgrade of power lines to the network; to connect new 
 customers or to replace power lines during road construction, etc.) 
  
+WESTERN REGION 
+ 
+PARTS OF KISUMU COUNTY 
+AREA: PART OF KISUMU TOWN 
+DATE: Sunday 26.02.2023                                        TIME: 9.00 A.M. – 3.00 P.M. 
+Breweries Factory, United Millers Dedicated Airport Rd, Old Airport Gate, Equator 
+Bottlers,  Kenya  Pipeline,  Usoma,  NITA,  NTSA,  Public  Works  Office,  Bandani, 
+KENHA, Mombasa Maize Millers, Kombedu, Golf Club, Sea Foods, Subuni Rd, 
+Toyota Kenya & adjacent customers. 
+ 
+AREA: OMBEYI, KASONGO 
+DATE: Tuesday 07.03.2023                                     TIME: 10.00 A.M. – 3.00 P.M. 
+Miwani  Fact,  Kasongo  Mkt,  Ombeyi  Mkt,  Onyalo  Obiro,  Kasongo,  Nyakoko  & 
+adjacent customers. 
+ 
+PARTS OF SIAYA COUNTY 
+AREA: BAR KADHIAMBO 
+DATE: Tuesday 28.02.2023                                      TIME: 9.00 A.M. – 2.00 P.M. 
+Bar  Kodhiambo,  Nyalgunga,  Nyamila,  Nina,  Nyamila  Pri,  Nyamila  Community 
+Centre & adjacent customers. 
+ 
+PARTS OF BUSIA COUNTY 
+AREA: BUDALANGI, PORT VICTORIA 
+DATE: Wednesday 01.03.2023                                 TIME: 9.00 A.M. – 5.00 P.M. 
+Budalangi Mkt, Budalangi Vocational Training Inst, Port Victoria Mkt, Port Victoria 
+Sub County Hosp, DCC’s Offices, Sifugwe Pri & adjacent customers. 
+ 
+AREA: SIOPORT, BUMBE 
+DATE: Friday 03.03.2023                                           TIME: 9.00 A.M. – 5.00 P.M. 
+Sioport Mkt, Bumbe Technical, Bumbe Mkt, Sigalame & adjacent customers. 
+ 
+PARTS OF VIHIGA COUNTY 
+AREA: LIKINDU, GIVUDEMESI 
+DATE: Thursday 02.03.2023                                     TIME: 8.30 A.M. – 5.00 P.M. 
+Likindi Health Center, Kapkerer, Kinu, Givudemesi, Simbi, Karandini, Gimarani, 
+Gamukuywa, Musiri, Jepsis, Dr. Maurice Dagana Sec & adjacent customers. 
+ 
+AREA: KAIMOSI COMPLEX 
+DATE: Friday 02.03.2023                                           TIME: 8.30 A.M. – 5.00 P.M. 
+Kaimosi  Complex,  Jamlongo,  Muhudu,  Ivumbu,  Mahanga,  Part  of  Cheptulu, 
+Vumavi & adjacent customers. 
+ 
 PARTS OF KAKAMEGA COUNTY 
-AREA: SHIMANYIRO, LURAMBI 
-DATE: Tuesday 14.02.2023                                       TIME: 9.00 A.M. – 5.00 P.M. 
-Mutsuma,  Bukhanga,  Imbiakalo,  Sawwa,  Lukume,  Shihome,  Shikutse,  Power 
-Spot,  Bushiri,  Ingotse,  Ewamakhumbi,  Shikoti,  Esumeiya,  Eshiongo,  Lwatingu, 
-Maraba,  Lwanda  Shop,  Lurambi,  Hirumbi,  Bukhulunya,  Joyland,  Eshisiru, 
-Rosterman,  Shimanyiro,  Jamdas,  Elwesero,  Elwasambi,  Ekonyero  &  adjacent 
-customers. 
+AREA: BUKURA 
+DATE: Tuesday 28.02.2023                                       TIME: 9.00 A.M. – 4.00 P.M. 
+Mutaho,  Musoli  Water,  Akatsa,  Bukura  College,  Bukura  Mkt,  Mwiyenga, 
+Eshikomere, Kilimo Girls & adjacent customers. 
  
 SOUTH NYANZA REGION 
  
-PARTS OF HOMABAY COUNTY 
-AREA: ARAMO, RIAT MARKET 
-DATE: Sunday 12.02.2023                                        TIME: 9.00 A.M. – 3.00 P.M. 
-Riat  Mkt,  God  Nyango  Pri  Sch,  Kosira  Pri  Sch,  Nyafare Mkt,  Yadhelo  Pri  Sch, 
-Otunga Water Point, Aramo Sch & adjacent customers. 
- 
-AREA: OWALO MARKET, ATEMO 
-DATE: Monday 13.02.2023                                        TIME: 9.00 A.M. – 3.00 P.M. 
-Owalo Mkt, Nyamokenye DEB Pri Sch and Village, Kakelo Stage, Atemo Water 
-Point, Atemo Polytechnic and Sec Sch & adjacent customers. 
- 
-AREA: RAMBUSI, KODIERA 
-DATE: Wednesday 15.02.2023                                 TIME: 9.00 A.M. – 3.00 P.M. 
-Kodiera  Mkt,  Rambusi  Sec  Sch,  Olodo  &  Nyakahia  Pri  Schs  &  adjacent 
-customers. 
- 
 PARTS OF MIGORI COUNTY 
-AREA: KEHANCHA, NTIMARU 
-DATE: Saturday 11.02.2023                                       TIME: 9.00 A.M. - 3.00 P.M.  
-KEFRI, Migori Airstrip, Nyanchabo, Masaba, Nyamagagana, Kurutyange, Maeta, 
-Kegonga, Matare, Senta, Kebaroti, Taranganya, Kobinto, Masangora, Komotobo, 
-Remanyanki, Ntimaru, Kwiho, Ikerege, Nyametamburo & adjacent customers. 
- 
-AREA: NYAMOME, MASARA 
-DATE: Wednesday 15.02.2023                                  TIME: 9.00 A.M. - 3.00 P.M.  
-Nyamome,  Kababu,  Nyabisawa,  Namba  ka  Hezron,  St.  Peter’s  Abwao  Sec, 
-Mukuro,  Chungni,  Nyarongi,  God  Kwer,  Mikei,  Kona  Kalangi  &  adjacent 
-customers. 
+AREA: OPAPO, NYANGAU 
+DATE: Sunday 26.02.2023                                         TIME: 9.00 A.M. - 3.00 P.M. 
+Opapo, Nyangau, Ndagoriedo, Sango, Miare, Komito, Nyaburu, Ofwanga, Opapo 
+Sugar Research, Opapo Fisheries, Winyo, Kasere, Nyamuga, Ngodhe, Nyarach, 
+Umbwa Kali, Rongo Town, Ogengo, Magena, Lwala, Ringa Kandongo, Ogango, 
+Lwanda, Ngiya Parish & adjacent customers. 
  
 PARTS OF NYAMIRA COUNTY 
-AREA: SANGANYI TEA FACTORY 
-DATE: Wednesday 15.02.2023                                  TIME: 9.00 A.M. - 3.00 P.M.  
-Sanganyi  T/Fact,  Nyaramba  Mkt,  Makairo,  Kebirigo  High  Sch,  Viongozi,  Ibara 
-Hosp, Kiabonyoru Girls, Kerema, Nyangoge, Nyagokiani, Itibo, Iteresi & adjacent 
+AREA: TEA, MOGUSII, FARM 
+DATE: Monday 27.02.2023                                       TIME: 10.00 A.M. - 4.00 P.M. 
+Kipkebe  Tea,  Mogusii  Farm,  Chebilat  Mkt,  Mokomoni,  Stmathias,  Arroket  Tea, 
+Monieri, Kitaru, Odieki Farm & adjacent customers. 
+ 
+AREA: ISOGE MARKET, GONZA 
+DATE: Friday 03.03.2023                                         TIME: 10.00 A.M. - 4.00 P.M. 
+Isoge Mkt, Gonza, Itumbe Sec, Pator Mairura, Riontonyi Police, Nyaronde 
+Mlimani, Nyaronde Pri & adjacent customers. 
+ 
+PARTS OF HOMABAY COUNTY 
+AREA: KIGWA MARKET 
+DATE: Monday 27.02.2023                                       TIME: 10.00 A.M. - 4.00 P.M. 
+Kigwa Mkt, Ruma National Park, Wiga Mkt & Schools, Nyadenda Mkt & adjacent 
 customers. 
  
-AREA: MOSOMBETI, GESIMA 
-DATE: Friday 17.02.2023                                           TIME: 9.00 A.M. - 3.00 P.M.  
-Gesima,  Mochenwa,  Nyamakoroto,  Mosombeti,  Enchoro,  Royal  Media, 
-Riamanoti & adjacent customers. 
+AREA: MIROGI MARKET 
+DATE: Wednesday 01.03.2023                                TIME: 10.00 A.M. - 4.00 P.M.  
+Mirogi Mkt, Mirogi Complex, Kodumba Mkt, Ruma National Park, Okok Sec Sch, 
+Kobodo Mkt, Andiwo Mkt & adjacent customers. 
+ 
+ 
+ 
+ 
+ PARTS OF KISII COUNTY 
+AREA: KIAMOKAMA, KEUMBU 
+DATE: Thursday 02.03.2023                                      TIME: 9.00 A.M. - 4.00 P.M.  
+Keumbu Mkt, Kiamokama Fact, Nyamache Fact, Nyanturago Mkt, Kabosi, Ibeno, 
+Borangi,  Maji  Mazuri,  Nyosia,  Kebuko,  Giosenseri,  Kiobegi,  Nyabisabo,  Kwa 
+Monda, Riangabi, Igare, Emenwa, Boitang’are, Enchoro, Tukiamwana, Kionduso, 
+Nyamache Mkt & adjacent customers. 
+ 
+AREA: KAMEJI, TABAKA, MARYLAND 
+DATE: Friday 03.03.2023                                            TIME: 9.00 A.M. - 4.00 P.M.  
+Kameji, Misesi, Tabaka Mkt, Maryland Hosp, Kobado, Nyabigege, Kamagambo, 
+Chico Quarry, Nyachenge, Kerina, Mesisita, Nyatike & adjacent customers. 
  
 MT. KENYA REGION 
  
 PARTS OF NYERI COUNTY 
-AREA: NGAINI, HIRIGA 
-DATE: Wednesday 15.02.2023                         TIME: 9.00 A.M. – 3.00 P.M. 
-Rititi,  Kianjogu,  Thaithi,  Kiangima,  Gatiko,  Ngaini,  Kahiraini,  Gatung’ang’a, 
-Mukanye    Ritho,  Maganjo,  Chieni,  Mikundi,  Kaiganaine,  Hiriga  &  adjacent 
+AREA: KIMAHURI, NDATHI 
+DATE: Wednesday 01.03.2023                                 TIME: 9.00 A.M. – 4.00 P.M. 
+Kimahuri,  Mapema  Junction  Villa,  Kabaru,  Ndathi,  Mountain  Lodge  &  adjacent 
 customers. 
  
-AREA: TETU, KIGOGOINI, IHWA 
-DATE: Wednesday 15.02.2023                   TIME: 9.00 A.M. – 4.00 P.M. 
-Kamuyu Mkt, Kagunduini Mkt, Kinunga Ihwa, Chania, Githakwa, Kamuyu C/Fact, 
-Gachiro, Tetu Mkt, Githurini, Kihatha Mkt, Chania Mkt, Githumi Village & adjacent 
-customers. 
- 
-PARTS OF KIRINYAGA COUNTY 
-AREA; MAKUTANO, KIKUMINI, VI MKT  
-DATE: Thursday 16.02.2023                         TIME: 8.30 A.M. – 1.30 P.M. 
-Makutano, Kamweli, Chai Wu Yi, Kirwara, Atlantis Kamweli, Gitaraka, Kikumini, 
-White Rose, VI Mkt, Makawani & adjacent customers. 
- 
-PARTS OF EMBU COUNTY 
-AREA: GATONDO, MUCHONOKE 
-DATE: Monday 13.02.2023                                  TIME: 9.00 A.M. – 5.00 P.M. 
-Gatondo  C/Fact,  Kiamuringa  Mkt,  Kavingori  Dispensary,  Muchonoke  Mkt, 
-Muinganania  &  Mukunguru  Mkt,  Mukunguru  Sch,  Siakago  Hosp,  Siakago  Mkt, 
-Siakago Boys, Siakago Girls, Siakago DO, Riandu Mkt, Minuri Mkt, Kanyaga Mkt 
-& adjacent customers. 
-  
-AREA: MAJIMBO EASTATE, KAMIU PRIMARY 
-DATE: Tuesday 14.02.2023                                TIME: 9.00 A.M. – 5.00 P.M. 
-Kamiu Macadamia Fact, St. Anne Catholic, By Grace Shopping Centre Kamiu, 
-Lower Iveche & adjacent customers. 
-  
-AREA: ISHIARA, KAMWIMBI, INTEX CRASHER 
-DATE: Thursday16.02.2023                                  TIME: 9.00 A.M. – 5.00 P.M. 
-Ishiara  Mkt,  Ishiara  Hosp,  Intex  Quarry,  KETRACO  Ishiara  Switching  Station, 
-Kieniri Mkt, Kamarandi Sec Sch, Ciangera Mkt, Karerema Mkt, Ngoce Sec Sch, 
-Monge Mkt & adjacent customers. 
+AREA: KIRIAINI, KAMUNE 
+DATE: Thursday 02.03.2023                                      TIME: 8.00 A.M. - 5.00 P.M. 
+Gatugi  Mkt,  Waitima,  Mbari  ya  Ndiga,  Kiriaini  Town,  Munaini  DC’s  Office, 
+Kamacharia, Kagumoini Mkt, Diara C/Fact, Kanjama Mkt, Kora Mkt, Kamune Mkt, 
+Iruri  Mkt,  Thuita  Mkt,  Kiaga  C/Fact,  Karuthi  C/Fact  &  Sec,  Geitwa  Mkt,  Kariki, 
+Giathugu Iruri, Mairo Mkt & adjacent customers. 
  
 NORTH EASTERN REGION 
  
 PARTS OF KIAMBU COUNTY 
-AREA: KWAMAIKO CENTRE, CRF, NEMBU  
-DATE: Saturday 11.02.2023                          TIME: 9.00 A.M. - 5.00 P.M. 
-Gathage, Kahuguini, Githima, Viva Gardens, Jacaranda Water, Oaklands, Osho 
-Grain  Millers,  Mega  Pipe  Ltd,  Kambui,  Raiyani,  Gathirimu  Girls  &  adjacent 
+AREA: KWA MAIKO 
+DATE: Saturday 25.02.2023                                       TIME: 9.00 A.M. - 5.00 P.M. 
+Kwa  Maiko  Shops,  Raini  Village,  Rayani  Village,  Kambui  Girls  Sec,  Mitahato 
+Shops,  Gathirimu  Girls,  Riagithu  Village,  Mchana  Est,  Kofinaf  HQtrs  Offices  & 
+adjacent customers. 
+ 
+AREA: KIHARA, GACHIE 
+DATE: Tuesday 28.02.2023                                        TIME: 9.00 A.M. - 5.00 P.M. 
+Karura  Kanyungu,  Kihara  Hosp,  Honey  Bee,  Mahindi,  Wangunyu,  Karura 
+Kagongo, Kihara High & adjacent customers. 
+ 
+AREA: MEMBLEY, KIWANJA 
+DATE: Tuesday 28.02.2023                                        TIME: 9.00 A.M. - 5.00 P.M. 
+Referral Hospital IMIC Block, Wataalam, Githunguri Ranch, Whole of Membley 
+Est, Gitambaya, Nyayo Hostel KU Kiwanja, Low Rates, Githunguri Pri, Membley 
+PCEA, Membley High Sch, Membley Sweat Water, Rubies Petrol Stn & adjacent 
 customers. 
  
-AREA: FARMERS CHOICE 
-DATE: Monday 13.02.2023                                         TIME: 9.00 A.M. - 5.00 P.M. 
-Farmers  Choice,  Uplands  Police,  Canaan  Dairies,  Nyambari,  Olive  Farm, 
-Roromo  Water,  Murengeti,  Mutosi,  Nyamweru  Water,  Juvenalis  Gitau  Sch, 
-Githirioni Forest Offices & adjacent customers. 
+AREA: RUAKA MKT, BORDER 
+DATE: Thursday 02.03.2023                                      TIME: 9.00 A.M. - 5.00 P.M. 
+Whole of Ruaka Mkt, Gertrude’s Ruaka, Quickmart Ruaka, Boarder, Slaughter, 
+Kanungu, California Rd, Delta Ruaka, Royal Brain & adjacent customers. 
  
-AREA: PART OF BYPASS 
-DATE: Tuesday 14.02.2023                                        TIME: 9.00 A.M. - 5.00 P.M. 
-KU  Riverside,  Thome,  Exodus,  St.  Linda,  Kwihota,  Kihunguro,  Sunset,  Part  of 
-Eastern  Bypass,  Mashinani,  Mitikenda,  Karunguru,  Mutonya,  Kiratina, 
-Gatongora, Green Valley, Varsity Ville, Gicheha Farms & adjacent customers. 
+AREA: MUNYU, KOMO, FARA INYA 
+DATE: Tuesday 02.03.2023                                        TIME: 9.00 A.M. - 5.00 P.M. 
+Munyu Center, Fara Inya, Komo, St. Paul Secondary kwa Simon, Gichigi Village 
+Spur,  Maganjo  S/Centre,  Ngiriki  S/Centre,  AIC  Church  Munyu  &  adjacent 
+customers. 
  
-AREA: CARBACID, KINALE, MATHORE 
-DATE: Wednesday 15.02.2023                                  TIME: 9.00 A.M. - 5.00 P.M. 
-Carbacid,  Kimende,  Lari,  Magina,  Rivelco,  Mirangi,  Maingi,  Afrodine,  Kinale, 
-Gathuariga, Sulmac, Kiracha, Mukeo, Kwa Edward, Mathore, Muringa Holding, 
-Marira Clinic, Kirenga, Kereita Farm & adjacent customers. 
- 
-AREA: GACHARAGE, ACME PLASTICS 
-DATE: Wednesday 15.02.2023                                  TIME: 9.00 A.M. - 3.00 P.M. 
-Karuri Hosp, Karuri Police, Karuri Exchange, Banana Mkt, Part of Ruaka Between 
-Gacharage  &  Ndenderu  Junction,  National  Oil  Ndenderu,  Shell  Ndenderu, 
-Banana & adjacent customers. 
- 
-AREA: GITHUNGURI TOWN, THAKWA  
-DATE: Thursday 16.02.2023                                      TIME: 9.00 A.M. - 5.00 P.M. 
-Wanjo, Thakwa, Eco Bricks, County Pride Hotel, Maichomo, Thuthuriki, Mukua, 
-Ciiko Pri, Police Stn, Beta Care Hosp, Kiriko & adjacent customers. 
- 
-AREA: TOLA, BOB HARRIS, TIBS 
-DATE: Thursday 16.02.2023                                      TIME: 9.00 A.M. - 5.00 P.M. 
-Whole of Tola, Kiahuria, Metro, Parts of Ngoingwa, Ndarugo Motel, Compuera, 
-Mpesa Academy, Muiri & adjacent customers. 
- 
-AREA: FARMERS CHOICE 
-DATE: Friday 17.02.2023                                            TIME: 9.00 A.M. - 5.00 P.M. 
-ACME Containers, Gatuikira, Tumaini Sch, Red Hill North, Raphalites, Valentine 
-Growers, Laini, Norbrook, Ombi Rubber Rollers, Kentmare Club, Echuka Farm, 
-Farley Dam, High Wood Farm, Marambaa Factory Water Pump, Njiku, Uplands, 
-Canaan, Githirioni & adjacent customers. 
- 
-AREA: KIGWARU, MUCHATHA, GATHANGA 
-DATE: Friday 17.02.2023                                           TIME: 9.00 A.M. - 5.00 P.M. 
-Little  Sisters,  Guango,  Clifftop,  Kigwaru  Inn,  Royal  Brains,  Ruaka  Shopping 
-Center & adjacent customer. 
+AREA: GITHUNGURI SHOPS 
+DATE: Friday 03.03.2023                                           TIME: 9.00 A.M. - 5.00 P.M. 
+Thakwa Village, Mukua Vlllage, Ciiako Pri, Thuthuriki Village, Githunguri Police 
+Stn, Lazinos Hotel, County Pride Hotel & adjacent customers. 
  
 COAST REGION 
  
-PARTS OF MOMBASA COUNTY 
-AREA: PART OF SHANZU 
-DATE: Thursday 16.02.2023                                     TIME: 9.00 A.M. – 5.00 P.M. 
-Papillon,  Neptune,  Seven  Sea  Lodge,  Kenya  Bay,  Indiana  Beach,  Yuls  Hotel, 
-Kenya Bay, Severine Hotel, Kahama Hotel & adjacent customers. 
+PARTS OF KWALE COUNTY 
+AREA: PARTS OF KWALE 
+DATE: Tuesday 28.02.2023                                   TIME: 10.00 A.M. – 12.00 P.M. 
+Shamu,  Mbuwani,  Mabokoni,  Technical  University  of  Mombasa,  Dr.  Babla  Sec 
+Sch, Buga, Mwajamba & adjacent customers. 
  
 PARTS OF KILIFI COUNTY 
-AREA: PART OF KANAMAI 
-DATE: Tuesday 14.02.2023               TIME: 9.00 A.M. – 5.00 P.M. 
-Northcoast  Beach  Hotel,  Gurdum  Villah,  Xanadu  Villahs,  Royal  Reserve, 
-Kanamai  Conference,  Salama  Beach  Hotel,  St.  Mathews  Sch,  Barani  Timboni, 
-Barani Sch, Kanamai Four Farm, Mtwapa Gardens, Cocacola Bottlers, Bayusuf 
-Farm,  Ashut  Plastics,  Brilliant  EPZ,  Mombasa  Apparel,  Rembo  Apts,  Kariuki 
-Farm,  Kwa  Mwavitswa,  Toto  Dogo,  Biladi,  Mtwapa  Pri,  Pwani  Fish  Farm  & 
-adjacent customers. 
+AREA: PARTS OF MTWAPA 
+DATE: Sunday 26.02.2023                                        TIME: 9.00 A.M. – 5.00 P.M. 
+La Marina, Ndodo, Maweni, Parts of Mtwapa Town & adjacent customers. 
  
-AREA: PART OF MTWAPA 
-DATE: Thursday 16.02.2023               TIME: 9.00 A.M. – 5.00 P.M. 
-Mtwapa  Rhino,  Mtwapa  Plaza,  Jambo  Jipya  Medical,  Mtwapa  Gardens, 
-Moorings,  Kwa  Wapokomo,  Funyula,  Mtomondoni  Chief’s  Camp,  Mikanjuni, 
-Airport, Aloo Drive, Creek, Zanak, Mtomondoni Pri, Mtomondoni Sec, AlBastad, 
-Mulika  Mwizi,  Mama  Mtaa,  Golden  Key  Kubwa,  Kizingitini,  Mama  Mabata  & 
-adjacent customers. 
- 
- 
+AREA: PARTS OF MTWAPA 
+DATE: Tuesday 28.02.2023                                       TIME: 9.00 A.M. – 3.00 P.M. 
+Ogali’s,  Gassaro,  Aljazeera  Est,  Mwalimu  Omar,  Mzuri  Sweets,  Parts  of 
+Mzambarauni,  Greenwood,  KMA,  Mwatundo,  Radar,  Tropical  Sea  Life,  Dada 
+Millers, Parts of Kanamai & adjacent customers. 
+           
 
                                                                                                     
 
@@ -695,6 +687,7 @@ www.kplc.co.ke
         ";
 
         let results = scan(r);
+        println!("{results:?}");
         let mut parser = Parser::new(results);
 
         let parsed_results = parser.parse();

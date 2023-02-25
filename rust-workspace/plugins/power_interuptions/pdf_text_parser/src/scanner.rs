@@ -15,7 +15,7 @@ lazy_static! {
             .build()
             .expect("Expected MATCH_ADJUSCENT_CUSTOMERS regex to compile ");
 }
-const END_OF_LOCATIONS: &str = "END_OF_LOCATIONS";
+const END_OF_LOCATIONS: &str = "ENDOFLOCATIONS";
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 
@@ -59,7 +59,7 @@ fn is_digit(c: char) -> bool {
 fn is_alpha(c: char) -> bool {
     ('a'..='z').contains(&c)
         || ('A'..='Z').contains(&c)
-        || ['.', '-', '&', ':', ';', '(', ')', '’', '\''].contains(&c)
+        || ['.', '-', '_', '&', ':', ';', '(', ')', '’', '\''].contains(&c)
 }
 
 fn is_alphanumeric(c: char) -> bool {

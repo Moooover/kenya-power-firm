@@ -8,6 +8,8 @@ use jsonwebtoken::{decode, decode_header, jwk, Algorithm, DecodingKey, Validatio
 use lazy_static::lazy_static;
 use serde::Deserialize;
 use serde::Serialize;
+use std::collections::HashSet;
+use use_cases::actor::{Actor, ExternalId, Permissions};
 
 lazy_static! {
     static ref JWKS: String = "blackouts-development.eu.auth0.com".to_string();
@@ -91,5 +93,16 @@ impl TryFrom<&HttpRequest> for AuthenticatedUserInfo {
 
         let claims = validated_token.claims;
         Ok(AuthenticatedUserInfo { claims })
+    }
+}
+
+impl Actor for AuthenticatedUserInfo {
+    fn permissions(&self) -> Permissions {
+        let permissions = &self.claims.permissions[..];
+        permissions.into()
+    }
+
+    fn external_id(&self) -> ExternalId {
+        self.claims.sub.clone().into()
     }
 }
