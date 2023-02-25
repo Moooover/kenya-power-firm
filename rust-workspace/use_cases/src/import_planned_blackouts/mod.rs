@@ -1,24 +1,26 @@
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use chrono::naive::NaiveTime;
-use chrono::NaiveDate;
+use chrono::{DateTime, NaiveDate};
+use chrono_tz::Tz;
 use std::collections::HashMap;
 use std::error::Error;
 use std::sync::Arc;
 use url::Url;
 
 use crate::actor::{Actor, Permission};
-use power_interuptions::location::County as DomainCounty;
+use power_interuptions::location::Area as DomainArea;
 use power_interuptions::location::Region as DomainRegion;
-use power_interuptions::location::{Area as DomainArea, FutureOrCurrentDate};
+use power_interuptions::location::{
+    County as DomainCounty, FutureOrCurrentNairobiTZDateTime, NairobiTZDateTime,
+};
 use power_interuptions::location::{ImportInput as DomainImportInput, TimeFrame};
 
 #[derive(Debug)]
 pub struct Area {
     pub lines: Vec<String>,
-    pub date: NaiveDate,
-    pub start: NaiveTime,
-    pub end: NaiveTime,
+    pub from: NairobiTZDateTime,
+    pub to: NairobiTZDateTime,
     pub locations: Vec<String>,
 }
 
@@ -92,7 +94,7 @@ impl ImportPlannedBlackoutsInteractor for ImportBlackouts {
     }
 }
 
-impl TryFrom<Region> for DomainRegion<FutureOrCurrentDate> {
+impl TryFrom<Region> for DomainRegion<FutureOrCurrentNairobiTZDateTime> {
     type Error = anyhow::Error;
 
     fn try_from(value: Region) -> Result<Self, Self::Error> {
@@ -109,7 +111,7 @@ impl TryFrom<Region> for DomainRegion<FutureOrCurrentDate> {
     }
 }
 
-impl TryFrom<County> for DomainCounty<FutureOrCurrentDate> {
+impl TryFrom<County> for DomainCounty<FutureOrCurrentNairobiTZDateTime> {
     type Error = anyhow::Error;
 
     fn try_from(value: County) -> Result<Self, Self::Error> {
@@ -126,18 +128,17 @@ impl TryFrom<County> for DomainCounty<FutureOrCurrentDate> {
     }
 }
 
-impl TryFrom<Area> for DomainArea<FutureOrCurrentDate> {
+impl TryFrom<Area> for DomainArea<FutureOrCurrentNairobiTZDateTime> {
     type Error = anyhow::Error;
 
     fn try_from(value: Area) -> Result<Self, Self::Error> {
-        let date = FutureOrCurrentDate::try_from(value.date).map_err(|error| anyhow!(error))?;
+        let from = FutureOrCurrentNairobiTZDateTime::try_from(value.from)
+            .map_err(|error| anyhow!(error))?;
+        let to =
+            FutureOrCurrentNairobiTZDateTime::try_from(value.to).map_err(|err| anyhow!(err))?;
         Ok(DomainArea {
             lines: value.lines,
-            date,
-            time_frame: TimeFrame {
-                from: value.start,
-                to: value.end,
-            },
+            time_frame: TimeFrame { from, to },
             locations: value.locations,
         })
     }

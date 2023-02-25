@@ -1,12 +1,13 @@
 use crate::scanner::{Date, Time};
-use chrono::{NaiveDate, NaiveTime};
+use chrono::{DateTime, NaiveDate, NaiveTime};
+use chrono_tz::Tz;
+use power_interuptions::location::NairobiTZDateTime;
 
 #[derive(Debug)]
 pub struct Area {
     pub lines: Vec<String>,
-    pub date: NaiveDate,
-    pub start: NaiveTime,
-    pub end: NaiveTime,
+    pub from: NairobiTZDateTime,
+    pub to: NairobiTZDateTime,
     pub locations: Vec<String>,
 }
 

@@ -8,8 +8,9 @@ use std::vec::IntoIter;
 
 use regex::{Regex, RegexBuilder};
 
-use anyhow::{Context, Error};
-use chrono::{NaiveDate, NaiveTime};
+use anyhow::{anyhow, Context, Error};
+use chrono::{DateTime, Datelike, NaiveDate, NaiveTime, TimeZone, Timelike};
+use chrono_tz::Tz;
 use lazy_static::lazy_static;
 
 mod filter_out_comments;
@@ -49,6 +50,24 @@ pub enum ParseError {
     ValidationError(Error),
     UnexpectedEndOfFile,
     UnexpectedToken(UnexpectedToken),
+}
+
+impl Date {
+    fn to_nairobi_date_time(&self, time: NaiveTime) -> Result<DateTime<Tz>, ParseError> {
+        use chrono_tz::Africa::Nairobi;
+        let date = NaiveDate::parse_from_str(&self.date, "%d.%m.%Y")
+            .context("Failed to parse the Date.")
+            .map_err(ParseError::ValidationError)?;
+        let naive_dt = date.and_time(time);
+        Nairobi
+            .from_local_datetime(&naive_dt)
+            .single()
+            .ok_or_else(|| {
+                ParseError::ValidationError(anyhow!(
+                    "Failed to convert {naive_dt} to Nairobi timezone"
+                ))
+            })
+    }
 }
 
 macro_rules! consume_expected_token {
@@ -213,19 +232,28 @@ impl Parser {
                 .map_err(ParseError::ValidationError),
             "Date".to_owned()
         )??;
+
         let (start, end) = consume_expected_token!(
             self.tokens,
             Token::Time(time),
             time.parse(),
             "Time".to_owned()
         )??;
+
+        let from = date
+            .and_time(start)
+            .try_into()
+            .map_err(|err| ParseError::ValidationError(anyhow!("{err}")))?;
+        let to = date
+            .and_time(end)
+            .try_into()
+            .map_err(|err| ParseError::ValidationError(anyhow!("{err}")))?;
         let pins = self.locations()?;
 
         Ok(Area {
             lines: area_lines,
-            date,
-            start,
-            end,
+            to,
+            from,
             locations: pins,
         })
     }

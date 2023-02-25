@@ -45,9 +45,8 @@ impl From<TokenArea> for Area {
     fn from(value: TokenArea) -> Self {
         Self {
             lines: value.lines,
-            date: value.date,
-            start: value.start,
-            end: value.end,
+            from: value.from,
+            to: value.to,
             locations: value.locations,
         }
     }
