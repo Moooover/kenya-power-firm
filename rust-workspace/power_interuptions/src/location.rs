@@ -21,14 +21,9 @@ pub struct Region<T = FutureOrCurrentNairobiTZDateTime> {
 pub struct NairobiTZDateTime(DateTime<Tz>);
 
 impl NairobiTZDateTime {
-    /// we only care about the date, the hour and min are set to 0 (midnight)
-    fn today_at_midnight() -> Result<Self, String> {
+    fn today() -> Self {
         let today = Utc::now().naive_utc();
-        Nairobi
-            .with_ymd_and_hms(today.year(), today.month(), today.day(), 0, 0, 0)
-            .single()
-            .ok_or_else(|| format!("Failed to convert {today} to Nairobi datetime"))
-            .map(NairobiTZDateTime)
+        NairobiTZDateTime(Nairobi.from_utc_datetime(&today))
     }
 
     fn date(&self) -> NaiveDate {
@@ -55,7 +50,7 @@ impl TryFrom<NairobiTZDateTime> for FutureOrCurrentNairobiTZDateTime {
     type Error = String;
 
     fn try_from(provided_date: NairobiTZDateTime) -> Result<Self, Self::Error> {
-        let today = NairobiTZDateTime::today_at_midnight()?;
+        let today = NairobiTZDateTime::today();
         if provided_date.date() < today.date() {
             return Err(format!(
                 "The date provided already passed {:?}",
