@@ -1,4 +1,6 @@
-use chrono::{DateTime, Datelike, Days, NaiveDate, NaiveDateTime, NaiveTime, TimeZone, Utc};
+use chrono::{
+    DateTime, Datelike, Days, NaiveDate, NaiveDateTime, NaiveTime, TimeZone, Timelike, Utc,
+};
 use chrono_tz::Africa::Nairobi;
 use chrono_tz::Tz;
 use std::collections::HashMap;
@@ -19,10 +21,11 @@ pub struct Region<T = FutureOrCurrentNairobiTZDateTime> {
 pub struct NairobiTZDateTime(DateTime<Tz>);
 
 impl NairobiTZDateTime {
-    fn now() -> Result<Self, String> {
+    /// we only care about the date, the hour and min are set to 0 (midnight)
+    fn today_at_midnight() -> Result<Self, String> {
         let today = Utc::now().naive_utc();
         Nairobi
-            .from_local_datetime(&today)
+            .with_ymd_and_hms(today.year(), today.month(), today.day(), 0, 0, 0)
             .single()
             .ok_or_else(|| format!("Failed to convert {today} to Nairobi datetime"))
             .map(NairobiTZDateTime)
@@ -52,8 +55,8 @@ impl TryFrom<NairobiTZDateTime> for FutureOrCurrentNairobiTZDateTime {
     type Error = String;
 
     fn try_from(provided_date: NairobiTZDateTime) -> Result<Self, Self::Error> {
-        let now = NairobiTZDateTime::now()?;
-        if provided_date.date() < now.date() {
+        let today = NairobiTZDateTime::today_at_midnight()?;
+        if provided_date.date() < today.date() {
             return Err(format!(
                 "The date provided already passed {:?}",
                 provided_date
