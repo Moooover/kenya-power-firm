@@ -10,22 +10,22 @@ pub struct County<T> {
 }
 
 #[derive(Debug)]
-pub struct Region<T = FutureOrCurrentNairobiDateTime> {
+pub struct Region<T = FutureOrCurrentNairobiTZDateTime> {
     pub region: String,
     pub counties: Vec<County<T>>,
 }
 
 #[derive(Debug)]
-pub struct NairobiDateTime(DateTime<Tz>);
+pub struct NairobiTZDateTime(DateTime<Tz>);
 
-impl NairobiDateTime {
+impl NairobiTZDateTime {
     fn now() -> Result<Self, String> {
         let today = Utc::now().naive_utc();
         Nairobi
             .from_local_datetime(&today)
             .single()
             .ok_or_else(|| format!("Failed to convert {today} to Nairobi datetime"))
-            .map(NairobiDateTime)
+            .map(NairobiTZDateTime)
     }
 
     fn date(&self) -> NaiveDate {
@@ -33,7 +33,7 @@ impl NairobiDateTime {
     }
 }
 
-impl TryFrom<NaiveDateTime> for NairobiDateTime {
+impl TryFrom<NaiveDateTime> for NairobiTZDateTime {
     type Error = String;
 
     fn try_from(value: NaiveDateTime) -> Result<Self, Self::Error> {
@@ -41,25 +41,25 @@ impl TryFrom<NaiveDateTime> for NairobiDateTime {
             .from_local_datetime(&value)
             .single()
             .ok_or_else(|| "Failed to convert {value} to Nairobi timezone".to_string())
-            .map(NairobiDateTime)
+            .map(NairobiTZDateTime)
     }
 }
 
 #[derive(Debug)]
-pub struct FutureOrCurrentNairobiDateTime(NairobiDateTime);
+pub struct FutureOrCurrentNairobiTZDateTime(NairobiTZDateTime);
 
-impl TryFrom<NairobiDateTime> for FutureOrCurrentNairobiDateTime {
+impl TryFrom<NairobiTZDateTime> for FutureOrCurrentNairobiTZDateTime {
     type Error = String;
 
-    fn try_from(provided_date: NairobiDateTime) -> Result<Self, Self::Error> {
-        let now = NairobiDateTime::now()?;
+    fn try_from(provided_date: NairobiTZDateTime) -> Result<Self, Self::Error> {
+        let now = NairobiTZDateTime::now()?;
         if provided_date.date() < now.date() {
             return Err(format!(
                 "The date provided already passed {:?}",
                 provided_date
             ));
         }
-        Ok(FutureOrCurrentNairobiDateTime(provided_date))
+        Ok(FutureOrCurrentNairobiTZDateTime(provided_date))
     }
 }
 
@@ -70,7 +70,7 @@ pub struct Area<T> {
     pub locations: Vec<String>,
 }
 
-pub struct ImportInput(pub HashMap<Url, Vec<Region<FutureOrCurrentNairobiDateTime>>>);
+pub struct ImportInput(pub HashMap<Url, Vec<Region<FutureOrCurrentNairobiTZDateTime>>>);
 
 #[derive(Clone, Debug)]
 pub struct TimeFrame<T> {
