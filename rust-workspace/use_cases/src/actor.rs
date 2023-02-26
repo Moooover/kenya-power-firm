@@ -45,6 +45,12 @@ impl From<&[String]> for Permissions {
 #[derive(Debug)]
 pub struct ExternalId(String);
 
+impl ToString for ExternalId {
+    fn to_string(&self) -> String {
+        self.0.clone()
+    }
+}
+
 impl From<String> for ExternalId {
     fn from(value: String) -> Self {
         ExternalId(value)

@@ -1,6 +1,7 @@
 use crate::use_case_app_container::UseCaseAppContainer;
 use actix_web::{web, App, HttpServer};
-use mock_store::store::Repository;
+use anyhow::Context;
+use sqlx_postgres::repository::Repository;
 use use_cases::AppImpl;
 
 mod authentication;
@@ -9,8 +10,8 @@ mod routes;
 mod use_case_app_container;
 
 #[tokio::main]
-async fn main() -> std::io::Result<()> {
-    let repository = Repository;
+async fn main() -> anyhow::Result<()> {
+    let repository = Repository::new().await?;
 
     HttpServer::new(move || {
         let app = AppImpl::new(repository.clone());
@@ -22,4 +23,5 @@ async fn main() -> std::io::Result<()> {
     .bind("127.0.0.1:8080")?
     .run()
     .await
+    .context("Server failed to run")
 }

@@ -1,0 +1,17 @@
+[package]
+name = "sqlx_postgres"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1.0.69"
+sqlx = { version = "0.6", features = [ "offline", "runtime-tokio-native-tls" , "postgres" ] }
+tokio = { version = "1", features = ["full"] }
+lazy_static = "1.4.0"
+async-trait = "0.1.64"
+use_cases = { path = "../../../use_cases" }
+
+[profile.dev.package.sqlx-macros]
+opt-level = 3

@@ -1,3 +1,5 @@
+mod conversion;
+
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use chrono::naive::NaiveTime;
@@ -10,10 +12,8 @@ use url::Url;
 
 use crate::actor::{Actor, Permission};
 use power_interuptions::location::Area as DomainArea;
+use power_interuptions::location::NairobiTZDateTime;
 use power_interuptions::location::Region as DomainRegion;
-use power_interuptions::location::{
-    County as DomainCounty, FutureOrCurrentNairobiTZDateTime, NairobiTZDateTime,
-};
 use power_interuptions::location::{ImportInput as DomainImportInput, TimeFrame};
 
 #[derive(Debug)]
@@ -57,6 +57,15 @@ pub struct ImportBlackouts {
     notifier: Arc<dyn NotifySubscribersOfAffectedAreas>,
 }
 
+impl ImportBlackouts {
+    pub fn new(
+        repo: Arc<dyn SaveBlackOutsRepo>,
+        notifier: Arc<dyn NotifySubscribersOfAffectedAreas>,
+    ) -> Self {
+        Self { repo, notifier }
+    }
+}
+
 #[async_trait]
 impl ImportPlannedBlackoutsInteractor for ImportBlackouts {
     async fn import(&self, actor: &dyn Actor, data: ImportInput) -> anyhow::Result<()> {
@@ -91,55 +100,5 @@ impl ImportPlannedBlackoutsInteractor for ImportBlackouts {
             .await
             .map_err(|err| anyhow!("{:?}", err))?;
         self.notifier.notify(data).await
-    }
-}
-
-impl TryFrom<Region> for DomainRegion<FutureOrCurrentNairobiTZDateTime> {
-    type Error = anyhow::Error;
-
-    fn try_from(value: Region) -> Result<Self, Self::Error> {
-        let counties = value
-            .counties
-            .into_iter()
-            .map(TryFrom::try_from)
-            .collect::<Result<_, _>>()
-            .with_context(|| format!("Region {}", value.name))?;
-        Ok(Self {
-            region: value.name,
-            counties,
-        })
-    }
-}
-
-impl TryFrom<County> for DomainCounty<FutureOrCurrentNairobiTZDateTime> {
-    type Error = anyhow::Error;
-
-    fn try_from(value: County) -> Result<Self, Self::Error> {
-        let areas = value
-            .areas
-            .into_iter()
-            .map(TryFrom::try_from)
-            .collect::<Result<_, _>>()
-            .with_context(|| format!("County {}", value.name))?;
-        Ok(DomainCounty {
-            name: value.name,
-            areas,
-        })
-    }
-}
-
-impl TryFrom<Area> for DomainArea<FutureOrCurrentNairobiTZDateTime> {
-    type Error = anyhow::Error;
-
-    fn try_from(value: Area) -> Result<Self, Self::Error> {
-        let from = FutureOrCurrentNairobiTZDateTime::try_from(value.from)
-            .map_err(|error| anyhow!(error))?;
-        let to =
-            FutureOrCurrentNairobiTZDateTime::try_from(value.to).map_err(|err| anyhow!(err))?;
-        Ok(DomainArea {
-            lines: value.lines,
-            time_frame: TimeFrame { from, to },
-            locations: value.locations,
-        })
     }
 }

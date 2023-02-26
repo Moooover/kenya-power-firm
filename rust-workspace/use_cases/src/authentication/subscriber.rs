@@ -23,3 +23,9 @@ impl SubscriberResolverInteractor for SubscriberResolverInteractorImpl {
         self.repo.find(actor).await
     }
 }
+
+impl SubscriberResolverInteractorImpl {
+    pub fn new(repo: Arc<dyn SubscriberResolverRepo>) -> Self {
+        Self { repo }
+    }
+}

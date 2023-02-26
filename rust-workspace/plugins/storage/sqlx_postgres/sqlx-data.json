@@ -1,0 +1,17 @@
+{
+  "db": "PostgreSQL",
+  "d0a0338be1b93723d25c4900c274610b1ccccf4bee367da05cdd43fcb042ce29": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Varchar",
+          "Varchar"
+        ]
+      }
+    },
+    "query": "\n        INSERT INTO public.subscriber (name, email, external_id) \n        VALUES ($1, $2, $3) \n        ON CONFLICT (external_id) \n        DO UPDATE SET name = EXCLUDED.name, email = EXCLUDED.email, updated_at = now();\n        "
+  }
+}

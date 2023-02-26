@@ -44,6 +44,18 @@ pub struct ListAllNotificationsStrategiesImpl {
     subscriber_resolver: Arc<dyn SubscriberResolverInteractor>,
 }
 
+impl ListAllNotificationsStrategiesImpl {
+    pub fn new(
+        repo: Arc<dyn Strategies>,
+        subscriber_resolver: Arc<dyn SubscriberResolverInteractor>,
+    ) -> Self {
+        Self {
+            repo,
+            subscriber_resolver,
+        }
+    }
+}
+
 #[async_trait]
 impl ListAllNotificationStrategiesInteractor for ListAllNotificationsStrategiesImpl {
     async fn list(&self, actor: &dyn Actor) -> anyhow::Result<Vec<StrategyWithIsActive>> {

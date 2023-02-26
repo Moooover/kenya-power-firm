@@ -46,6 +46,18 @@ pub struct EditLocationInteractorImpl {
     subscriber_resolver: Arc<dyn SubscriberResolverInteractor>,
 }
 
+impl EditLocationInteractorImpl {
+    pub fn new(
+        location_repo: Arc<dyn CreateAndEditLocationRepo>,
+        subscriber_resolver: Arc<dyn SubscriberResolverInteractor>,
+    ) -> Self {
+        Self {
+            location_repo,
+            subscriber_resolver,
+        }
+    }
+}
+
 #[async_trait]
 impl EditLocationInteractor for EditLocationInteractorImpl {
     async fn edit(

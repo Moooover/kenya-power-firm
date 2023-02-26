@@ -16,6 +16,18 @@ pub struct ListSubscribedLocationsImpl {
     subscriber_resolver: Arc<dyn SubscriberResolverInteractor>,
 }
 
+impl ListSubscribedLocationsImpl {
+    pub fn new(
+        repo: Arc<dyn LocationsSubscribedRepo>,
+        subscriber_resolver: Arc<dyn SubscriberResolverInteractor>,
+    ) -> Self {
+        Self {
+            repo,
+            subscriber_resolver,
+        }
+    }
+}
+
 #[async_trait]
 pub trait LocationsSubscribedRepo: Send + Sync {
     async fn list(&self, id: SubscriberId) -> anyhow::Result<Vec<LocationWithId>>;

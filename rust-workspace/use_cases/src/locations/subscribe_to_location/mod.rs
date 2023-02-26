@@ -32,6 +32,18 @@ pub struct SubscribeToLocationImpl {
     subscriber_resolver: Arc<dyn SubscriberResolverInteractor>,
 }
 
+impl SubscribeToLocationImpl {
+    pub fn new(
+        repo: Arc<dyn CreateLocationAndSubscribeRepo>,
+        subscriber_resolver: Arc<dyn SubscriberResolverInteractor>,
+    ) -> Self {
+        Self {
+            repo,
+            subscriber_resolver,
+        }
+    }
+}
+
 #[async_trait]
 impl SubscribeToLocationInteractor for SubscribeToLocationImpl {
     async fn subscribe(&self, actor: &dyn Actor, location: Location) -> anyhow::Result<()> {
