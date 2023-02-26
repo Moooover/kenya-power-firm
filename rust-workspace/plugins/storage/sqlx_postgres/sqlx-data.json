@@ -1,6 +1,6 @@
 {
   "db": "PostgreSQL",
-  "d0a0338be1b93723d25c4900c274610b1ccccf4bee367da05cdd43fcb042ce29": {
+  "4cb191d7ba6ea49126490d63e16a39cf7862337666f55b6c810f3120b5630e12": {
     "describe": {
       "columns": [],
       "nullable": [],
@@ -12,6 +12,6 @@
         ]
       }
     },
-    "query": "\n        INSERT INTO public.subscriber (name, email, external_id) \n        VALUES ($1, $2, $3) \n        ON CONFLICT (external_id) \n        DO UPDATE SET name = EXCLUDED.name, email = EXCLUDED.email, updated_at = now();\n        "
+    "query": "\n        INSERT INTO public.subscriber (name, email, external_id) \n        VALUES ($1, $2, $3) \n        ON CONFLICT (external_id) \n        DO UPDATE SET name = EXCLUDED.name, email = EXCLUDED.email, last_login = now();\n        "
   }
 }
