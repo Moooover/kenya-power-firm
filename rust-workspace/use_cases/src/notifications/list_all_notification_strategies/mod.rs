@@ -1,9 +1,9 @@
 use crate::actor::Actor;
-use crate::authentication::subscriber::SubscriberResolverInteractor;
+use crate::authentication::subscriber_authentication::SubscriberResolverInteractor;
 use async_trait::async_trait;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
-use subscriptions::subscriber::SubscriberId;
+use subscriber::subscriber::SubscriberId;
 use uuid::Uuid;
 
 #[derive(Copy, Clone, Hash, Eq, PartialEq)]

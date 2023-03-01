@@ -9,6 +9,7 @@ use lazy_static::lazy_static;
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashSet;
+use subscriber::subscriber::details::SubscriberExternalId;
 use use_cases::actor::{Actor, ExternalId, Permissions};
 
 lazy_static! {
@@ -41,7 +42,8 @@ struct Claims {
 
 #[derive(Debug)]
 pub struct AuthenticatedUserInfo {
-    claims: Claims,
+    permissions: Vec<String>,
+    external_id: SubscriberExternalId,
 }
 
 impl TryFrom<&HttpRequest> for AuthenticatedUserInfo {
@@ -92,17 +94,23 @@ impl TryFrom<&HttpRequest> for AuthenticatedUserInfo {
             .map_err(|err| ApiError::Unauthorized(format!("{err:?}")))?;
 
         let claims = validated_token.claims;
-        Ok(AuthenticatedUserInfo { claims })
+
+        let external_id = claims.sub.clone().try_into().context("invalid id")?;
+
+        Ok(AuthenticatedUserInfo {
+            permissions: claims.permissions,
+            external_id,
+        })
     }
 }
 
 impl Actor for AuthenticatedUserInfo {
     fn permissions(&self) -> Permissions {
-        let permissions = &self.claims.permissions[..];
+        let permissions = &self.permissions[..];
         permissions.into()
     }
 
-    fn external_id(&self) -> ExternalId {
-        self.claims.sub.clone().into()
+    fn external_id(&self) -> SubscriberExternalId {
+        self.external_id.clone()
     }
 }

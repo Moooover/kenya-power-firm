@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use power_interuptions::location::LocationWithDateAndTime;
-use subscriptions::subscriber::{AffectedSubscriber, SubscriberId};
+use subscriber::subscriber::{AffectedSubscriber, SubscriberId};
 use url::Url;
 
 pub struct Notification {

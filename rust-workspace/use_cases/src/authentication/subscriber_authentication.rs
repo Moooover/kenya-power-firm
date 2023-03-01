@@ -1,7 +1,7 @@
 use crate::actor::Actor;
 use async_trait::async_trait;
 use std::sync::Arc;
-use subscriptions::subscriber::SubscriberId;
+use subscriber::subscriber::SubscriberId;
 
 #[async_trait]
 pub trait SubscriberResolverInteractor: Send + Sync {

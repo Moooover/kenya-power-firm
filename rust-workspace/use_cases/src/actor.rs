@@ -1,8 +1,10 @@
 use anyhow::anyhow;
+#[cfg(test)]
+use mockall::automock;
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashSet;
-use subscriptions::subscriber::SubscriberId;
+use subscriber::subscriber::details::SubscriberExternalId;
 use uuid::Uuid;
 
 #[derive(Copy, Clone, Hash, Eq, PartialEq, Debug, Deserialize)]
@@ -57,10 +59,11 @@ impl From<String> for ExternalId {
     }
 }
 
+#[cfg_attr(test, automock)]
 pub trait Actor: Send + Sync {
     fn permissions(&self) -> Permissions;
 
-    fn external_id(&self) -> ExternalId;
+    fn external_id(&self) -> SubscriberExternalId;
 
     fn check_for_permission(&self, permission: Permission) -> anyhow::Result<()> {
         match self.permissions().contains(permission) {

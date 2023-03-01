@@ -3,7 +3,7 @@ use crate::errors::ApiError;
 use crate::use_case_app_container::UseCaseAppContainer;
 use actix_web::{web, HttpRequest, HttpResponse};
 use serde::{Deserialize, Serialize};
-use use_cases::authentication::{User, UserDetails};
+use use_cases::authentication::SubscriberDetailsInput;
 
 #[derive(Serialize, Deserialize)]
 struct UserRequest {
@@ -27,7 +27,7 @@ async fn authentication(
     } = user_details.into_inner();
     let auth_interactor = app.get_client().authentication();
     auth_interactor
-        .authenticate(&user, UserDetails { name, email })
+        .authenticate(&user, SubscriberDetailsInput { name, email })
         .await
         .map_err(ApiError::InternalServerError)?;
 

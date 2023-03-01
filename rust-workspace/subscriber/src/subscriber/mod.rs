@@ -1,3 +1,5 @@
+pub mod details;
+
 use crate::plans::Plan;
 use uuid::Uuid;
 

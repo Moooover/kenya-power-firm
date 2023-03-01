@@ -1,5 +1,5 @@
-use crate::authentication::UserAuthenticationRepo;
+use crate::authentication::SubscriberAuthenticationRepo;
 
-pub trait Repository: UserAuthenticationRepo + Clone {}
+pub trait Repository: SubscriberAuthenticationRepo + Clone {}
 
-impl<T> Repository for T where T: Clone + UserAuthenticationRepo {}
+impl<T> Repository for T where T: Clone + SubscriberAuthenticationRepo {}

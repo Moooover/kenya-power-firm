@@ -6,7 +6,7 @@ use power_interuptions::location::{ImportInput, LocationWithDateAndTime, Region}
 use std::collections::HashMap;
 use std::error::Error;
 use std::sync::Arc;
-use subscriptions::subscriber::{AffectedSubscriber, SubscriberId};
+use subscriber::subscriber::{AffectedSubscriber, SubscriberId};
 use url::Url;
 use use_cases::import_planned_blackouts::NotifySubscribersOfAffectedAreas;
 

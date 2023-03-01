@@ -7,11 +7,22 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.69"
+config = "0.13.3"
 sqlx = { version = "0.6", features = [ "offline", "runtime-tokio-native-tls" , "postgres" ] }
 tokio = { version = "1", features = ["full"] }
 lazy_static = "1.4.0"
 async-trait = "0.1.64"
+serde = {  version= "1.0.152", features=["derive"] }
+serde-aux = "4.1.2"
+secrecy = { version = "0.8", features = ["serde"] }
 use_cases = { path = "../../../use_cases" }
+subscriber = { path = "../../../subscriber" }
+
+[dependencies.uuid]
+version = "1.3.0"
+features = [
+    "v4"
+]
 
 [profile.dev.package.sqlx-macros]
 opt-level = 3
