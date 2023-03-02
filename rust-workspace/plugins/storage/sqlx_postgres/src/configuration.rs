@@ -4,6 +4,11 @@ use serde::Deserialize;
 use serde_aux::field_attributes::deserialize_number_from_string;
 use sqlx::postgres::{PgConnectOptions, PgSslMode};
 
+#[derive(Debug, Deserialize)]
+pub struct Settings {
+    database: DbSettings,
+}
+
 type DbName = String;
 #[derive(Debug, Deserialize)]
 pub struct DbSettings {
@@ -16,7 +21,7 @@ pub struct DbSettings {
     require_ssl: bool,
 }
 
-impl DbSettings {
+impl Settings {
     fn parse() -> anyhow::Result<Self> {
         let base_path =
             std::env::current_dir().context("Failed to determine the current directory")?;
@@ -30,11 +35,11 @@ impl DbSettings {
             .context("Failed to build configuration")?;
 
         settings
-            .try_deserialize::<DbSettings>()
+            .try_deserialize::<Settings>()
             .context("Failed to deserialize settings to db settings")
     }
     pub fn without_db() -> anyhow::Result<(PgConnectOptions, DbName)> {
-        let config = Self::parse()?;
+        let config = Self::parse()?.database;
         let ssl_mode = if config.require_ssl {
             PgSslMode::Require
         } else {
@@ -52,7 +57,7 @@ impl DbSettings {
     }
 
     pub fn with_db() -> anyhow::Result<PgConnectOptions> {
-        let (mut options, database_name) = Self::without_db()?;
+        let (options, database_name) = Self::without_db()?;
         Ok(options.database(&database_name))
     }
 }

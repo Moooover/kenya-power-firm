@@ -3,5 +3,5 @@ database:
   port: 5432
   username: "postgres"
   password: "postgres"
-  database_name: ""
+  database_name: "blackout"
   require_ssl: false

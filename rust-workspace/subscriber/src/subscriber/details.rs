@@ -1,9 +1,11 @@
+#[derive(Debug, Clone)]
 pub struct NonEmptyString(String);
 
 pub struct SubscriberName(NonEmptyString);
 
 pub struct SubscriberEmail(NonEmptyString);
 
+#[derive(Debug, Clone)]
 pub struct SubscriberExternalId(NonEmptyString);
 
 pub struct SubscriberDetails {

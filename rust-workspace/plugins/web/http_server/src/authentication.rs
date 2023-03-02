@@ -95,7 +95,11 @@ impl TryFrom<&HttpRequest> for AuthenticatedUserInfo {
 
         let claims = validated_token.claims;
 
-        let external_id = claims.sub.clone().try_into().context("invalid id")?;
+        let external_id = claims
+            .sub
+            .clone()
+            .try_into()
+            .map_err(ApiError::Unauthorized)?;
 
         Ok(AuthenticatedUserInfo {
             permissions: claims.permissions,

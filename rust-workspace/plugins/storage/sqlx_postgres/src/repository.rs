@@ -1,18 +1,9 @@
-use crate::configuration::DbSettings;
-use anyhow::anyhow;
+use crate::configuration::Settings;
 use anyhow::Context;
-use lazy_static::lazy_static;
-use secrecy::{ExposeSecret, Secret};
-use serde::Deserialize;
-use sqlx::postgres::{PgConnectOptions, PgPool};
-use sqlx::postgres::{PgPoolOptions, PgSslMode};
+use sqlx::postgres::PgPool;
 use sqlx::{Connection, Executor, PgConnection};
 use std::sync::Arc;
 use uuid::Uuid;
-
-lazy_static! {
-    static ref DB_URL: String = "postgres://postgres:postgres@localhost/blackout".to_string();
-}
 
 #[derive(Clone)]
 pub struct Repository {
@@ -25,7 +16,7 @@ impl Repository {
     }
     #[cfg(not(test))]
     pub async fn new() -> anyhow::Result<Self> {
-        let pg_connection = DbSettings::with_db()?;
+        let pg_connection = Settings::with_db()?;
         let pg_pool = PgPool::connect_with(pg_connection)
             .await
             .context("Failed to connect to DB")
@@ -40,7 +31,7 @@ impl Repository {
     }
     #[cfg(test)]
     pub async fn new_test_repo() -> Self {
-        let mut connection_options = DbSettings::without_db().unwrap().0;
+        let mut connection_options = Settings::without_db().unwrap().0;
 
         let mut connection = PgConnection::connect_with(&connection_options)
             .await
