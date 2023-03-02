@@ -49,7 +49,7 @@ impl Repository {
         let connection_pool = PgPool::connect_with(connection_with_db_name)
             .await
             .expect("Failed to connect to Postgres.");
-        sqlx::migrate!("./migrations")
+        sqlx::migrate!()
             .run(&connection_pool)
             .await
             .expect("Failed to migrate the database");
