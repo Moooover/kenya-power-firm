@@ -30,7 +30,11 @@ impl Settings {
             .add_source(config::File::from(
                 configuration_directory.join("base.yaml"),
             ))
-            .add_source(config::Environment::with_prefix("APP").separator("_"))
+            .add_source(
+                config::Environment::with_prefix("APP")
+                    .prefix_separator("_")
+                    .separator("__"),
+            )
             .build()
             .context("Failed to build configuration")?;
 
