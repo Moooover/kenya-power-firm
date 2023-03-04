@@ -13,7 +13,7 @@ use std::sync::Arc;
 use url::Url;
 
 use crate::http_client::HttpClient;
-use use_cases::import_planned_blackouts::{Area, Region};
+use use_cases::import_affected_areas::{Area, Region};
 
 lazy_static! {
     static ref FORWARD_SLASH: Regex =
@@ -122,7 +122,7 @@ mod tests {
     use async_trait::async_trait;
     use std::sync::Arc;
     use url::Url;
-    use use_cases::import_planned_blackouts::Region;
+    use use_cases::import_affected_areas::Region;
 
     struct TestExtractor;
 

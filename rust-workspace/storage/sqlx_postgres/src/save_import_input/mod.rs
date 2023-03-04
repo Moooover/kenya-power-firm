@@ -11,12 +11,12 @@ use entities::power_interruptions::location::{
 };
 use futures::stream::FuturesUnordered;
 use url::Url;
-use use_cases::import_planned_blackouts::SaveBlackOutsRepo;
+use use_cases::import_affected_areas::SaveBlackoutAffectedAreasRepo;
 use uuid::Uuid;
 
 #[async_trait]
-impl SaveBlackOutsRepo for Repository {
-    async fn save_blackouts(
+impl SaveBlackoutAffectedAreasRepo for Repository {
+    async fn save(
         &self,
         data: &entities::power_interruptions::location::ImportInput,
     ) -> anyhow::Result<()> {
@@ -232,7 +232,7 @@ mod tests {
     use entities::power_interruptions::location::{
         Area, County, ImportInput, NairobiTZDateTime, Region, TimeFrame,
     };
-    use use_cases::import_planned_blackouts::SaveBlackOutsRepo;
+    use use_cases::import_affected_areas::SaveBlackOutsRepo;
 
     use crate::repository::Repository;
 

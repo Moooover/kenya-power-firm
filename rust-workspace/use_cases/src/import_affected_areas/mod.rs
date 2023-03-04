@@ -43,8 +43,8 @@ pub trait ImportPlannedBlackoutsInteractor: Send + Sync {
 }
 
 #[async_trait]
-pub trait SaveBlackOutsRepo: Send + Sync {
-    async fn save_blackouts(&self, data: &DomainImportInput) -> anyhow::Result<()>;
+pub trait SaveBlackoutAffectedAreasRepo: Send + Sync {
+    async fn save(&self, data: &DomainImportInput) -> anyhow::Result<()>;
 }
 
 #[async_trait]
@@ -52,14 +52,14 @@ pub trait NotifySubscribersOfAffectedAreas: Send + Sync {
     async fn notify(&self, data: DomainImportInput) -> anyhow::Result<()>;
 }
 
-pub struct ImportBlackouts {
-    repo: Arc<dyn SaveBlackOutsRepo>,
+pub struct ImportAffectedAreas {
+    repo: Arc<dyn SaveBlackoutAffectedAreasRepo>,
     notifier: Arc<dyn NotifySubscribersOfAffectedAreas>,
 }
 
-impl ImportBlackouts {
+impl ImportAffectedAreas {
     pub fn new(
-        repo: Arc<dyn SaveBlackOutsRepo>,
+        repo: Arc<dyn SaveBlackoutAffectedAreasRepo>,
         notifier: Arc<dyn NotifySubscribersOfAffectedAreas>,
     ) -> Self {
         Self { repo, notifier }
@@ -67,7 +67,7 @@ impl ImportBlackouts {
 }
 
 #[async_trait]
-impl ImportPlannedBlackoutsInteractor for ImportBlackouts {
+impl ImportPlannedBlackoutsInteractor for ImportAffectedAreas {
     async fn import(&self, actor: &dyn Actor, data: ImportInput) -> anyhow::Result<()> {
         actor.check_for_permission(Permission::ImportAffectedAreas)?;
 
@@ -96,7 +96,7 @@ impl ImportPlannedBlackoutsInteractor for ImportBlackouts {
         }
         let data = DomainImportInput(data);
         self.repo
-            .save_blackouts(&data)
+            .save(&data)
             .await
             .map_err(|err| anyhow!("{:?}", err))?;
         self.notifier.notify(data).await

@@ -8,7 +8,7 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::sync::Arc;
 use use_cases::actor::Actor;
-use use_cases::import_planned_blackouts::{
+use use_cases::import_affected_areas::{
     Area, ImportInput, ImportPlannedBlackoutsInteractor, Region,
 };
 

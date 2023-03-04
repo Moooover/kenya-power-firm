@@ -1,4 +1,4 @@
-use crate::import_planned_blackouts::NotifySubscribersOfAffectedAreas;
+use crate::import_affected_areas::NotifySubscribersOfAffectedAreas;
 use async_trait::async_trait;
 use entities::notifications::{DeliveryStrategy, Notification};
 use entities::power_interruptions::location::{ImportInput, LocationWithDateAndTime, Region};
@@ -43,7 +43,7 @@ impl NotifySubscribersOfAffectedAreas for Notifier {
         let mut futures: FuturesUnordered<_> = data
             .0
             .iter()
-            .map(|(url, regions)| self.notify_subscribers_in_regions(url.clone(), regions))
+            .map(|(url, regions)| self.notify_subscribers_about_regions(url.clone(), regions))
             .collect();
 
         while let Some(result) = futures.next().await {
@@ -59,7 +59,7 @@ impl NotifySubscribersOfAffectedAreas for Notifier {
 }
 
 impl Notifier {
-    async fn notify_subscribers_in_regions(
+    async fn notify_subscribers_about_regions(
         &self,
         url: Url,
         regions: &[Region],
