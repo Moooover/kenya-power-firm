@@ -1,5 +1,68 @@
 {
   "db": "PostgreSQL",
+  "302a35e1056d812323112fd09f1268bd1893ac83101872fb2620a3e53e537395": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "url",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Varchar"
+        ]
+      }
+    },
+    "query": "INSERT INTO public.source(url) VALUES ($1) ON CONFLICT DO NOTHING RETURNING id, url "
+  },
+  "392b97c0a94047b48ab5ed90e77439865c8806260f35d38b1aa067860be5c2db": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": []
+      }
+    },
+    "query": "\n            SELECT id, name FROM location.county\n            "
+  },
+  "42c7e18d1c75c2eb878dd061c158122c093001d9fd276492fefd2629298405ca": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "TextArray",
+          "UuidArray"
+        ]
+      }
+    },
+    "query": "\n            INSERT INTO location.line(name, area_id)\n            SELECT * FROM UNNEST($1::text[], $2::uuid[]) ON CONFLICT DO NOTHING\n            "
+  },
   "4cb191d7ba6ea49126490d63e16a39cf7862337666f55b6c810f3120b5630e12": {
     "describe": {
       "columns": [],
@@ -13,5 +76,65 @@
       }
     },
     "query": "\n        INSERT INTO public.subscriber (name, email, external_id) \n        VALUES ($1, $2, $3) \n        ON CONFLICT (external_id) \n        DO UPDATE SET name = EXCLUDED.name, email = EXCLUDED.email, last_login = now();\n        "
+  },
+  "4ea496669636d2020d9047b7053c7496c81e8bc08030a31273ea2d5c919a910a": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "TextArray",
+          "UuidArray"
+        ]
+      }
+    },
+    "query": "\n            INSERT INTO location.area(name, county_id)\n            SELECT * FROM UNNEST($1::text[], $2::uuid[]) ON CONFLICT DO NOTHING\n            "
+  },
+  "8ca5b21d263deca294d82dff8d6a200da5438fb9d6c149cf8c89f85b963c4698": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "county_id",
+          "ordinal": 2,
+          "type_info": "Uuid"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "TextArray"
+        ]
+      }
+    },
+    "query": "SELECT * FROM location.area WHERE name = ANY($1)"
+  },
+  "f3ac55e2b438d6ca309cb1fe35a2ebc56ecd131c6985e2090391c4e9285519f3": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "UuidArray",
+          "TimestamptzArray",
+          "TimestamptzArray",
+          "UuidArray"
+        ]
+      }
+    },
+    "query": "\n            INSERT INTO location.blackout_schedule(area_id, start_time, end_time, source_id) \n            SELECT * FROM UNNEST($1::uuid[], $2::timestamptz[], $3::timestamptz[], $4::uuid[]) ON CONFLICT DO NOTHING\n            "
   }
 }

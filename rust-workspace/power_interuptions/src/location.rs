@@ -5,7 +5,7 @@ use chrono_tz::Africa::Nairobi;
 use chrono_tz::Tz;
 use std::collections::HashMap;
 use url::Url;
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct County<T> {
     pub name: String,
     pub areas: Vec<Area<T>>,
@@ -17,17 +17,21 @@ pub struct Region<T = FutureOrCurrentNairobiTZDateTime> {
     pub counties: Vec<County<T>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct NairobiTZDateTime(DateTime<Tz>);
 
 impl NairobiTZDateTime {
-    fn today() -> Self {
+    pub fn today() -> Self {
         let today = Utc::now().naive_utc();
         NairobiTZDateTime(Nairobi.from_utc_datetime(&today))
     }
 
     fn date(&self) -> NaiveDate {
         self.0.date_naive()
+    }
+
+    pub fn into_inner(&self) -> DateTime<Tz> {
+        self.0
     }
 }
 
@@ -43,8 +47,15 @@ impl TryFrom<NaiveDateTime> for NairobiTZDateTime {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct FutureOrCurrentNairobiTZDateTime(NairobiTZDateTime);
+
+
+impl FutureOrCurrentNairobiTZDateTime {
+    pub fn to_date_time(&self) -> DateTime<Tz> {
+        self.0.into_inner()
+    }
+}
 
 impl TryFrom<NairobiTZDateTime> for FutureOrCurrentNairobiTZDateTime {
     type Error = String;
@@ -61,9 +72,9 @@ impl TryFrom<NairobiTZDateTime> for FutureOrCurrentNairobiTZDateTime {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Area<T> {
-    pub lines: Vec<String>,
+    pub name: String,
     pub time_frame: TimeFrame<T>,
     pub locations: Vec<String>,
 }

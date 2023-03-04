@@ -44,7 +44,7 @@ impl From<TokenCounty> for County {
 impl From<TokenArea> for Area {
     fn from(value: TokenArea) -> Self {
         Self {
-            lines: value.lines,
+            name: value.name,
             from: value.from,
             to: value.to,
             locations: value.locations,

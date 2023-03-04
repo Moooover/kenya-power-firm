@@ -143,10 +143,9 @@ impl Parser {
                     .areas
                     .into_iter()
                     .map(|area| {
-                        let lines = area.lines.into_iter().map(sanitize).collect();
                         let locations = area.locations.into_iter().map(sanitize).collect();
                         Area {
-                            lines,
+                            name: sanitize(area.name),
                             locations,
                             ..area
                         }
@@ -214,13 +213,10 @@ impl Parser {
     }
 
     fn area(&mut self) -> Result<Area, ParseError> {
-        let area_lines = consume_expected_token!(
+        let name = consume_expected_token!(
             self.tokens,
             Token::Area(literal),
-            literal
-                .split(",")
-                .map(|line| line.trim().to_string())
-                .collect(),
+            literal.trim().to_string(),
             "Area".to_string()
         )?;
 
@@ -251,7 +247,7 @@ impl Parser {
         let pins = self.locations()?;
 
         Ok(Area {
-            lines: area_lines,
+            name,
             to,
             from,
             locations: pins,

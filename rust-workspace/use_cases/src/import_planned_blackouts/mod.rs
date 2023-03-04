@@ -18,7 +18,7 @@ use power_interuptions::location::{ImportInput as DomainImportInput, TimeFrame};
 
 #[derive(Debug)]
 pub struct Area {
-    pub lines: Vec<String>,
+    pub name: String,
     pub from: NairobiTZDateTime,
     pub to: NairobiTZDateTime,
     pub locations: Vec<String>,
@@ -44,7 +44,7 @@ pub trait ImportPlannedBlackoutsInteractor: Send + Sync {
 
 #[async_trait]
 pub trait SaveBlackOutsRepo: Send + Sync {
-    async fn save_blackouts(&self, data: &DomainImportInput) -> Result<(), Box<dyn Error>>;
+    async fn save_blackouts(&self, data: &DomainImportInput) -> anyhow::Result<()>;
 }
 
 #[async_trait]

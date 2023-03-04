@@ -31,7 +31,7 @@ impl Repository {
     }
     #[cfg(test)]
     pub async fn new_test_repo() -> Self {
-        let mut connection_options = Settings::without_db().unwrap().0;
+        let connection_options = Settings::without_db().unwrap().0;
 
         let mut connection = PgConnection::connect_with(&connection_options)
             .await
@@ -42,6 +42,7 @@ impl Repository {
             .execute(&*format!(r#"CREATE DATABASE "{}";"#, db_name))
             .await
             .expect("Failed to create database.");
+        println!("The db name is {db_name}");
 
         let connection_with_db_name = connection_options.database(&db_name.to_string());
 

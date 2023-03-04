@@ -48,7 +48,7 @@ impl TryFrom<Area> for DomainArea<FutureOrCurrentNairobiTZDateTime> {
         let to =
             FutureOrCurrentNairobiTZDateTime::try_from(value.to).map_err(|err| anyhow!(err))?;
         Ok(DomainArea {
-            lines: value.lines,
+            name: value.name,
             time_frame: TimeFrame { from, to },
             locations: value.locations,
         })

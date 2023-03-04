@@ -5,7 +5,7 @@ use power_interuptions::location::NairobiTZDateTime;
 
 #[derive(Debug)]
 pub struct Area {
-    pub lines: Vec<String>,
+    pub name: String,
     pub from: NairobiTZDateTime,
     pub to: NairobiTZDateTime,
     pub locations: Vec<String>,
