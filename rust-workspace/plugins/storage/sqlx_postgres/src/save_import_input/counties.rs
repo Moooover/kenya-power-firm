@@ -1,6 +1,5 @@
 use crate::repository::Repository;
 use anyhow::{anyhow, Context};
-use std::collections::{HashMap, HashSet};
 use uuid::Uuid;
 
 pub struct DbCountyName(String);
@@ -29,7 +28,7 @@ impl DbCountyName {
     }
 
     fn first_substring_of_county_name_split_by_space(&self) -> Option<&str> {
-        self.0.split(" ").collect::<Vec<_>>().first().cloned()
+        self.0.split(' ').collect::<Vec<_>>().first().cloned()
     }
 }
 
@@ -96,7 +95,7 @@ impl Repository {
 
 #[cfg(test)]
 mod tests {
-    use crate::save_import_input::counties::{DbCounty, DbCountyName};
+    use crate::save_import_input::counties::DbCounty;
     use uuid::Uuid;
 
     #[test]
