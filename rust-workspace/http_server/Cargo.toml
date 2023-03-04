@@ -18,4 +18,4 @@ lazy_static = "1.4.0"
 ureq = { version = "2.6", features = ["json"] }
 use_cases = { path = "../use_cases" }
 entities = { path = "../entities" }
-sqlx_postgres = { path = "../storage_plugins/sqlx_postgres" }
+sqlx_postgres = { path = "../storage/sqlx_postgres" }
