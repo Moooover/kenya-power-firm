@@ -1,6 +1,6 @@
 use crate::import_planned_blackouts::{Area, County, Region};
 use anyhow::{anyhow, Context};
-use power_interuptions::location::{
+use entities::power_interruptions::location::{
     Area as DomainArea, County as DomainCounty, FutureOrCurrentNairobiTZDateTime,
     Region as DomainRegion, TimeFrame,
 };

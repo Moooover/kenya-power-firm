@@ -3,10 +3,11 @@ pub mod subscriber_authentication;
 use crate::actor::{Actor, ExternalId};
 use anyhow::anyhow;
 use async_trait::async_trait;
+use entities::subscriptions::details::SubscriberDetails;
 #[cfg(test)]
 use mockall::automock;
 use std::sync::Arc;
-use subscriber::subscriber::details::{SubscriberDetails, SubscriberExternalId};
+
 #[derive(Debug)]
 pub struct SubscriberDetailsInput {
     pub name: String,
@@ -74,6 +75,7 @@ mod tests {
         SubscriberDetailsInput,
     };
     use async_trait::async_trait;
+    use entities::subscriptions::details::SubscriberExternalId;
     use std::sync::Arc;
     use subscriber::subscriber::details::{SubscriberDetails, SubscriberExternalId};
 

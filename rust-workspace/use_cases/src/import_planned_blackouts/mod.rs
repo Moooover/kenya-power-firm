@@ -11,10 +11,10 @@ use std::sync::Arc;
 use url::Url;
 
 use crate::actor::{Actor, Permission};
-use power_interuptions::location::Area as DomainArea;
-use power_interuptions::location::NairobiTZDateTime;
-use power_interuptions::location::Region as DomainRegion;
-use power_interuptions::location::{ImportInput as DomainImportInput, TimeFrame};
+use entities::power_interruptions::location::Area as DomainArea;
+use entities::power_interruptions::location::NairobiTZDateTime;
+use entities::power_interruptions::location::Region as DomainRegion;
+use entities::power_interruptions::location::{ImportInput as DomainImportInput, TimeFrame};
 
 #[derive(Debug)]
 pub struct Area {

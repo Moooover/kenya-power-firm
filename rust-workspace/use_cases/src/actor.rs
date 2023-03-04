@@ -1,10 +1,10 @@
 use anyhow::anyhow;
+use entities::subscriptions::details::SubscriberExternalId;
 #[cfg(test)]
 use mockall::automock;
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashSet;
-use subscriber::subscriber::details::SubscriberExternalId;
 use uuid::Uuid;
 
 #[derive(Copy, Clone, Hash, Eq, PartialEq, Debug, Deserialize)]
