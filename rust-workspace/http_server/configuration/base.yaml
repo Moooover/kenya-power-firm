@@ -5,3 +5,6 @@ database:
   password: "postgres"
   database_name: "blackout"
   require_ssl: false
+location_searcher:
+  host: "https://maps.googleapis.com/maps/api"
+  api_key: ""

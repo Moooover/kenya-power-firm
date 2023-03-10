@@ -16,19 +16,19 @@ pub struct SubscriberDetails {
 
 impl AsRef<str> for SubscriberEmail {
     fn as_ref(&self) -> &str {
-        &self.0.as_ref()
+        self.0.as_ref()
     }
 }
 
 impl AsRef<str> for SubscriberName {
     fn as_ref(&self) -> &str {
-        &self.0.as_ref()
+        self.0.as_ref()
     }
 }
 
 impl AsRef<str> for SubscriberExternalId {
     fn as_ref(&self) -> &str {
-        &self.0.as_ref()
+        self.0.as_ref()
     }
 }
 

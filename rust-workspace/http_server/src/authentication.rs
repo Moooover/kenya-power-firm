@@ -60,21 +60,22 @@ impl TryFrom<&HttpRequest> for AuthenticatedUserInfo {
             .map_err(|err| ApiError::Unauthorized(format!("{err:?}")))?;
 
         let kid = header.kid.ok_or_else(|| {
-            ApiError::Unauthorized(format!("Token does not have a `kid` header field"))
+            ApiError::Unauthorized("Token does not have a `kid` header field".to_string())
         })?;
 
         let jwk = JWKS_SET.find(&kid).ok_or_else(|| {
-            ApiError::Unauthorized(format!("No matching JWK found for the given kid"))
+            ApiError::Unauthorized("No matching JWK found for the given kid".to_string())
         })?;
 
         let decoding_key = match &jwk.algorithm {
-            AlgorithmParameters::RSA(rsa) => {
-                let decoding_key = DecodingKey::from_rsa_components(&rsa.n, &rsa.e)
-                    .context("Failed to get DecodingKey from rsa_components")
-                    .map_err(|err| ApiError::Unauthorized(format!("{err:?}")))?;
-                decoding_key
+            AlgorithmParameters::RSA(rsa) => DecodingKey::from_rsa_components(&rsa.n, &rsa.e)
+                .context("Failed to get DecodingKey from rsa_components")
+                .map_err(|err| ApiError::Unauthorized(format!("{err:?}")))?,
+            _ => {
+                return Err(ApiError::Unauthorized(
+                    "Algorithm should be RSA".to_string(),
+                ))
             }
-            _ => return Err(ApiError::Unauthorized(format!("Algorithm should be RSA"))),
         };
 
         let validation = {

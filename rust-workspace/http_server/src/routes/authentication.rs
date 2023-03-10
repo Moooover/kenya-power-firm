@@ -9,7 +9,6 @@ use use_cases::authentication::SubscriberDetailsInput;
 struct UserRequest {
     name: String,
     email: String,
-    external_id: String,
 }
 
 async fn authentication(
@@ -19,12 +18,7 @@ async fn authentication(
 ) -> Result<HttpResponse, ApiError> {
     let user: AuthenticatedUserInfo = (&req).try_into()?;
 
-    println!("{user:?}");
-    let UserRequest {
-        name,
-        email,
-        external_id,
-    } = user_details.into_inner();
+    let UserRequest { name, email } = user_details.into_inner();
     let auth_interactor = app.get_client().authentication();
     auth_interactor
         .authenticate(&user, SubscriberDetailsInput { name, email })

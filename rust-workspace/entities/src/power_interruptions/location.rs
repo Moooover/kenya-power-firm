@@ -50,7 +50,6 @@ impl TryFrom<NaiveDateTime> for NairobiTZDateTime {
 #[derive(Debug, Clone)]
 pub struct FutureOrCurrentNairobiTZDateTime(NairobiTZDateTime);
 
-
 impl FutureOrCurrentNairobiTZDateTime {
     pub fn to_date_time(&self) -> DateTime<Tz> {
         self.0.into_inner()
@@ -88,9 +87,7 @@ pub struct TimeFrame<T> {
 }
 
 #[derive(Clone)]
-pub struct LocationWithDateAndTime<T = DateTime<Tz>> {
-    location: String,
-    area: String,
-    county: String,
+pub struct AffectedLine<T = DateTime<Tz>> {
+    line: String,
     time_frame: TimeFrame<T>,
 }

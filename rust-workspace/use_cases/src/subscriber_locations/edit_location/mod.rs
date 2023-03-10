@@ -1,7 +1,6 @@
-use crate::actor::Actor;
 use crate::authentication::subscriber_authentication::SubscriberResolverInteractor;
-use crate::locations::data::{Location, LocationId, LocationWithId};
-use crate::locations::subscribe_to_location::CreateLocationRepo;
+use crate::subscriber_locations::data::{LocationId, LocationInput, LocationWithId};
+use crate::{actor::Actor, search_for_locations::ExternalLocationId};
 use async_trait::async_trait;
 use entities::subscriptions::SubscriberId;
 use std::sync::Arc;
@@ -12,7 +11,7 @@ pub trait EditLocationInteractor: Send + Sync {
     async fn edit(
         &self,
         actor: &dyn Actor,
-        location_change: LocationChange<Location>,
+        location_change: LocationChange<LocationInput<ExternalLocationId>>,
     ) -> Result<LocationWithId, EditLocationError>;
 }
 
@@ -39,7 +38,7 @@ pub trait EditLocationRepo: Send + Sync {
 }
 
 #[async_trait]
-pub trait CreateAndEditLocationRepo: EditLocationRepo + CreateLocationRepo {}
+pub trait CreateAndEditLocationRepo: EditLocationRepo {}
 
 pub struct EditLocationInteractorImpl {
     location_repo: Arc<dyn CreateAndEditLocationRepo>,
@@ -63,22 +62,23 @@ impl EditLocationInteractor for EditLocationInteractorImpl {
     async fn edit(
         &self,
         actor: &dyn Actor,
-        location_change: LocationChange<Location>,
+        location_change: LocationChange<LocationInput<ExternalLocationId>>,
     ) -> Result<LocationWithId, EditLocationError> {
         let id = self
             .subscriber_resolver
             .resolve_from_actor(actor)
             .await
             .map_err(EditLocationError::InternalServerError)?;
-        let new_location = self
-            .location_repo
-            .create_or_return_existing_location(id, location_change.new_location)
-            .await
-            .map_err(EditLocationError::InternalServerError)?;
-        let change = LocationChange {
-            old_location: location_change.old_location,
-            new_location: new_location.id,
-        };
-        self.location_repo.edit(id, change).await
+        // let new_location = self
+        //     .location_repo
+        //     .create_or_return_existing_location(id, location_change.new_location)
+        //     .await
+        //     .map_err(EditLocationError::InternalServerError)?;
+        // let change = LocationChange {
+        //     old_location: location_change.old_location,
+        //     new_location: new_location.id,
+        // };
+        // self.location_repo.edit(id, change).await
+        todo!()
     }
 }

@@ -5,5 +5,7 @@ members = [
     "import_power_interruptions/*",
     "notification_strategies/*",
     "http_server",
-    "entities"
+    "entities",
+    "location_searcher",
+    "shared_kernel"
 ]

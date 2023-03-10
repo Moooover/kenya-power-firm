@@ -34,9 +34,7 @@ mod tests {
     use entities::subscriptions::details::{
         SubscriberDetails, SubscriberEmail, SubscriberExternalId, SubscriberName,
     };
-    use subscriber::subscriber::details::{
-        SubscriberDetails, SubscriberEmail, SubscriberExternalId, SubscriberName,
-    };
+
     use use_cases::authentication::SubscriberAuthenticationRepo;
 
     #[tokio::test]

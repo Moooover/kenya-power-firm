@@ -1,4 +1,4 @@
-use crate::power_interruptions::location::LocationWithDateAndTime;
+use crate::power_interruptions::location::AffectedLine;
 use crate::subscriptions::AffectedSubscriber;
 use async_trait::async_trait;
 use url::Url;
@@ -6,7 +6,7 @@ use url::Url;
 pub struct Notification {
     pub url: Url,
     pub subscriber: AffectedSubscriber,
-    pub locations: Vec<LocationWithDateAndTime>,
+    pub lines: Vec<AffectedLine>,
 }
 #[async_trait]
 pub trait DeliveryStrategy: Send + Sync {

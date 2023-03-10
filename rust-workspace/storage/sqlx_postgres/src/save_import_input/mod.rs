@@ -9,7 +9,6 @@ use async_trait::async_trait;
 use entities::power_interruptions::location::{
     Area, County, FutureOrCurrentNairobiTZDateTime, NairobiTZDateTime, Region, TimeFrame,
 };
-use futures::stream::FuturesUnordered;
 use url::Url;
 use use_cases::import_affected_areas::SaveBlackoutAffectedAreasRepo;
 use uuid::Uuid;
@@ -232,7 +231,7 @@ mod tests {
     use entities::power_interruptions::location::{
         Area, County, ImportInput, NairobiTZDateTime, Region, TimeFrame,
     };
-    use use_cases::import_affected_areas::SaveBlackOutsRepo;
+    use use_cases::import_affected_areas::SaveBlackoutAffectedAreasRepo;
 
     use crate::repository::Repository;
 
@@ -258,7 +257,7 @@ mod tests {
     #[tokio::test]
     async fn test_can_save_data_successfully() {
         let repository = Repository::new_test_repo().await;
-        let result = repository.save_blackouts(&generate_input()).await;
+        let result = repository.save(&generate_input()).await;
         assert!(result.is_ok())
     }
 }

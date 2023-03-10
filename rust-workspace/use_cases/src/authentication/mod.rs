@@ -77,7 +77,6 @@ mod tests {
     use async_trait::async_trait;
     use entities::subscriptions::details::SubscriberExternalId;
     use std::sync::Arc;
-    use subscriber::subscriber::details::{SubscriberDetails, SubscriberExternalId};
 
     fn mock_actor() -> MockActor {
         let mut mock_actor = MockActor::new();

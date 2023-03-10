@@ -1,7 +1,7 @@
 use crate::import_affected_areas::NotifySubscribersOfAffectedAreas;
 use async_trait::async_trait;
 use entities::notifications::{DeliveryStrategy, Notification};
-use entities::power_interruptions::location::{ImportInput, LocationWithDateAndTime, Region};
+use entities::power_interruptions::location::{AffectedLine, ImportInput, Region};
 use entities::subscriptions::{AffectedSubscriber, SubscriberId};
 use futures::stream::FuturesUnordered;
 use futures::StreamExt;
@@ -16,17 +16,17 @@ pub struct Notifier {
 }
 
 #[derive(Clone)]
-pub struct SubscriberWithLocations {
+pub struct SubscriberWithAffectedLines {
     subscriber: AffectedSubscriber,
-    locations: Vec<LocationWithDateAndTime>,
+    lines: Vec<AffectedLine>,
 }
 
 #[async_trait]
 pub trait SubscriberRepo: Send + Sync {
-    async fn get_subscribers_from_affected_locations(
+    async fn get_affected_subscribers(
         &self,
         regions: &[Region],
-    ) -> anyhow::Result<HashMap<AffectedSubscriber, Vec<LocationWithDateAndTime>>>;
+    ) -> anyhow::Result<HashMap<AffectedSubscriber, Vec<AffectedLine>>>;
 }
 
 #[async_trait]
@@ -43,7 +43,7 @@ impl NotifySubscribersOfAffectedAreas for Notifier {
         let mut futures: FuturesUnordered<_> = data
             .0
             .iter()
-            .map(|(url, regions)| self.notify_subscribers_about_regions(url.clone(), regions))
+            .map(|(url, regions)| self.notify_affected_subscribers(url.clone(), regions))
             .collect();
 
         while let Some(result) = futures.next().await {
@@ -59,14 +59,14 @@ impl NotifySubscribersOfAffectedAreas for Notifier {
 }
 
 impl Notifier {
-    async fn notify_subscribers_about_regions(
+    async fn notify_affected_subscribers(
         &self,
         url: Url,
         regions: &[Region],
     ) -> anyhow::Result<()> {
         let mapping_of_subscriber_to_locations = self
             .subscriber_repo
-            .get_subscribers_from_affected_locations(regions)
+            .get_affected_subscribers(regions)
             .await?;
 
         let subscriber_ids = mapping_of_subscriber_to_locations
@@ -81,13 +81,10 @@ impl Notifier {
 
         let mapping_of_subscriber_to_locations = mapping_of_subscriber_to_locations
             .into_iter()
-            .map(|(subscriber, locations)| {
+            .map(|(subscriber, lines)| {
                 (
                     subscriber.id(),
-                    SubscriberWithLocations {
-                        subscriber,
-                        locations,
-                    },
+                    SubscriberWithAffectedLines { subscriber, lines },
                 )
             })
             .collect::<HashMap<_, _>>();
@@ -104,7 +101,7 @@ impl Notifier {
                             .map(|data| Notification {
                                 url: url.clone(),
                                 subscriber: data.subscriber,
-                                locations: data.locations,
+                                lines: data.lines,
                             })
                     })
                     .collect::<Vec<_>>();

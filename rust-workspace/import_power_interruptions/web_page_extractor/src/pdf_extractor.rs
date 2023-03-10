@@ -12,7 +12,8 @@ use std::path::Path;
 use std::sync::Arc;
 use url::Url;
 
-use crate::http_client::HttpClient;
+use shared_kernel::http_client::HttpClient;
+
 use use_cases::import_affected_areas::{Area, Region};
 
 lazy_static! {

@@ -1,4 +1,3 @@
-pub mod http_client;
 pub mod pdf_extractor;
 
 use anyhow::Context;
@@ -12,8 +11,8 @@ use use_cases::import_affected_areas::{
     Area, ImportInput, ImportPlannedBlackoutsInteractor, Region,
 };
 
-use crate::http_client::HttpClient;
 use regex::Regex;
+use shared_kernel::http_client::HttpClient;
 use url::Url;
 
 struct WebPageExtractor {
