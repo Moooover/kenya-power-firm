@@ -1,32 +1,13 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
+use entities::locations::ExternalLocationId;
 use uuid::Uuid;
 
 use crate::{
     actor::Actor, authentication::subscriber_authentication::SubscriberResolverInteractor,
 };
 
-#[derive(Clone, Eq, PartialEq, Hash, Debug)]
-pub struct ExternalLocationId(String);
-
-impl AsRef<str> for ExternalLocationId {
-    fn as_ref(&self) -> &str {
-        &self.0
-    }
-}
-
-impl ExternalLocationId {
-    pub fn into_inner(self) -> String {
-        self.0
-    }
-}
-
-impl From<String> for ExternalLocationId {
-    fn from(value: String) -> Self {
-        ExternalLocationId(value)
-    }
-}
 pub struct LocationApiResponse {
     pub id: ExternalLocationId,
     pub name: String,

@@ -1,8 +1,8 @@
 use anyhow::Context;
 use async_trait::async_trait;
+use entities::locations::ExternalLocationId;
 use location_searcher::location_details_finder::{LocationDetailsCache, LocationDetailsInput};
 use std::collections::HashMap;
-use use_cases::search_for_locations::ExternalLocationId;
 use use_cases::subscriber_locations::data::LocationId;
 
 use crate::repository::Repository;

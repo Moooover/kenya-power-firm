@@ -29,7 +29,7 @@ impl From<LocationApiResponse> for Location {
     fn from(value: LocationApiResponse) -> Self {
         Self {
             name: value.name,
-            id: value.id.into_inner(),
+            id: value.id.inner(),
         }
     }
 }

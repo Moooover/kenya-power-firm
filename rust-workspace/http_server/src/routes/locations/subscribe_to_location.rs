@@ -1,8 +1,7 @@
 use actix_web::{web, HttpRequest, HttpResponse};
+use entities::locations::ExternalLocationId;
 use serde::Deserialize;
-use use_cases::{
-    search_for_locations::ExternalLocationId, subscriber_locations::data::LocationInput,
-};
+use use_cases::subscriber_locations::data::LocationInput;
 
 use crate::{
     authentication::AuthenticatedUserInfo, errors::ApiError,
@@ -39,8 +38,9 @@ async fn subscribe_to_location(
     let interactor = app.get_client().subscribe_to_location();
     let user: AuthenticatedUserInfo = (&req).try_into()?;
 
+    let data = data.into_inner();
     interactor
-        .subscribe(&user, data.into_inner().into())
+        .subscribe(&user, data.into())
         .await
         .map_err(ApiError::InternalServerError)?;
 

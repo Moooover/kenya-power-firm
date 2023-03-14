@@ -1,13 +1,13 @@
 use crate::{searcher::Searcher, status_code::StatusCode};
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
+use entities::locations::ExternalLocationId;
 use futures::{stream::FuturesUnordered, StreamExt};
 use secrecy::ExposeSecret;
 use serde::Deserialize;
 use shared_kernel::http_client::HttpClient;
 use std::collections::{HashMap, HashSet};
 use url::Url;
-use use_cases::search_for_locations::ExternalLocationId;
 use use_cases::subscriber_locations::data::{LocationId, LocationInput};
 use use_cases::subscriber_locations::subscribe_to_location::LocationDetailsFinder;
 
@@ -142,7 +142,7 @@ async fn get_place_details(url: Url) -> anyhow::Result<LocationDetailsInput> {
         serde_json::from_value(result.clone()).context("Failed to get valid response")?;
     if response.status.is_cacheable() {
         return Ok(LocationDetailsInput {
-            id: response.result.place_id.into(),
+            id: ExternalLocationId::new(response.result.place_id),
             name: response.result.name,
             address: response.result.formatted_address,
             api_response: result,

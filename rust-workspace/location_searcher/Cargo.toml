@@ -17,5 +17,7 @@ secrecy = { version = "0.8", features = ["serde"] }
 serde = {  version= "1.0.152", features=["derive"] }
 serde_json = { version = "1.0.93" }
 url = "2.3.1"
+entities = { path = "../entities" }
 shared_kernel = { path = "../shared_kernel" }
 use_cases = { path = "../use_cases" }
+
