@@ -30,7 +30,7 @@ impl NairobiTZDateTime {
         self.0.date_naive()
     }
 
-    pub fn into_inner(&self) -> DateTime<Tz> {
+    pub fn to_date_time(&self) -> DateTime<Tz> {
         self.0
     }
 }
@@ -52,7 +52,7 @@ pub struct FutureOrCurrentNairobiTZDateTime(NairobiTZDateTime);
 
 impl FutureOrCurrentNairobiTZDateTime {
     pub fn to_date_time(&self) -> DateTime<Tz> {
-        self.0.into_inner()
+        self.0.to_date_time()
     }
 }
 

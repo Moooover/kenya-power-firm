@@ -39,6 +39,33 @@
     },
     "query": "INSERT INTO public.source(url) VALUES ($1) ON CONFLICT DO NOTHING RETURNING id, url "
   },
+  "327dec1d5c7f4cfcf908a1244ffc5419398c83e9e1a55c223b5d08e3240d743e": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "area_id",
+          "ordinal": 1,
+          "type_info": "Uuid"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "UuidArray",
+          "Uuid"
+        ]
+      }
+    },
+    "query": "SELECT id, area_id FROM location.blackout_schedule WHERE area_id = ANY($1) AND source_id = $2"
+  },
   "392b97c0a94047b48ab5ed90e77439865c8806260f35d38b1aa067860be5c2db": {
     "describe": {
       "columns": [
@@ -75,6 +102,33 @@
       }
     },
     "query": "\n            INSERT INTO location.line(name, area_id)\n            SELECT * FROM UNNEST($1::text[], $2::uuid[]) ON CONFLICT DO NOTHING\n            "
+  },
+  "4c2cde8486e51548259c15f34da1f50291ffa0e1e885b32275b3598d124de3e1": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "TextArray",
+          "UuidArray"
+        ]
+      }
+    },
+    "query": "SELECT id, name FROM location.line WHERE name = ANY($1) AND area_id = ANY($2)"
   },
   "4cb191d7ba6ea49126490d63e16a39cf7862337666f55b6c810f3120b5630e12": {
     "describe": {
@@ -193,6 +247,19 @@
       }
     },
     "query": "SELECT * FROM location.area WHERE name = ANY($1)"
+  },
+  "9e5679e85ce2ed8fdff76f874ac43b254f3393cc2f73f94d2628b38ba48c997c": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "UuidArray",
+          "UuidArray"
+        ]
+      }
+    },
+    "query": "\n            INSERT INTO location.line_schedule(line_id, schedule_id)\n            SELECT * FROM UNNEST($1::uuid[], $2::uuid[]) ON CONFLICT DO NOTHING\n            "
   },
   "e2349855ce41569176081a9ec4011a4ee79bd866b9dd3d69077bc3644a4db1a6": {
     "describe": {

@@ -1,5 +1,6 @@
 mod counties;
-use anyhow::Context;
+use anyhow::{bail, Context};
+use itertools::Itertools;
 use sqlx::query;
 use std::{collections::HashMap, iter};
 
@@ -62,16 +63,23 @@ async fn save_regions_data(
         .await
         .context("Failed to save & return areas")?;
 
-    BlackoutSchedule::save_many(transaction, source_id, &areas).await?;
+    let area_id_to_blackout_schedule =
+        BlackoutSchedule::save_many(transaction, source_id, &areas).await?;
 
     let lines = areas
         .iter()
-        .flat_map(|data| {
-            data.area.locations.iter().map(|line| DbLine {
-                area_id: data.id,
-                name: line.clone(),
-            })
+        .filter_map(|data| {
+            area_id_to_blackout_schedule
+                .get(&AreaId(data.id))
+                .map(|blackout_schedule| {
+                    data.area.locations.iter().map(|line| DbLine {
+                        area_id: data.id,
+                        name: line.clone(),
+                        blackout_schedule: blackout_schedule.0,
+                    })
+                })
         })
+        .flatten()
         .collect::<Vec<_>>();
 
     DbLine::save_many(transaction, lines)
@@ -155,13 +163,14 @@ impl AreaWithId {
 struct DbLine {
     area_id: Uuid,
     name: String,
+    blackout_schedule: Uuid,
 }
 
 impl DbLine {
     async fn save_many(
         transaction: &mut sqlx::Transaction<'_, sqlx::Postgres>,
         lines: Vec<DbLine>,
-    ) -> Result<(), sqlx::Error> {
+    ) -> anyhow::Result<()> {
         let line_names = lines
             .iter()
             .map(|line| line.name.clone())
@@ -177,7 +186,57 @@ impl DbLine {
             &line_area_ids[..]
         )
         .execute(&mut *transaction)
-        .await?;
+        .await
+        .context("Failed to insert lines")?;
+
+        let inserted_lines = query!(
+            "SELECT id, name FROM location.line WHERE name = ANY($1) AND area_id = ANY($2)",
+            &line_names[..],
+            &line_area_ids[..]
+        )
+        .fetch_all(&mut *transaction)
+        .await
+        .context("Failed to return inserted lines")?;
+
+        if inserted_lines.len() != lines.len() {
+            bail!("The line rows inserted and the rows returned do not match")
+        }
+
+        let mapping_of_line_id_to_name = inserted_lines
+            .into_iter()
+            .map(|line| (line.name, line.id))
+            .collect::<HashMap<_, _>>();
+
+        struct LineIdWithScheduleId {
+            line_id: Uuid,
+            schedule_id: Uuid,
+        }
+
+        let insert = lines
+            .iter()
+            .filter_map(|line| {
+                mapping_of_line_id_to_name
+                    .get(&line.name)
+                    .map(|line_id| LineIdWithScheduleId {
+                        line_id: *line_id,
+                        schedule_id: line.blackout_schedule,
+                    })
+            })
+            .collect::<Vec<_>>();
+        let line_ids = insert.iter().map(|line| line.line_id).collect_vec();
+        let schedule_ids = insert.iter().map(|line| line.schedule_id).collect_vec();
+
+        sqlx::query!(
+            "
+            INSERT INTO location.line_schedule(line_id, schedule_id)
+            SELECT * FROM UNNEST($1::uuid[], $2::uuid[]) ON CONFLICT DO NOTHING
+            ",
+            &line_ids[..],
+            &schedule_ids[..]
+        )
+        .execute(&mut *transaction)
+        .await
+        .context("Failed to insert line schedules")?;
 
         Ok(())
     }
@@ -190,12 +249,18 @@ struct BlackoutSchedule {
     end_time: NairobiTZDateTime,
 }
 
+#[derive(PartialEq, Eq, Hash)]
+pub struct AreaId(Uuid);
+
+#[derive(PartialEq, Eq, Hash)]
+pub struct BlackoutScheduleId(Uuid);
+
 impl BlackoutSchedule {
     async fn save_many(
         transaction: &mut sqlx::Transaction<'_, sqlx::Postgres>,
         source_id: Uuid,
         areas: &[AreaWithId],
-    ) -> anyhow::Result<()> {
+    ) -> anyhow::Result<HashMap<AreaId, BlackoutScheduleId>> {
         let area_ids = areas.iter().map(|area| area.id).collect::<Vec<_>>();
         let (start_times, end_times): (Vec<_>, Vec<_>) = areas
             .iter()
@@ -220,7 +285,20 @@ impl BlackoutSchedule {
         )
         .execute(&mut *transaction).await.context("Failed to save schedules")?;
 
-        Ok(())
+        let inserted_area_schedules = query!(
+            "SELECT id, area_id FROM location.blackout_schedule WHERE area_id = ANY($1) AND source_id = $2",
+            &area_ids[..],
+            source_id
+        )
+        .fetch_all(&mut *transaction)
+        .await?;
+
+        let results = inserted_area_schedules
+            .into_iter()
+            .map(|data| (AreaId(data.area_id), BlackoutScheduleId(data.id)))
+            .collect::<HashMap<_, _>>();
+
+        Ok(results)
     }
 }
 
