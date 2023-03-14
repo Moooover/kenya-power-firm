@@ -1,18 +1,7 @@
+use shared_kernel::string_key;
 use std::collections::HashMap;
 
-pub struct ExternalLocationId(String);
-
-impl AsRef<str> for ExternalLocationId {
-    fn as_ref(&self) -> &str {
-        &self.0
-    }
-}
-
-impl From<String> for ExternalLocationId {
-    fn from(value: String) -> Self {
-        Self(value)
-    }
-}
+string_key!(ExternalLocationId);
 
 pub struct LocationInput {
     pub name: String,
