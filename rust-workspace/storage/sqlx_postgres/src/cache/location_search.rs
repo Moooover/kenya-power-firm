@@ -1,13 +1,56 @@
 use crate::repository::Repository;
 use anyhow::Context;
 use async_trait::async_trait;
-use location_searcher::text_search::{LocationSearchApiResponse, LocationSearchApiResponseCache};
+use serde::Deserialize;
+use serde::Serialize;
 use sqlx::types::Json;
 use url::Url;
 
-#[async_trait]
-impl LocationSearchApiResponseCache for Repository {
-    async fn get(&self, key: &Url) -> anyhow::Result<Option<LocationSearchApiResponse>> {
+#[derive(Deserialize, Serialize, Debug, Clone)]
+pub enum StatusCode {
+    OK,
+    #[serde(rename = "ZERO_RESULTS")]
+    ZERORESULTS,
+    #[serde(rename = "INVALID_REQUEST")]
+    INVALIDREQUEST,
+    #[serde(rename = "OVER_QUERY_LIMIT")]
+    OVERQUERYLIMIT,
+    #[serde(rename = "REQUEST_DENIED")]
+    REQUESTDENIED,
+    #[serde(rename = "UNKNOWN_ERROR")]
+    UNKNOWNERROR,
+}
+
+impl StatusCode {
+    pub fn is_cacheable(&self) -> bool {
+        matches!(self, StatusCode::OK | StatusCode::ZERORESULTS)
+    }
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct LocationSearchApiResponsePrediction {
+    pub description: String,
+    pub place_id: String,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct LocationSearchApiResponse {
+    status: StatusCode,
+    pub predictions: Vec<LocationSearchApiResponsePrediction>,
+    error_message: Option<String>,
+}
+
+impl LocationSearchApiResponse {
+    pub fn is_cacheable(&self) -> bool {
+        self.status.is_cacheable()
+    }
+}
+
+impl Repository {
+    pub async fn get_cached_text_search_response(
+        &self,
+        key: &Url,
+    ) -> anyhow::Result<Option<LocationSearchApiResponse>> {
         struct Row {
             value: Json<LocationSearchApiResponse>,
         }
@@ -29,7 +72,11 @@ impl LocationSearchApiResponseCache for Repository {
         Ok(None)
     }
 
-    async fn set(&self, key: &Url, response: &serde_json::Value) -> anyhow::Result<()> {
+    pub async fn set_cached_text_search_response(
+        &self,
+        key: &Url,
+        response: &serde_json::Value,
+    ) -> anyhow::Result<()> {
         let _ = sqlx::query!(
             r#"
             INSERT INTO location.location_search_cache ( key, value )

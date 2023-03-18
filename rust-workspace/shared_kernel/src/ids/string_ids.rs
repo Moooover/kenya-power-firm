@@ -1,7 +1,18 @@
 #[macro_export]
 macro_rules! string_key {
     ($TypeName: ident) => {
-        #[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
+        #[derive(
+            Clone,
+            Debug,
+            Default,
+            Eq,
+            Hash,
+            Ord,
+            PartialEq,
+            PartialOrd,
+            serde::Serialize,
+            serde::Deserialize,
+        )]
         pub struct $TypeName(String);
 
         impl $TypeName {

@@ -144,6 +144,19 @@
     },
     "query": "\n        INSERT INTO public.subscriber (name, email, external_id) \n        VALUES ($1, $2, $3) \n        ON CONFLICT (external_id) \n        DO UPDATE SET name = EXCLUDED.name, email = EXCLUDED.email, last_login = now();\n        "
   },
+  "4dd730f9e300f7d9be1acb3aeafded71daed94d51d984efa3ece00a0672a80fc": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Uuid",
+          "Uuid"
+        ]
+      }
+    },
+    "query": "\n              INSERT INTO location.adjuscent_locations(initial_location_id, adjuscent_location_id) \n              VALUES ($1, $2) ON CONFLICT DO NOTHING\n            "
+  },
   "4e60a89410aae471810abaedb26c2e220d66e0e9f22214e0693bba48c59b044c": {
     "describe": {
       "columns": [],
@@ -195,6 +208,26 @@
       }
     },
     "query": "\n            SELECT id, external_id\n            FROM location.locations WHERE external_id = ANY($1)\n            "
+  },
+  "6a1d966505f520b02ce5eff3b14e04506c674b1f76b639ed70ff2c5a83cb093d": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\n            SELECT id\n            FROM location.locations WHERE external_id = $1\n            "
   },
   "6ba4a55e12e4c33b26834d3d5c15347356ea21dc881e8e0fee79c304bc143dff": {
     "describe": {
@@ -260,6 +293,40 @@
       }
     },
     "query": "\n            INSERT INTO location.line_schedule(line_id, schedule_id)\n            SELECT * FROM UNNEST($1::uuid[], $2::uuid[]) ON CONFLICT DO NOTHING\n            "
+  },
+  "c9196fb2338d14fe601d614f6f403966c5ab9b1d84a667d93d97bae69edfd08f": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid",
+          "Uuid"
+        ]
+      }
+    },
+    "query": "\n            SELECT id FROM location.subscriber_locations WHERE subscriber_id = $1 AND location_id = $2\n            "
+  },
+  "e13fced71b43c2f6abf8ab9652539fc2e4b3ae38da844d494e682cef9c6035af": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Uuid",
+          "Uuid"
+        ]
+      }
+    },
+    "query": "\n              INSERT INTO location.subscriber_locations (subscriber_id, location_id) \n              VALUES ($1, $2) ON CONFLICT DO NOTHING\n            "
   },
   "e2349855ce41569176081a9ec4011a4ee79bd866b9dd3d69077bc3644a4db1a6": {
     "describe": {

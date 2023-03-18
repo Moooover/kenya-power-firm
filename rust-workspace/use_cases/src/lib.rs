@@ -3,7 +3,7 @@ use search_for_locations::{
     LocationSearchApi, LocationSearchInteractor, LocationSearchInteractorImpl,
 };
 use subscriber_locations::subscribe_to_location::{
-    LocationDetailsFinder, SubscribeToLocationImpl, SubscribeToLocationInteractor,
+    LocationSubscriber, SubscribeToLocationImpl, SubscribeToLocationInteractor,
 };
 
 use crate::authentication::{AuthenticationInteractor, AuthenticationInteractorImpl};
@@ -44,30 +44,27 @@ impl App for AppImpl {
     }
 }
 
-pub trait LocationsApi: LocationSearchApi + LocationDetailsFinder {}
+pub trait LocationsApi: LocationSearchApi + LocationSubscriber {}
 
-impl<T> LocationsApi for T where T: LocationSearchApi + LocationDetailsFinder {}
+impl<T> LocationsApi for T where T: LocationSearchApi + LocationSubscriber {}
 
 impl AppImpl {
     pub fn new<R: Repository + 'static, L: LocationsApi + 'static>(
         repo: R,
-        location_searcher: L,
+        location_api: L,
     ) -> Self {
         let repository = Arc::new(repo);
-        let locations_api = Arc::new(location_searcher);
+        let location_api = Arc::new(location_api);
         let subscriber_authentication_checker =
             Arc::new(SubscriberResolverInteractorImpl::new(repository.clone()));
-        let authentication_interactor = AuthenticationInteractorImpl::new(repository.clone());
+        let authentication_interactor = AuthenticationInteractorImpl::new(repository);
         let location_searcher_interactor = LocationSearchInteractorImpl::new(
-            locations_api.clone(),
+            location_api.clone(),
             subscriber_authentication_checker.clone(),
         );
 
-        let subscribe_to_locations_interactor = SubscribeToLocationImpl::new(
-            repository,
-            subscriber_authentication_checker,
-            locations_api,
-        );
+        let subscribe_to_locations_interactor =
+            SubscribeToLocationImpl::new(subscriber_authentication_checker, location_api);
 
         Self {
             authentication: Arc::new(authentication_interactor),

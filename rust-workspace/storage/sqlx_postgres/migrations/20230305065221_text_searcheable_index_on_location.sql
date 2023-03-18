@@ -1,5 +1,8 @@
 -- Add migration script here
 
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA "public";
+CREATE EXTENSION IF NOT EXISTS "pg_trgm" WITH SCHEMA "public";
+
 ALTER TABLE location.locations
     ADD COLUMN textsearchable_index_col tsvector
                GENERATED ALWAYS AS (to_tsvector('english', name)) STORED;

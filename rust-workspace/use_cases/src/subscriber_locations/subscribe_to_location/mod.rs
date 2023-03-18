@@ -26,21 +26,18 @@ pub trait SubscribeToLocationRepo: Send + Sync {
 }
 
 pub struct SubscribeToLocationImpl {
-    repo: Arc<dyn SubscribeToLocationRepo>,
     subscriber_resolver: Arc<dyn SubscriberResolverInteractor>,
-    location_details_finder: Arc<dyn LocationDetailsFinder>,
+    location_subscriber: Arc<dyn LocationSubscriber>,
 }
 
 impl SubscribeToLocationImpl {
     pub fn new(
-        repo: Arc<dyn SubscribeToLocationRepo>,
         subscriber_resolver: Arc<dyn SubscriberResolverInteractor>,
-        location_details_finder: Arc<dyn LocationDetailsFinder>,
+        location_subscriber: Arc<dyn LocationSubscriber>,
     ) -> Self {
         Self {
-            repo,
             subscriber_resolver,
-            location_details_finder,
+            location_subscriber,
         }
     }
 }
@@ -54,6 +51,15 @@ pub trait LocationDetailsFinder: Send + Sync {
 }
 
 #[async_trait]
+pub trait LocationSubscriber: Send + Sync {
+    async fn subscribe_to_location(
+        &self,
+        location: LocationInput<ExternalLocationId>,
+        subscriber: SubscriberId,
+    ) -> anyhow::Result<()>;
+}
+
+#[async_trait]
 impl SubscribeToLocationInteractor for SubscribeToLocationImpl {
     async fn subscribe(
         &self,
@@ -61,10 +67,9 @@ impl SubscribeToLocationInteractor for SubscribeToLocationImpl {
         location: LocationInput<ExternalLocationId>,
     ) -> anyhow::Result<()> {
         let id = self.subscriber_resolver.resolve_from_actor(actor).await?;
-        let location = self
-            .location_details_finder
-            .location_details(location)
-            .await?;
-        self.repo.subscribe(id, location).await
+
+        self.location_subscriber
+            .subscribe_to_location(location, id)
+            .await
     }
 }

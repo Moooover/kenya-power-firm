@@ -142,7 +142,7 @@ impl<'a> Scanner<'a> {
             ("sch", "School"),
             ("sec", "Secondary"),
             ("stn", "Station"),
-            ("apts", "Apartment"),
+            ("apts", "Apartments"),
             ("hqtrs", "Headquaters"),
             ("mkt", "Market"),
         ]);

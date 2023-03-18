@@ -1,7 +1,19 @@
 #[macro_export]
 macro_rules! uuid_key {
     ($TypeName: ident) => {
-        #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
+        #[derive(
+            Clone,
+            Copy,
+            Debug,
+            Default,
+            Eq,
+            Hash,
+            Ord,
+            PartialEq,
+            PartialOrd,
+            serde::Serialize,
+            serde::Deserialize,
+        )]
         pub struct $TypeName(uuid::Uuid);
 
         impl $TypeName {

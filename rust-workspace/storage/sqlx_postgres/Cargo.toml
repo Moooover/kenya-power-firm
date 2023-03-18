@@ -19,9 +19,9 @@ serde_json = { version = "1.0.93" }
 serde-aux = "4.1.2"
 secrecy = { version = "0.8", features = ["serde"] }
 url = "2.3.1"
+regex = "1.7.1"
 use_cases = { path = "../../use_cases" }
 entities = { path = "../../entities" }
-location_searcher = { path = "../../location_searcher" }
 [dependencies.uuid]
 version = "1.3.0"
 features = [

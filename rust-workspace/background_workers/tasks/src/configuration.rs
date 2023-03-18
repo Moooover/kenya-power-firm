@@ -1,7 +1,9 @@
 use anyhow::Context;
+use async_once::AsyncOnce;
+use lazy_static::lazy_static;
 use secrecy::Secret;
 use serde::Deserialize;
-
+use sqlx_postgres::repository::Repository;
 #[derive(Debug, Deserialize, Clone)]
 pub struct LocationSearcherConfig {
     pub host: String,
@@ -19,7 +21,7 @@ impl Settings {
         let base_path =
             std::env::current_dir().context("Failed to determine the current directory")?;
         let configuration_directory = base_path.join("configuration");
-        let file = if cfg!(test) { "test.yaml" } else { "base.yaml" };
+        let file = "base.yaml";
         let settings = config::Config::builder()
             .add_source(config::File::from(configuration_directory.join(file)))
             .add_source(
@@ -34,4 +36,14 @@ impl Settings {
             .try_deserialize::<Settings>()
             .context("Failed to deserialize settings to location_searcher settings")
     }
+}
+
+lazy_static! {
+    pub static ref SETTINGS_CONFIG: LocationSearcherConfig =
+        Settings::parse().unwrap().location_searcher;
+    pub static ref REPO: AsyncOnce<Repository> = AsyncOnce::new(async {
+        Repository::new()
+            .await
+            .expect("Repository to be initialzed")
+    });
 }

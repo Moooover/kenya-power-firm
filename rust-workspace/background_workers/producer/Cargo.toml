@@ -1,0 +1,23 @@
+[package]
+name = "producer"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1.0.69"
+async-trait = "0.1.64"
+celery = "0.5.3"
+tokio = { version = "1.26.0", features = ["full"] }
+serde = "1.0.154"
+serde_json = "1.0.94"
+redis = { version = "0.22", features = ["tokio-comp"] }
+url = "2.3.1"
+async_once = "0.2.6"
+lazy_static = "1.4.0"
+tasks = { path = "../tasks" }
+entities = { path = "../../entities" }
+shared_kernel = { path = "../../shared_kernel" }
+use_cases = { path = "../../use_cases" }
+sqlx_postgres = { path = "../../storage/sqlx_postgres" }

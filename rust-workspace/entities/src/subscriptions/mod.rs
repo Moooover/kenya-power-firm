@@ -4,20 +4,9 @@ pub mod plans;
 use crate::subscriptions::plans::Plan;
 use uuid::Uuid;
 
-#[derive(Clone, Copy, Eq, PartialEq, Hash)]
-pub struct SubscriberId(Uuid);
+use shared_kernel::uuid_key;
 
-impl SubscriberId {
-    pub fn into_inner(self) -> Uuid {
-        self.0
-    }
-}
-
-impl From<Uuid> for SubscriberId {
-    fn from(value: Uuid) -> Self {
-        SubscriberId(value)
-    }
-}
+uuid_key!(SubscriberId);
 
 pub struct Subscriber {
     id: SubscriberId,
