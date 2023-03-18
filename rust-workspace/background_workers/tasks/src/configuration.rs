@@ -12,7 +12,7 @@ pub struct LocationSearcherConfig {
 
 #[derive(Debug, Deserialize)]
 pub struct Settings {
-    pub location_searcher: LocationSearcherConfig,
+    pub location: LocationSearcherConfig,
 }
 
 impl Settings {
@@ -39,8 +39,7 @@ impl Settings {
 }
 
 lazy_static! {
-    pub static ref SETTINGS_CONFIG: LocationSearcherConfig =
-        Settings::parse().unwrap().location_searcher;
+    pub static ref SETTINGS_CONFIG: LocationSearcherConfig = Settings::parse().unwrap().location;
     pub static ref REPO: AsyncOnce<Repository> = AsyncOnce::new(async {
         Repository::new()
             .await

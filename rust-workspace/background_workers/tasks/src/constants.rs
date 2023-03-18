@@ -1,0 +1,1 @@
+pub const GOOGLE_API_TOKEN_KEY: &str = "LOCATION_EXTERNAL_API";

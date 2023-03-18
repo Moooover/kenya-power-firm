@@ -13,11 +13,11 @@ struct ExternalApi {
     pub name: String,
 }
 
-const SUFFIX: &str = "EXTERNAL_APIS";
+const SUFFIX: &str = "EXTERNAL_API";
 
 impl ExternalApi {
     fn token_bucket(&self) -> String {
-        format!("{}{}", self.name.to_uppercase(), SUFFIX)
+        format!("{}_{}", self.name.to_uppercase(), SUFFIX)
     }
 
     fn expiration(&self) -> f64 {
@@ -82,7 +82,7 @@ async fn main() -> Result<()> {
 
     let apis = vec![ExternalApi {
         rate_per_second: 100.0,
-        name: "location-api".to_string(),
+        name: "location".to_string(),
     }];
 
     let fut: Vec<_> = apis

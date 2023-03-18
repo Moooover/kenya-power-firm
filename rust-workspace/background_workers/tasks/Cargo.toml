@@ -9,6 +9,7 @@ edition = "2021"
 anyhow = "1.0.69"
 celery = "0.5.3"
 config = "0.13.3"
+async-trait = "0.1.67"
 secrecy = { version = "0.8", features = ["serde"] }
 
 tokio = { version = "1.26.0", features = ["full"] }
@@ -24,6 +25,7 @@ entities = { path = "../../entities" }
 shared_kernel = { path = "../../shared_kernel" }
 use_cases = { path = "../../use_cases" }
 sqlx_postgres = { path = "../../storage/sqlx_postgres" }
+redis_client = { path = "../../storage/redis_client" }
 
 
 [dependencies.uuid]

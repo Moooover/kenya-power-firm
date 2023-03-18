@@ -10,12 +10,15 @@ use secrecy::ExposeSecret;
 use shared_kernel::http_client::HttpClient;
 use url::Url;
 
+use crate::get_token::get_token_count;
+use redis_client::client::CLIENT;
 use serde::Deserialize;
 use serde::Serialize;
 use sqlx_postgres::cache::location_search::StatusCode;
 use use_cases::subscriber_locations::data::LocationId;
 use uuid::Uuid;
 
+use crate::constants::GOOGLE_API_TOKEN_KEY;
 use crate::{
     callbacks::failure_callback,
     configuration::{REPO, SETTINGS_CONFIG},
@@ -31,13 +34,26 @@ pub async fn subscribe_to_primary_location(
         .map_err(|err| TaskError::UnexpectedError(format!("{err}")))
 }
 
-#[celery::task(max_retries = 200, retry_for_unexpected = false, on_failure = failure_callback)]
+#[celery::task(max_retries = 200, bind=true, retry_for_unexpected = false, on_failure = failure_callback)]
 pub async fn get_and_subscribe_to_nearby_location(
+    task: &Self,
     external_id: ExternalLocationId,
     subscriber_primary_location_id: Uuid,
 ) -> TaskResult<()> {
     let repo = REPO.get().await;
-    let id = get_location_from_cache_or_api(external_id).await?;
+    let id = try_get_location_from_cache(&external_id).await?;
+    let id = match id {
+        None => {
+            let token_count = get_token_count().await?;
+
+            if token_count < 0 {
+                return Task::retry_with_countdown(task, 1);
+            }
+
+            get_location_from_api(external_id.clone()).await?
+        }
+        Some(id) => id,
+    };
     repo.subscribe_to_adjuscent_location(subscriber_primary_location_id, id)
         .await
         .map_err(|err| TaskError::UnexpectedError(format!("{err}")))
@@ -50,7 +66,20 @@ pub async fn fetch_and_subscribe_to_locations(
     nearby_locations: Vec<ExternalLocationId>,
     subscriber: SubscriberId,
 ) -> TaskResult<()> {
-    let location_id = get_location_from_cache_or_api(primary_location).await?;
+    let id = try_get_location_from_cache(&primary_location).await?;
+    let location_id = match id {
+        None => {
+            let token_count = get_token_count().await?;
+
+            if token_count < 0 {
+                return Task::retry_with_countdown(task, 1);
+            }
+
+            get_location_from_api(primary_location).await?
+        }
+        Some(id) => id,
+    };
+
     let id = subscribe_to_primary_location(location_id, subscriber).await?;
 
     let mut futures: FuturesUnordered<_> = nearby_locations
@@ -104,23 +133,22 @@ fn generate_url(id: ExternalLocationId) -> anyhow::Result<Url> {
     .context("Failed to parse Url")
 }
 
-async fn get_location_from_cache_or_api(external_id: ExternalLocationId) -> TaskResult<LocationId> {
-    let repo = REPO.get().await;
-    let item = repo
-        .find_location_id(external_id.clone())
-        .await
-        .map_err(|err| TaskError::UnexpectedError(format!("{err}")))?;
-
-    if let Some(item) = item {
-        return Ok(item);
-    }
-
+async fn get_location_from_api(external_id: ExternalLocationId) -> TaskResult<LocationId> {
     let url =
         generate_url(external_id).map_err(|err| TaskError::UnexpectedError(format!("{err}")))?;
 
     let location = get_place_details(url).await?;
 
     save_location_returning_id(location.clone()).await
+}
+
+async fn try_get_location_from_cache(
+    external_id: &ExternalLocationId,
+) -> TaskResult<Option<LocationId>> {
+    let repo = REPO.get().await;
+    repo.find_location_id(external_id.clone())
+        .await
+        .map_err(|err| TaskError::UnexpectedError(format!("{err}")))
 }
 
 async fn get_place_details(url: Url) -> TaskResult<LocationInput> {
