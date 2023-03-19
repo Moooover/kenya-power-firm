@@ -1,4 +1,4 @@
-use crate::location_details::{
+use crate::subscribe_to_location::{
     fetch_and_subscribe_to_locations, get_and_subscribe_to_nearby_location,
 };
 
@@ -9,7 +9,7 @@ use text_search::search_locations_by_text;
 
 pub mod configuration;
 pub mod constants;
-pub mod location_details;
+pub mod subscribe_to_location;
 pub mod text_search;
 pub mod utils;
 

@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use entities::locations::ExternalLocationId;
 use entities::subscriptions::SubscriberId;
 use std::collections::HashMap;
-use tasks::location_details::fetch_and_subscribe_to_locations;
+use tasks::subscribe_to_location::fetch_and_subscribe_to_locations;
 use use_cases::subscriber_locations::data::{LocationId, LocationInput};
 use use_cases::subscriber_locations::subscribe_to_location::LocationSubscriber;
 

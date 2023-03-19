@@ -119,12 +119,12 @@ async fn save_location_returning_id(location: LocationInput) -> TaskResult<Locat
         .map_err(|err| TaskError::UnexpectedError(err.to_string()))
 }
 
-const PLACE_DETAILS_PATH: &str = "/place/details/json";
-
 fn generate_url(id: ExternalLocationId) -> anyhow::Result<Url> {
+    let place_details_path = "/place/details/json";
+
     let host = &SETTINGS_CONFIG.host;
     Url::parse_with_params(
-        &format!("{}{}", host, PLACE_DETAILS_PATH),
+        &format!("{}{}", host, place_details_path),
         &[
             ("key", SETTINGS_CONFIG.api_key.expose_secret()),
             ("place_id", &id.inner()),
