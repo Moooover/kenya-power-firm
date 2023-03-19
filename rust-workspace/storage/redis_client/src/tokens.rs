@@ -2,7 +2,7 @@ use crate::client::Client;
 use anyhow::Context;
 
 impl Client {
-    pub async fn get_token(&self, key: &str) -> anyhow::Result<usize> {
+    pub async fn get_token(&self, key: &str) -> anyhow::Result<i32> {
         let mut conn = self.conn.clone();
         let _ = redis::Cmd::decr(key, 1)
             .query_async(&mut conn)

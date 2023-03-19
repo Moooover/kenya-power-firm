@@ -11,10 +11,10 @@ use url::Url;
 use redis_client::client::CLIENT;
 
 use crate::constants::GOOGLE_API_TOKEN_KEY;
-use crate::get_token::get_token_count;
+use crate::utils::get_token::get_token_count;
 use crate::{
-    callbacks::failure_callback,
     configuration::{REPO, SETTINGS_CONFIG},
+    utils::callbacks::failure_callback,
 };
 
 pub fn generate_search_url(text: String) -> anyhow::Result<Url> {

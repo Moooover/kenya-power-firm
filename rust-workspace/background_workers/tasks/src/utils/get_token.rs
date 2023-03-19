@@ -3,7 +3,7 @@ use celery::error::TaskError;
 use celery::prelude::TaskResult;
 use redis_client::client::CLIENT;
 
-pub async fn get_token_count() -> TaskResult<usize> {
+pub async fn get_token_count() -> TaskResult<i32> {
     let token_client = CLIENT.get().await;
 
     token_client

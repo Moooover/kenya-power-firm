@@ -10,7 +10,7 @@ use secrecy::ExposeSecret;
 use shared_kernel::http_client::HttpClient;
 use url::Url;
 
-use crate::get_token::get_token_count;
+use crate::utils::get_token::get_token_count;
 use redis_client::client::CLIENT;
 use serde::Deserialize;
 use serde::Serialize;
@@ -20,8 +20,8 @@ use uuid::Uuid;
 
 use crate::constants::GOOGLE_API_TOKEN_KEY;
 use crate::{
-    callbacks::failure_callback,
     configuration::{REPO, SETTINGS_CONFIG},
+    utils::callbacks::failure_callback,
 };
 
 pub async fn subscribe_to_primary_location(
