@@ -4,6 +4,7 @@ use crate::repository::Repository;
 use anyhow::Context;
 use entities::locations::LocationInput;
 use sqlx::types::Json;
+use use_cases::subscriber_locations::data::LocationId;
 
 pub struct NonAcronymString(String);
 
@@ -52,8 +53,7 @@ impl AsRef<str> for NonAcronymString {
 }
 
 impl Repository {
-    pub async fn insert_location(&self, location: LocationInput) -> anyhow::Result<()> {
-        // locations
+    pub async fn insert_location(&self, location: LocationInput) -> anyhow::Result<LocationId> {
         let pool = self.pool();
         let external_id = location.external_id.as_ref();
         let address = location.address.clone();
@@ -74,6 +74,16 @@ impl Repository {
         .await
         .context("Failed to insert location")?;
 
-        Ok(())
+        let record = sqlx::query!(
+            r#"
+            SELECT id FROM location.locations WHERE external_id = $1
+            "#,
+            external_id
+        )
+        .fetch_one(pool)
+        .await
+        .context("Failed to fetch")?;
+
+        Ok(record.id.into())
     }
 }

@@ -1,13 +1,22 @@
 use crate::repository::Repository;
 use anyhow::Context;
 use async_trait::async_trait;
-use entities::subscriptions::SubscriberId;
+use entities::subscriptions::{details::SubscriberExternalId, SubscriberId};
 use use_cases::{actor::Actor, authentication::subscriber_authentication::SubscriberResolverRepo};
 
 #[async_trait]
 impl SubscriberResolverRepo for Repository {
     async fn find(&self, actor: &dyn Actor) -> anyhow::Result<SubscriberId> {
         let external_id = actor.external_id();
+        self.find_by_external_id(external_id).await
+    }
+}
+
+impl Repository {
+    pub async fn find_by_external_id(
+        &self,
+        external_id: SubscriberExternalId,
+    ) -> anyhow::Result<SubscriberId> {
         let result = sqlx::query!(
             "
             SELECT id FROM public.subscriber WHERE external_id = $1

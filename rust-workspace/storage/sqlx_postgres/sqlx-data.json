@@ -103,6 +103,52 @@
     },
     "query": "\n            INSERT INTO location.line(name, area_id)\n            SELECT * FROM UNNEST($1::text[], $2::uuid[]) ON CONFLICT DO NOTHING\n            "
   },
+  "467992ee53af97d80919707996a62af6fcaafb022b1caedc58781bc294e4010e": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\n            SELECT id FROM location.locations WHERE external_id = $1\n            "
+  },
+  "4a72b917f7044f12954fc6ab789a6b5f0bf37134786858779eb91dfede1d514e": {
+    "describe": {
+      "columns": [
+        {
+          "name": "subscriber_id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "location_id",
+          "ordinal": 1,
+          "type_info": "Uuid"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "UuidArray"
+        ]
+      }
+    },
+    "query": "\n            SELECT subscriber_id, location_id FROM location.subscriber_locations WHERE location_id = ANY($1)\n            "
+  },
   "4c2cde8486e51548259c15f34da1f50291ffa0e1e885b32275b3598d124de3e1": {
     "describe": {
       "columns": [
@@ -182,32 +228,6 @@
       }
     },
     "query": "\n            INSERT INTO location.area(name, county_id)\n            SELECT * FROM UNNEST($1::text[], $2::uuid[]) ON CONFLICT DO NOTHING\n            "
-  },
-  "6917a2f9261e39077dbb7440acd065039ce78ce4351de1601d8eb4486e784baf": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "external_id",
-          "ordinal": 1,
-          "type_info": "Text"
-        }
-      ],
-      "nullable": [
-        false,
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "TextArray"
-        ]
-      }
-    },
-    "query": "\n            SELECT id, external_id\n            FROM location.locations WHERE external_id = ANY($1)\n            "
   },
   "6a1d966505f520b02ce5eff3b14e04506c674b1f76b639ed70ff2c5a83cb093d": {
     "describe": {
@@ -315,6 +335,32 @@
     },
     "query": "\n            SELECT id FROM location.subscriber_locations WHERE subscriber_id = $1 AND location_id = $2\n            "
   },
+  "d7ec2f8ed6d05a940145d400fb3763a583b740888fcfaae8f85141ef58c9bfda": {
+    "describe": {
+      "columns": [
+        {
+          "name": "subscriber_id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "adjuscent_location_id",
+          "ordinal": 1,
+          "type_info": "Uuid"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "UuidArray"
+        ]
+      }
+    },
+    "query": "\n            SELECT subscriber_id, adjuscent_location_id FROM location.adjuscent_locations \n            INNER JOIN location.subscriber_locations ON location.adjuscent_locations.initial_location_id = location.subscriber_locations.id \n            WHERE location.adjuscent_locations.adjuscent_location_id = ANY($1)\n            "
+  },
   "e13fced71b43c2f6abf8ab9652539fc2e4b3ae38da844d494e682cef9c6035af": {
     "describe": {
       "columns": [],
@@ -343,22 +389,6 @@
       }
     },
     "query": "\n            INSERT INTO location.locations (name, external_id, address, sanitized_address, external_api_response) \n            VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING\n            "
-  },
-  "f1e09aa7f911fd88b4fee2f19bbabac01ca1e50277c747a2acb99c4579e113de": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Left": [
-          "TextArray",
-          "TextArray",
-          "TextArray",
-          "TextArray",
-          "JsonbArray"
-        ]
-      }
-    },
-    "query": "\n            INSERT INTO location.locations (name, external_id, address, sanitized_address, external_api_response) \n            SELECT * FROM UNNEST ($1::text[], $2::text[], $3::text[], $4::text[], $5::jsonb[]) ON CONFLICT DO NOTHING\n            "
   },
   "f3ac55e2b438d6ca309cb1fe35a2ebc56ecd131c6985e2090391c4e9285519f3": {
     "describe": {

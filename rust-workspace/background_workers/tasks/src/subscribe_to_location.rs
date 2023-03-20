@@ -107,7 +107,8 @@ pub async fn fetch_and_subscribe_to_locations(
 async fn save_location_returning_id(location: LocationInput) -> TaskResult<LocationId> {
     let repo = REPO.get().await;
     let external_id = location.external_id.clone();
-    repo.insert_location(location)
+    let _ = repo
+        .insert_location(location)
         .await
         .map_err(|err| TaskError::UnexpectedError(format!("{err}")))?;
     let location_id = repo

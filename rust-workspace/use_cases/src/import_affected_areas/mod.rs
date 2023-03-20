@@ -90,7 +90,7 @@ impl ImportPlannedBlackoutsInteractor for ImportAffectedAreas {
             .map(Result::unwrap_err)
             .collect::<Vec<_>>();
 
-        if errors.len() > 0 {
+        if !errors.is_empty() {
             // TODO: Log the errors here
             println!("{errors:?}")
         }
