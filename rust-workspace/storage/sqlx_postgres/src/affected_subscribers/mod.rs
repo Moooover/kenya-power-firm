@@ -1,7 +1,10 @@
+mod check_if_subscriber_will_be_affected;
+
 use crate::repository::Repository;
 use anyhow::Context;
 use async_trait::async_trait;
-use entities::power_interruptions::location::{Area, TimeFrame};
+use entities::locations::LocationId;
+use entities::power_interruptions::location::{Area, NairobiTZDateTime, TimeFrame};
 use entities::subscriptions::AffectedSubscriber;
 use entities::{
     power_interruptions::location::{AffectedLine, FutureOrCurrentNairobiTZDateTime, Region},
@@ -19,7 +22,7 @@ impl SubscriberRepo for Repository {
     async fn get_affected_subscribers(
         &self,
         regions: &[Region],
-    ) -> anyhow::Result<HashMap<AffectedSubscriber, Vec<AffectedLine>>> {
+    ) -> anyhow::Result<HashMap<AffectedSubscriber, Vec<AffectedLine<NairobiTZDateTime>>>> {
         let areas = regions
             .iter()
             .flat_map(|region| {
@@ -80,10 +83,10 @@ impl From<&str> for SearcheableCandidate {
 }
 
 #[derive(sqlx::FromRow, Debug)]
-struct DbLocationSearchResults {
+pub struct DbLocationSearchResults {
     search_query: String,
     location: String,
-    id: uuid::Uuid,
+    id: Uuid,
 }
 
 struct SubscriberWithLocation {
@@ -95,7 +98,7 @@ impl Repository {
     async fn get_location_subscribers(
         &self,
         area: &Area<FutureOrCurrentNairobiTZDateTime>,
-    ) -> anyhow::Result<HashMap<AffectedSubscriber, Vec<AffectedLine>>> {
+    ) -> anyhow::Result<HashMap<AffectedSubscriber, Vec<AffectedLine<NairobiTZDateTime>>>> {
         let time_frame = area.time_frame.clone();
         let candidates = &area.locations;
 
@@ -152,13 +155,13 @@ impl Repository {
             &str,
         >,
     ) -> anyhow::Result<(
-        HashMap<AffectedSubscriber, Vec<AffectedLine>>,
+        HashMap<AffectedSubscriber, Vec<AffectedLine<NairobiTZDateTime>>>,
         HashMap<Uuid, Vec<Uuid>>,
     )> {
         let pool = self.pool();
         let time_frame = TimeFrame {
-            from: time_frame.from.to_date_time(),
-            to: time_frame.to.to_date_time(),
+            from: NairobiTZDateTime::from(&time_frame.from),
+            to: NairobiTZDateTime::from(&time_frame.to),
         };
         let primary_locations = sqlx::query_as::<_, DbLocationSearchResults>(
             "
@@ -204,7 +207,7 @@ impl Repository {
             .iter()
             .map(|(subscriber, location_ids)| {
                 let locations = location_ids
-                    .into_iter()
+                    .iter()
                     .filter_map(|location| {
                         location_ids_to_search_query
                             .get(location)
@@ -212,14 +215,13 @@ impl Repository {
                                 mapping_of_searcheable_candidate_to_candidate
                                     .get(candidate)
                                     .cloned()
+                                    .map(|line| (line, location))
                             })
                     })
-                    .map(|location| AffectedLine {
-                        line: location,
-                        time_frame: TimeFrame {
-                            from: time_frame.from,
-                            to: time_frame.to,
-                        },
+                    .map(|(line, location)| AffectedLine {
+                        line,
+                        location_matched: LocationId::from(*location),
+                        time_frame: time_frame.clone(),
                     })
                     .collect_vec();
                 (
@@ -239,7 +241,7 @@ impl Repository {
         mapping_of_searcheable_candidate_to_original_candidate: HashMap<SearcheableCandidate, &str>,
         mapping_of_subscriber_to_directly_affected_locations: HashMap<Uuid, Vec<Uuid>>,
         area_name: String,
-    ) -> anyhow::Result<HashMap<AffectedSubscriber, Vec<AffectedLine>>> {
+    ) -> anyhow::Result<HashMap<AffectedSubscriber, Vec<AffectedLine<NairobiTZDateTime>>>> {
         let (mapping_of_searcheable_candidate_to_original_candidate, searcheable_candidates) =
             include_area_name_to_searcheable_candidates(
                 searcheable_candidates,
@@ -249,8 +251,8 @@ impl Repository {
 
         let pool = self.pool();
         let time_frame = TimeFrame {
-            from: time_frame.from.to_date_time(),
-            to: time_frame.to.to_date_time(),
+            from: NairobiTZDateTime::from(&time_frame.from),
+            to: NairobiTZDateTime::from(&time_frame.to),
         };
 
         let nearby_locations = sqlx::query_as::<_, DbLocationSearchResults>(
@@ -300,19 +302,18 @@ impl Repository {
                     .iter()
                     .filter_map(|location| {
                         location_ids_to_search_query
-                            .get(&location)
+                            .get(location)
                             .and_then(|candidate| {
                                 mapping_of_searcheable_candidate_to_candidate
                                     .get(candidate)
                                     .cloned()
+                                    .map(|line| (line, location))
                             })
                     })
-                    .map(|location| AffectedLine {
-                        line: location,
-                        time_frame: TimeFrame {
-                            from: time_frame.from,
-                            to: time_frame.to,
-                        },
+                    .map(|(line, location)| AffectedLine {
+                        line,
+                        location_matched: LocationId::from(*location),
+                        time_frame: time_frame.clone(),
                     })
                     .collect_vec();
                 (
@@ -340,10 +341,10 @@ impl Repository {
                 &location_ids[..]
             ).fetch_all(pool).await.context("Failed to get subscribers subscribed to nearby locations")?;
 
-        /// We are still getting direct subscriber locations
-        /// because some subscribers might be directly subscribed to the location
-        /// however, we are still marking them as PottentiallyAffected because
-        /// we scanned the text in the API-Response via `search_locations_secondary_text()`
+        // We are still getting direct subscriber locations
+        // because some subscribers might be directly subscribed to the location
+        // however, we are still marking them as PottentiallyAffected because
+        // we scanned the text in the API-Response via `search_locations_secondary_text()`
         let directly_affected_subscribers = self
             .get_direct_subscribers_with_locations(&location_ids)
             .await?;
@@ -446,7 +447,6 @@ fn filter_out_directly_affected_subscriber_locations_from_potentially_affected(
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
 
     use entities::{
         locations::{ExternalLocationId, LocationInput},
@@ -497,7 +497,7 @@ mod tests {
         }
     }
 
-    async fn authenticate(repo: &Repository) -> SubscriberId {
+    pub async fn authenticate(repo: &Repository) -> SubscriberId {
         let external_id: SubscriberExternalId =
             "ChIJGdueTt0VLxgRk19ir6oE8I0".to_owned().try_into().unwrap();
         repo.create_or_update_subscriber(SubscriberDetails {

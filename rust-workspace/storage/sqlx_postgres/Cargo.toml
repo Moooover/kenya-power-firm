@@ -20,6 +20,8 @@ serde-aux = "4.1.2"
 secrecy = { version = "0.8", features = ["serde"] }
 url = "2.3.1"
 regex = "1.7.1"
+chrono = "0.4.23"
+chrono-tz = "0.8.1"
 use_cases = { path = "../../use_cases" }
 entities = { path = "../../entities" }
 [dependencies.uuid]

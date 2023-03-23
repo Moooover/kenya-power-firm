@@ -4,6 +4,7 @@ pub mod plans;
 use crate::subscriptions::plans::Plan;
 use uuid::Uuid;
 
+use crate::locations::LocationId;
 use shared_kernel::uuid_key;
 
 uuid_key!(SubscriberId);

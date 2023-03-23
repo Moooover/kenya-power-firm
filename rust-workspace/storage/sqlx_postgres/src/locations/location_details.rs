@@ -6,8 +6,6 @@ use use_cases::subscriber_locations::data::LocationId;
 
 use crate::repository::Repository;
 
-use crate::locations::insert_location::NonAcronymString;
-
 impl Repository {
     pub async fn find_location_id(
         &self,
