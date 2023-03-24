@@ -3,20 +3,20 @@ use celery::export::async_trait;
 use celery::prelude::*;
 use entities::locations::ExternalLocationId;
 use entities::locations::LocationId as EntityLocationId;
-use entities::locations::LocationInput;
 use entities::subscriptions::SubscriberId;
 use futures::stream::FuturesUnordered;
 use futures::StreamExt;
 use secrecy::ExposeSecret;
 use shared_kernel::http_client::HttpClient;
+use sqlx_postgres::locations::insert_location::LocationInput;
 use url::Url;
 
 use crate::utils::get_token::get_token_count;
+use entities::locations::LocationId;
 use redis_client::client::CLIENT;
 use serde::Deserialize;
 use serde::Serialize;
 use sqlx_postgres::cache::location_search::StatusCode;
-use use_cases::subscriber_locations::data::LocationId;
 use uuid::Uuid;
 
 use crate::constants::GOOGLE_API_TOKEN_KEY;
@@ -45,7 +45,7 @@ pub async fn get_and_subscribe_to_nearby_location(
 ) -> TaskResult<()> {
     let repo = REPO.get().await;
     let id = try_get_location_from_cache(&external_id).await?;
-    let id = match id {
+    let location_id = match id {
         None => {
             let token_count = get_token_count().await?;
 
@@ -57,14 +57,13 @@ pub async fn get_and_subscribe_to_nearby_location(
         }
         Some(id) => id,
     };
-    repo.subscribe_to_adjuscent_location(subscriber_primary_location_id, id)
+    repo.subscribe_to_adjuscent_location(subscriber_primary_location_id, location_id)
         .await
         .map_err(|err| TaskError::UnexpectedError(format!("{err}")))?;
 
     if subscriber_directly_affected {
         return Ok(());
     }
-    let location_id = id.into_inner().into();
     let notification = repo
         .subscriber_potentially_affected(subscriber_id, location_id)
         .await

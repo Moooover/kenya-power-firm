@@ -2,9 +2,8 @@ use std::collections::HashMap;
 
 use crate::repository::Repository;
 use anyhow::Context;
-use entities::locations::LocationInput;
+use entities::locations::{ExternalLocationId, LocationId};
 use sqlx::types::Json;
-use use_cases::subscriber_locations::data::LocationId;
 
 pub struct NonAcronymString(String);
 
@@ -86,4 +85,13 @@ impl Repository {
 
         Ok(record.id.into())
     }
+}
+
+// TODO: Refactor this, should be moved to the sqlx crate, maybe
+#[derive(Clone)]
+pub struct LocationInput {
+    pub name: String,
+    pub external_id: ExternalLocationId,
+    pub address: String,
+    pub api_response: serde_json::Value,
 }

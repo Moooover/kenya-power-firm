@@ -1,3 +1,4 @@
+use entities::locations::LocationId;
 use uuid::Uuid;
 
 pub struct LocationInput<T: Clone> {
@@ -13,21 +14,6 @@ impl<T: Clone> LocationInput<T> {
         let mut ids = self.nearby_locations.to_vec();
         ids.push(self.id.clone());
         ids
-    }
-}
-
-#[derive(Copy, Clone, Debug)]
-pub struct LocationId(Uuid);
-
-impl LocationId {
-    pub fn into_inner(self) -> Uuid {
-        self.0
-    }
-}
-
-impl From<Uuid> for LocationId {
-    fn from(value: Uuid) -> Self {
-        LocationId(value)
     }
 }
 

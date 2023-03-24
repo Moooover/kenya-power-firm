@@ -276,7 +276,7 @@ mod tests {
 
     use chrono::{Days, Utc};
     use entities::{
-        locations::{ExternalLocationId, LocationId, LocationInput},
+        locations::{ExternalLocationId, LocationId},
         power_interruptions::location::{
             Area, County, ImportInput, NairobiTZDateTime, Region, TimeFrame,
         },
@@ -286,6 +286,7 @@ mod tests {
     use url::Url;
     use use_cases::import_affected_areas::SaveBlackoutAffectedAreasRepo;
 
+    use crate::locations::insert_location::LocationInput;
     use crate::{affected_subscribers::tests::authenticate, repository::Repository};
 
     fn generate_region() -> Region {
@@ -339,7 +340,6 @@ mod tests {
             .unwrap();
 
         // TODO: Fix this type
-        let location_id = LocationId::from(location_id.into_inner());
 
         let notification = repository
             .subscriber_directly_affected(subscriber_id, location_id)
@@ -373,8 +373,6 @@ mod tests {
             })
             .await
             .unwrap();
-
-        let location_id = LocationId::from(location_id.into_inner());
 
         let notification = repository
             .subscriber_potentially_affected(subscriber_id, location_id)

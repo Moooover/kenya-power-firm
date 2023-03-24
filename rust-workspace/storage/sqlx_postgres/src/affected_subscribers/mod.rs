@@ -448,8 +448,9 @@ fn filter_out_directly_affected_subscriber_locations_from_potentially_affected(
 #[cfg(test)]
 mod tests {
 
+    use crate::locations::insert_location::LocationInput;
     use entities::{
-        locations::{ExternalLocationId, LocationInput},
+        locations::ExternalLocationId,
         power_interruptions::location::{Area, County, NairobiTZDateTime, Region, TimeFrame},
         subscriptions::{
             details::{SubscriberDetails, SubscriberExternalId},

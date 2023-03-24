@@ -1,13 +1,11 @@
 use crate::actor::Actor;
 use crate::authentication::subscriber_authentication::SubscriberResolverInteractor;
 use async_trait::async_trait;
+use entities::notifications::strategy::StrategyId;
 use entities::subscriptions::SubscriberId;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 use uuid::Uuid;
-
-#[derive(Copy, Clone, Hash, Eq, PartialEq)]
-pub struct StrategyId(Uuid);
 
 pub struct Strategy {
     pub id: StrategyId,

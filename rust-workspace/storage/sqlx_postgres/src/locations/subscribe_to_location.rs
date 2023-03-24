@@ -2,10 +2,10 @@ use std::iter;
 
 use anyhow::Context;
 use async_trait::async_trait;
+use entities::locations::LocationId;
 use entities::subscriptions::SubscriberId;
 use use_cases::subscriber_locations::{
-    data::{LocationId, LocationInput},
-    subscribe_to_location::SubscribeToLocationRepo,
+    data::LocationInput, subscribe_to_location::SubscribeToLocationRepo,
 };
 use uuid::Uuid;
 
@@ -18,7 +18,7 @@ impl Repository {
         location_id: LocationId,
     ) -> anyhow::Result<Uuid> {
         let subscriber = subscriber.inner();
-        let location_id = location_id.into_inner();
+        let location_id = location_id.inner();
         let _ = sqlx::query!(
             r#"
               INSERT INTO location.subscriber_locations (subscriber_id, location_id) 
@@ -53,7 +53,7 @@ impl Repository {
               VALUES ($1, $2) ON CONFLICT DO NOTHING
             ",
             initial_location_id,
-            adjuscent_location_id.into_inner()
+            adjuscent_location_id.inner()
         )
         .execute(self.pool())
         .await
@@ -84,7 +84,7 @@ impl SubscribeToLocationRepo for Repository {
               VALUES ($1, $2) ON CONFLICT DO NOTHING RETURNING id
             "#,
             subscriber_id,
-            location.primary_id().into_inner()
+            location.primary_id().inner()
         )
         .fetch_one(&mut *transaction)
         .await
@@ -93,7 +93,7 @@ impl SubscribeToLocationRepo for Repository {
         let nearby_locations = location
             .nearby_locations
             .into_iter()
-            .map(|location| location.into_inner())
+            .map(|location| location.inner())
             .collect::<Vec<_>>();
         let take_initial_location = iter::repeat(record.id)
             .take(nearby_locations.len())

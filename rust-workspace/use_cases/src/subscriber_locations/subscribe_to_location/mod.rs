@@ -1,8 +1,9 @@
 use crate::actor::Actor;
 use crate::authentication::subscriber_authentication::SubscriberResolverInteractor;
-use crate::subscriber_locations::data::{LocationId, LocationInput, LocationWithId};
+use crate::subscriber_locations::data::{LocationInput, LocationWithId};
 use async_trait::async_trait;
 use entities::locations::ExternalLocationId;
+use entities::locations::LocationId;
 use entities::subscriptions::SubscriberId;
 use std::sync::Arc;
 use uuid::Uuid;
