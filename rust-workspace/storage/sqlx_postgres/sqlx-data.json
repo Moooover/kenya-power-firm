@@ -1,5 +1,23 @@
 {
   "db": "PostgreSQL",
+  "1633c34c3f83b52c72a5b664e8f1284b347dc1134b9c008f5d73647682aaa698": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "UuidArray",
+          "BoolArray",
+          "UuidArray",
+          "TextArray",
+          "UuidArray",
+          "UuidArray",
+          "TextArray"
+        ]
+      }
+    },
+    "query": "\n                INSERT INTO communication.notifications(source_id, directly_affected, subscriber_id, line, strategy_id, location_id_matched, external_id)\n                SELECT * FROM UNNEST($1::uuid[], $2::bool[], $3::uuid[], $4::text[], $5::uuid[], $6::uuid[], $7::text[]) ON CONFLICT DO NOTHING\n                "
+  },
   "2f273f726b1261f1e0bf8f6bdbe6786d23bfb0b13a23120eb500f3367818379c": {
     "describe": {
       "columns": [],
@@ -190,6 +208,47 @@
     },
     "query": "\n        INSERT INTO public.subscriber (name, email, external_id) \n        VALUES ($1, $2, $3) \n        ON CONFLICT (external_id) \n        DO UPDATE SET name = EXCLUDED.name, email = EXCLUDED.email, last_login = now();\n        "
   },
+  "4db9124a258a08808a377e9753c51059a1467753d18538b50ce8152e5235258b": {
+    "describe": {
+      "columns": [
+        {
+          "name": "source_id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "subscriber_id",
+          "ordinal": 1,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "line",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "strategy_id",
+          "ordinal": 3,
+          "type_info": "Uuid"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid",
+          "Uuid",
+          "TextArray",
+          "Uuid"
+        ]
+      }
+    },
+    "query": "SELECT source_id, subscriber_id, line, strategy_id FROM communication.notifications \n                WHERE source_id = $1 AND subscriber_id = $2 AND line = ANY($3) AND strategy_id = $4"
+  },
   "4dd730f9e300f7d9be1acb3aeafded71daed94d51d984efa3ece00a0672a80fc": {
     "describe": {
       "columns": [],
@@ -269,6 +328,76 @@
     },
     "query": "\n            SELECT value as \"value: Json<LocationSearchApiResponse>\" FROM location.location_search_cache WHERE key = $1\n            "
   },
+  "76d653989592ac763cd84e17ee5b2f093a3e8b3350b7e5fd54838059bf1119db": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "email",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "external_id",
+          "ordinal": 3,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 4,
+          "type_info": "Timestamptz"
+        },
+        {
+          "name": "last_login",
+          "ordinal": 5,
+          "type_info": "Timestamptz"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      }
+    },
+    "query": "\n            SELECT * FROM public.subscriber WHERE id = $1\n            "
+  },
+  "80d5fe3abd56cd212bc5ced8310cba0762b633c75e904710a65d7653e02a908d": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "SELECT id FROM communication.strategies WHERE name = $1"
+  },
   "8ca5b21d263deca294d82dff8d6a200da5438fb9d6c149cf8c89f85b963c4698": {
     "describe": {
       "columns": [
@@ -314,6 +443,26 @@
     },
     "query": "\n            INSERT INTO location.line_schedule(line_id, schedule_id)\n            SELECT * FROM UNNEST($1::uuid[], $2::uuid[]) ON CONFLICT DO NOTHING\n            "
   },
+  "c35d5c2f0aa0c53824203b87238441f5ea082bcfecf6cb30d9d1e11d670a1f09": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "SELECT id FROM public.source WHERE url = $1"
+  },
   "c9196fb2338d14fe601d614f6f403966c5ab9b1d84a667d93d97bae69edfd08f": {
     "describe": {
       "columns": [
@@ -334,6 +483,32 @@
       }
     },
     "query": "\n            SELECT id FROM location.subscriber_locations WHERE subscriber_id = $1 AND location_id = $2\n            "
+  },
+  "cf434383b4f134f006bb5b9da0bf96938d17f33ca4fe572ef119a7df83265660": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "UuidArray"
+        ]
+      }
+    },
+    "query": "\n            SELECT id, name FROM location.locations WHERE id = ANY($1)\n            "
   },
   "d7ec2f8ed6d05a940145d400fb3763a583b740888fcfaae8f85141ef58c9bfda": {
     "describe": {

@@ -11,7 +11,9 @@ use shared_kernel::http_client::HttpClient;
 use sqlx_postgres::locations::insert_location::LocationInput;
 use url::Url;
 
-use crate::utils::get_token::get_token_count;
+use crate::{
+    send_notifications::email::send_email_notification, utils::get_token::get_token_count,
+};
 use entities::locations::LocationId;
 use redis_client::client::CLIENT;
 use serde::Deserialize;
@@ -69,6 +71,15 @@ pub async fn get_and_subscribe_to_nearby_location(
         .await
         .map_err(|err| TaskError::UnexpectedError(format!("{err}")))?;
 
+    if let Some(notification) = notification {
+        let _ = task
+            .request
+            .app
+            .send_task(send_email_notification::new(notification))
+            .await
+            .with_expected_err(|| "Failed to send task")?;
+    }
+
     Ok(())
 }
 
@@ -100,9 +111,18 @@ pub async fn fetch_and_subscribe_to_locations(
         .await
         .subscriber_directly_affected(subscriber, EntityLocationId::from(id))
         .await
-        .map_err(|err| TaskError::UnexpectedError(format!("{err}")))?;
+        .map_err(|err| TaskError::UnexpectedError(err.to_string()))?;
 
-    // TODO: Send notification
+    let subscriber_directly_affected = direct_notification.is_some();
+
+    if let Some(notification) = direct_notification {
+        let _ = task
+            .request
+            .app
+            .send_task(send_email_notification::new(notification))
+            .await
+            .with_expected_err(|| "Failed to send task")?;
+    }
 
     let mut futures: FuturesUnordered<_> = nearby_locations
         .into_iter()
@@ -113,7 +133,7 @@ pub async fn fetch_and_subscribe_to_locations(
                     nearby_location,
                     id,
                     subscriber,
-                    direct_notification.is_some(),
+                    subscriber_directly_affected,
                 ))
         })
         .collect();
@@ -147,11 +167,11 @@ async fn save_location_returning_id(location: LocationInput) -> TaskResult<Locat
 fn generate_url(id: ExternalLocationId) -> anyhow::Result<Url> {
     let place_details_path = "/place/details/json";
 
-    let host = &SETTINGS_CONFIG.host;
+    let host = &SETTINGS_CONFIG.location.host;
     Url::parse_with_params(
         &format!("{}{}", host, place_details_path),
         &[
-            ("key", SETTINGS_CONFIG.api_key.expose_secret()),
+            ("key", SETTINGS_CONFIG.location.api_key.expose_secret()),
             ("place_id", &id.inner()),
         ],
     )

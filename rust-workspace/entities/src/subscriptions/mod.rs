@@ -2,6 +2,7 @@ pub mod details;
 pub mod plans;
 
 use crate::subscriptions::plans::Plan;
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::locations::LocationId;
@@ -14,7 +15,7 @@ pub struct Subscriber {
     current_plan: Option<Plan>,
 }
 
-#[derive(Debug, Eq, PartialEq, Hash, Clone, Copy)]
+#[derive(Debug, Eq, PartialEq, Hash, Clone, Copy, Serialize, Deserialize)]
 pub enum AffectedSubscriber {
     DirectlyAffected(SubscriberId),
     PotentiallyAffected(SubscriberId),

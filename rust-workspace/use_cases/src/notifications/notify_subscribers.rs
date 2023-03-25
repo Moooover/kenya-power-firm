@@ -31,12 +31,17 @@ pub trait SubscriberRepo: Send + Sync {
     ) -> anyhow::Result<HashMap<AffectedSubscriber, Vec<AffectedLine<NairobiTZDateTime>>>>;
 }
 
+pub struct StrategyWithSubscribers {
+    pub strategy: Arc<dyn DeliveryStrategy>,
+    pub subscribers: Vec<SubscriberId>,
+}
+
 #[async_trait]
 pub trait GetPreferredDeliveryStrategies: Send + Sync {
     async fn get_strategies(
         &self,
         subscribers: Vec<SubscriberId>,
-    ) -> anyhow::Result<HashMap<Arc<dyn DeliveryStrategy>, Vec<SubscriberId>>>;
+    ) -> anyhow::Result<Vec<StrategyWithSubscribers>>;
 }
 
 #[async_trait]
@@ -93,22 +98,27 @@ impl Notifier {
 
         let mut notification_futures: FuturesUnordered<_> = strategies_with_subscribers
             .iter()
-            .map(|(strategy, subscribers)| {
-                let notifications = subscribers
-                    .iter()
-                    .filter_map(|subscriber| {
-                        mapping_of_subscriber_to_locations
-                            .get(subscriber)
-                            .cloned()
-                            .map(|data| Notification {
-                                url: url.clone(),
-                                subscriber: data.subscriber,
-                                lines: data.lines,
-                            })
-                    })
-                    .collect::<Vec<_>>();
-                strategy.deliver(notifications)
-            })
+            .map(
+                |StrategyWithSubscribers {
+                     strategy,
+                     subscribers,
+                 }| {
+                    let notifications = subscribers
+                        .iter()
+                        .filter_map(|subscriber| {
+                            mapping_of_subscriber_to_locations
+                                .get(subscriber)
+                                .cloned()
+                                .map(|data| Notification {
+                                    url: url.clone(),
+                                    subscriber: data.subscriber,
+                                    lines: data.lines,
+                                })
+                        })
+                        .collect::<Vec<_>>();
+                    strategy.deliver(notifications)
+                },
+            )
             .collect();
 
         while let Some(result) = notification_futures.next().await {

@@ -20,12 +20,12 @@ use crate::{
 pub fn generate_search_url(text: String) -> anyhow::Result<Url> {
     let search_path = "/place/queryautocomplete/json";
 
-    let host = &SETTINGS_CONFIG.host;
+    let host = &SETTINGS_CONFIG.location.host;
 
     Url::parse_with_params(
         &format!("{}{}", host, search_path),
         &[
-            ("key", SETTINGS_CONFIG.api_key.expose_secret()),
+            ("key", SETTINGS_CONFIG.location.api_key.expose_secret()),
             ("input", &text),
         ],
     )

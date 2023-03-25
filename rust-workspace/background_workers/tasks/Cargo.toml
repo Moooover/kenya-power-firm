@@ -11,6 +11,7 @@ celery = "0.5.3"
 config = "0.13.3"
 async-trait = "0.1.67"
 secrecy = { version = "0.8", features = ["serde"] }
+chrono-tz = { version = "0.8.1", features = ["serde"] }
 
 tokio = { version = "1.26.0", features = ["full"] }
 serde = "1.0.154"

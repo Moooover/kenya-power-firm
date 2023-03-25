@@ -6,6 +6,12 @@ non_empty_string!(SubscriberExternalId);
 
 pub struct SubscriberEmail(SubscriberEmailInner);
 
+impl ToString for SubscriberEmail {
+    fn to_string(&self) -> String {
+        self.0.to_string()
+    }
+}
+
 impl AsRef<str> for SubscriberEmail {
     fn as_ref(&self) -> &str {
         self.0.as_ref()

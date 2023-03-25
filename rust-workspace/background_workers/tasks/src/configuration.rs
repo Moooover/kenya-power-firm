@@ -4,15 +4,23 @@ use lazy_static::lazy_static;
 use secrecy::Secret;
 use serde::Deserialize;
 use sqlx_postgres::repository::Repository;
+
 #[derive(Debug, Deserialize, Clone)]
 pub struct LocationSearcherConfig {
     pub host: String,
     pub api_key: Secret<String>,
 }
 
+#[derive(Debug, Deserialize, Clone)]
+pub struct EmailConfig {
+    pub host: String,
+    pub auth_token: Secret<String>,
+}
+
 #[derive(Debug, Deserialize)]
 pub struct Settings {
     pub location: LocationSearcherConfig,
+    pub email: EmailConfig,
 }
 
 impl Settings {
@@ -39,7 +47,7 @@ impl Settings {
 }
 
 lazy_static! {
-    pub static ref SETTINGS_CONFIG: LocationSearcherConfig = Settings::parse().unwrap().location;
+    pub static ref SETTINGS_CONFIG: Settings = Settings::parse().unwrap();
     pub static ref REPO: AsyncOnce<Repository> = AsyncOnce::new(async {
         Repository::new()
             .await

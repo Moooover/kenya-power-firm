@@ -15,3 +15,5 @@ reqwest-middleware = "0.2.0"
 reqwest-retry = "0.2.1"
 url = "2.3.1"
 serde = {  version= "1.0.152", features=["derive"] }
+serde_json = { version = "1.0.93" }
+thiserror = "1.0.40"
