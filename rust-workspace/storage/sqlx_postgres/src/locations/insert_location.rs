@@ -1,47 +1,60 @@
 use std::collections::HashMap;
+use std::fmt::{Display, Formatter};
 
 use crate::repository::Repository;
 use anyhow::Context;
 use entities::locations::{ExternalLocationId, LocationId};
+use itertools::Itertools;
+use lazy_static::lazy_static;
+use regex::{Captures, Regex, RegexBuilder};
 use sqlx::types::Json;
 
+lazy_static! {
+    static ref ACRONYM_MAP: HashMap<String, &'static str> = HashMap::from([
+        ("pri".to_string(), "Primary"),
+        ("rd".to_string(), "Road"),
+        ("est".to_string(), "Estate"),
+        ("sch".to_string(), "School"),
+        ("sec".to_string(), "Secondary"),
+        ("stn".to_string(), "Station"),
+        ("apts".to_string(), "Apartments"),
+        ("hqtrs".to_string(), "Headquaters"),
+        ("mkt".to_string(), "Market"),
+    ]);
+    static ref REGEX_STR: String = {
+        let keys = ACRONYM_MAP.keys().map(|key| key).join("|");
+        format!(r"\b(?:{})\b", keys)
+    };
+    static ref ACRONYMS_MATCHER: Regex = RegexBuilder::new(&REGEX_STR)
+        .case_insensitive(true)
+        .build()
+        .expect("ACRONYMS_MATCHER to have been built successfully");
+}
+
+#[derive(Debug)]
 pub struct NonAcronymString(String);
 
-impl NonAcronymString {
-    pub fn into_inner(self) -> String {
-        self.0
+impl From<String> for NonAcronymString {
+    fn from(value: String) -> Self {
+        let result = ACRONYMS_MATCHER
+            .replace_all(&value, |cap: &Captures| {
+                let cap_as_lower_case = cap[0].to_lowercase();
+                ACRONYM_MAP
+                    .get(&cap_as_lower_case)
+                    .cloned()
+                    .unwrap_or_default()
+                    .to_string()
+            })
+            .trim()
+            .to_string();
+
+        NonAcronymString(result)
     }
 }
 
-// TODO: Fix this logic
-impl From<String> for NonAcronymString {
-    fn from(value: String) -> Self {
-        let acronym_map = HashMap::from([
-            ("pri", "Primary"),
-            ("rd", "Road"),
-            ("est", "Estate"),
-            ("sch", "School"),
-            ("sec", "Secondary"),
-            ("stn", "Station"),
-            ("apts", "Apartments"),
-            ("hqtrs", "Headquaters"),
-            ("mkt", "Market"),
-        ]);
-        let split = value
-            .split(' ')
-            .map(|val| {
-                format!(
-                    "{} ",
-                    acronym_map
-                        .get(val.to_ascii_lowercase().as_str())
-                        .cloned()
-                        .unwrap_or(val)
-                )
-            })
-            .collect::<String>()
-            .trim()
-            .to_owned();
-        NonAcronymString(split)
+impl Display for NonAcronymString {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
     }
 }
 
@@ -87,11 +100,23 @@ impl Repository {
     }
 }
 
-// TODO: Refactor this, should be moved to the sqlx crate, maybe
 #[derive(Clone)]
 pub struct LocationInput {
     pub name: String,
     pub external_id: ExternalLocationId,
     pub address: String,
     pub api_response: serde_json::Value,
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::locations::insert_location::NonAcronymString;
+
+    #[test]
+    fn test_acronym_new_type() {
+        let value = "Garden city Rd";
+        let value = NonAcronymString::from(value.to_string());
+        let expected_value = "Garden city Road";
+        assert_eq!(value.to_string(), expected_value.to_string())
+    }
 }
