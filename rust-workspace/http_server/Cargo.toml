@@ -20,7 +20,6 @@ ureq = { version = "2.6", features = ["json"] }
 url = { version = "2.3.1", features = ["serde"] }
 producer = { path = "../background_workers/producer" }
 use_cases = { path = "../use_cases" }
-entities = { path = "../entities" }
 sqlx_postgres = { path = "../storage/sqlx_postgres" }
 itertools = "0.10.5"
 
