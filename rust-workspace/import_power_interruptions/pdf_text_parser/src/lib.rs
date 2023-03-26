@@ -10,10 +10,10 @@ use use_cases::import_affected_areas::{Area, County, Region};
 use web_page_extractor::pdf_extractor::TextExtractor;
 use web_page_extractor::PdfExtractor;
 
-struct ContentExtractor {}
+pub struct PDFContentExtractor;
 
 #[async_trait]
-impl TextExtractor for ContentExtractor {
+impl TextExtractor for PDFContentExtractor {
     async fn extract(&self, text: String) -> anyhow::Result<Vec<Region>> {
         let tokens = scanner::scan(&text);
         let mut parser = parser::Parser::new(tokens);

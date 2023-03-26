@@ -16,7 +16,7 @@ use regex::Regex;
 use shared_kernel::http_client::HttpClient;
 use url::Url;
 
-struct WebPageExtractor {
+pub struct WebPageExtractor {
     importer: Arc<dyn ImportPlannedBlackoutsInteractor>,
     file_operations: Arc<dyn FileOperations>,
     pdf_reader: Arc<dyn PdfExtractor>,
@@ -34,6 +34,17 @@ pub trait PdfExtractor: Send + Sync {
 }
 
 impl WebPageExtractor {
+    pub fn new(
+        importer: Arc<dyn ImportPlannedBlackoutsInteractor>,
+        file_operations: Arc<dyn FileOperations>,
+        pdf_reader: Arc<dyn PdfExtractor>,
+    ) -> Self {
+        Self {
+            importer,
+            file_operations,
+            pdf_reader,
+        }
+    }
     pub async fn run(&self, actor: &dyn Actor) -> anyhow::Result<()> {
         let pdf_links = self.get_pdf_links().await?;
 
@@ -78,20 +89,4 @@ impl WebPageExtractor {
             .collect();
         Ok(this_years_pdf_urls)
     }
-}
-
-#[cfg(test)]
-mod tests {
-    // use crate::{get_page_contents, get_pdf_links};
-    //
-    // #[tokio::test]
-    // async fn test_get_page_contents() {
-    //     get_page_contents().await;
-    // }
-    //
-    // #[tokio::test]
-    // async fn test_links() {
-    //     let links = get_pdf_links().await.unwrap();
-    //     println!("{links:?}")
-    // }
 }

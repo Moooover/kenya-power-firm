@@ -10,6 +10,7 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::path::Path;
 use std::sync::Arc;
+use tokio::fs::create_dir;
 use url::Url;
 
 use shared_kernel::http_client::HttpClient;
@@ -26,11 +27,14 @@ pub trait TextExtractor: Send + Sync {
     async fn extract(&self, text: String) -> anyhow::Result<Vec<Region>>;
 }
 
-struct PdfExtractorImpl {
+pub struct PdfExtractorImpl {
     text_extractor: Arc<dyn TextExtractor>,
 }
 
 impl PdfExtractorImpl {
+    pub fn new(text_extractor: Arc<dyn TextExtractor>) -> Self {
+        Self { text_extractor }
+    }
     async fn fetch_and_extract(&self, url: Url) -> anyhow::Result<(Url, Vec<Region>)> {
         let res = HttpClient::get_bytes(url.clone()).await?;
         let text = resolve_text_from_file(&url, &res).await?;
@@ -85,7 +89,6 @@ async fn resolve_text_from_file(url: &Url, file_bytes: &[u8]) -> anyhow::Result<
     let path = env::current_dir().context("Cannot read current_dir")?;
     let normalized_url = FORWARD_SLASH.replace_all(url.as_str(), "_");
     let file_path = format!("{}/pdf_dump/pdf-{}", path.display(), normalized_url);
-    println!("{file_path}");
     let mut file = OpenOptions::new()
         .read(true)
         .write(true)
