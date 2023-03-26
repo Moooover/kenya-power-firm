@@ -3,7 +3,6 @@ members = [
     "use_cases",
     "storage/*",
     "import_power_interruptions/*",
-    "notification_strategies/*",
     "http_server",
     "entities",
     "shared_kernel",
