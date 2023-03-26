@@ -1,5 +1,5 @@
 use anyhow::anyhow;
-use entities::subscriptions::details::SubscriberExternalId;
+use entities::subscriptions::details::SubscriberExternalId as SubscriberExternalIdInner;
 #[cfg(test)]
 use mockall::automock;
 use serde::Deserialize;
@@ -56,6 +56,24 @@ impl ToString for ExternalId {
 impl From<String> for ExternalId {
     fn from(value: String) -> Self {
         ExternalId(value)
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct SubscriberExternalId(SubscriberExternalIdInner);
+
+impl From<SubscriberExternalId> for SubscriberExternalIdInner {
+    fn from(value: SubscriberExternalId) -> Self {
+        value.0
+    }
+}
+
+impl TryFrom<String> for SubscriberExternalId {
+    type Error = String;
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        let value = SubscriberExternalIdInner::try_from(value)?;
+        Ok(SubscriberExternalId(value))
     }
 }
 

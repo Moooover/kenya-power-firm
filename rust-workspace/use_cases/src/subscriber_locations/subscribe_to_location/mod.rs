@@ -13,7 +13,7 @@ pub trait SubscribeToLocationInteractor: Send + Sync {
     async fn subscribe(
         &self,
         actor: &dyn Actor,
-        location: LocationInput<ExternalLocationId>,
+        location: LocationInput<String>,
     ) -> anyhow::Result<()>;
 }
 
@@ -65,10 +65,17 @@ impl SubscribeToLocationInteractor for SubscribeToLocationImpl {
     async fn subscribe(
         &self,
         actor: &dyn Actor,
-        location: LocationInput<ExternalLocationId>,
+        location: LocationInput<String>,
     ) -> anyhow::Result<()> {
         let id = self.subscriber_resolver.resolve_from_actor(actor).await?;
-
+        let location = LocationInput {
+            id: ExternalLocationId::new(location.id),
+            nearby_locations: location
+                .nearby_locations
+                .into_iter()
+                .map(ExternalLocationId::new)
+                .collect(),
+        };
         self.location_subscriber
             .subscribe_to_location(location, id)
             .await

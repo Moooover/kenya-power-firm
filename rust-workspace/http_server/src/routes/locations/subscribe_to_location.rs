@@ -1,5 +1,4 @@
 use actix_web::{web, HttpRequest, HttpResponse};
-use entities::locations::ExternalLocationId;
 use serde::Deserialize;
 use use_cases::subscriber_locations::data::LocationInput;
 
@@ -14,18 +13,13 @@ struct LocationSubscriptionRequest {
     nearby_locations: Vec<String>,
 }
 
-impl From<LocationSubscriptionRequest> for LocationInput<ExternalLocationId> {
+impl From<LocationSubscriptionRequest> for LocationInput<String> {
     fn from(value: LocationSubscriptionRequest) -> Self {
-        let location = value.location.into();
-        let nearby_locations = value
-            .nearby_locations
-            .into_iter()
-            .map(|location| location.into())
-            .collect::<Vec<_>>();
+        let location = value.location;
 
         LocationInput {
             id: location,
-            nearby_locations,
+            nearby_locations: value.nearby_locations,
         }
     }
 }

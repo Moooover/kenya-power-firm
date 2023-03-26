@@ -8,7 +8,7 @@ use use_cases::{actor::Actor, authentication::subscriber_authentication::Subscri
 #[async_trait]
 impl SubscriberResolverRepo for Repository {
     async fn find(&self, actor: &dyn Actor) -> anyhow::Result<SubscriberId> {
-        let external_id = actor.external_id();
+        let external_id = actor.external_id().into();
         self.find_by_external_id(external_id).await
     }
 }
@@ -31,7 +31,10 @@ impl Repository {
         Ok(result.id.into())
     }
 
-    pub async fn find_subscriber_by_id(&self, id: SubscriberId) -> anyhow::Result<SubscriberDetails> {
+    pub async fn find_subscriber_by_id(
+        &self,
+        id: SubscriberId,
+    ) -> anyhow::Result<SubscriberDetails> {
         let id = id.inner();
         let result = sqlx::query!(
             "

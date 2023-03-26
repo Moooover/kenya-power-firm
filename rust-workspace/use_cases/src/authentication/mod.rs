@@ -43,7 +43,7 @@ impl AuthenticationInteractor for AuthenticationInteractorImpl {
         actor: &dyn Actor,
         subscriber: SubscriberDetailsInput,
     ) -> anyhow::Result<()> {
-        let external_id = actor.external_id();
+        let external_id = actor.external_id().into();
 
         let details = SubscriberDetails {
             name: subscriber.name.try_into().map_err(|err| anyhow!("{err}"))?,
