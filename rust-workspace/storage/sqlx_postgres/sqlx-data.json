@@ -249,19 +249,6 @@
     },
     "query": "\n              INSERT INTO location.adjuscent_locations(initial_location_id, adjuscent_location_id) \n              VALUES ($1, $2) ON CONFLICT DO NOTHING\n            "
   },
-  "4e60a89410aae471810abaedb26c2e220d66e0e9f22214e0693bba48c59b044c": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Left": [
-          "UuidArray",
-          "UuidArray"
-        ]
-      }
-    },
-    "query": "\n              INSERT INTO location.adjuscent_locations(initial_location_id, adjuscent_location_id) \n              SELECT * FROM UNNEST($1::uuid[], $2::uuid[])\n            "
-  },
   "4ea496669636d2020d9047b7053c7496c81e8bc08030a31273ea2d5c919a910a": {
     "describe": {
       "columns": [],
@@ -443,6 +430,39 @@
     },
     "query": "\n            INSERT INTO location.line_schedule(line_id, schedule_id)\n            SELECT * FROM UNNEST($1::uuid[], $2::uuid[]) ON CONFLICT DO NOTHING\n            "
   },
+  "bb19244d8dc027cdd6c33d58e84f7caa5b6036d334ece33b3e513668d4d979b9": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Varchar"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "TextArray"
+        ]
+      }
+    },
+    "query": "\n            SELECT id FROM importer.processed_files WHERE id = ANY($1)\n            "
+  },
+  "bc798c3d32d01de408e0ecf7dc778012857c6316302fee764e89ea45ec99ac23": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "UuidArray",
+          "UuidArray"
+        ]
+      }
+    },
+    "query": "\n              INSERT INTO location.adjuscent_locations(initial_location_id, adjuscent_location_id) \n              SELECT * FROM UNNEST($1::uuid[], $2::uuid[]) ON CONFLICT DO NOTHING\n            "
+  },
   "c35d5c2f0aa0c53824203b87238441f5ea082bcfecf6cb30d9d1e11d670a1f09": {
     "describe": {
       "columns": [
@@ -600,6 +620,18 @@
       }
     },
     "query": "\n              INSERT INTO location.subscriber_locations (subscriber_id, location_id) \n              VALUES ($1, $2) ON CONFLICT DO NOTHING RETURNING id\n            "
+  },
+  "faac91ef21b36f2e2302b536b35a490cbd0346372b8aa0351c1e2fb1ba3b03d9": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "TextArray"
+        ]
+      }
+    },
+    "query": "\n              INSERT INTO importer.processed_files(id) \n              SELECT * FROM UNNEST($1::text[]) ON CONFLICT DO NOTHING\n            "
   },
   "fb902a1af28ca72f0f6f3617384874897e3e807f12f907e3ceb6de5bdc889d85": {
     "describe": {

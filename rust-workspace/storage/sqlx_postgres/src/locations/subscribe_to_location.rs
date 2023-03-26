@@ -102,7 +102,7 @@ impl SubscribeToLocationRepo for Repository {
         sqlx::query!(
             "
               INSERT INTO location.adjuscent_locations(initial_location_id, adjuscent_location_id) 
-              SELECT * FROM UNNEST($1::uuid[], $2::uuid[])
+              SELECT * FROM UNNEST($1::uuid[], $2::uuid[]) ON CONFLICT DO NOTHING
             ",
             &take_initial_location[..],
             &nearby_locations[..],
