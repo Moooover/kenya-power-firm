@@ -18,19 +18,6 @@
     },
     "query": "\n                INSERT INTO communication.notifications(source_id, directly_affected, subscriber_id, line, strategy_id, location_id_matched, external_id)\n                SELECT * FROM UNNEST($1::uuid[], $2::bool[], $3::uuid[], $4::text[], $5::uuid[], $6::uuid[], $7::text[]) ON CONFLICT DO NOTHING\n                "
   },
-  "2f273f726b1261f1e0bf8f6bdbe6786d23bfb0b13a23120eb500f3367818379c": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Left": [
-          "Text",
-          "Jsonb"
-        ]
-      }
-    },
-    "query": "\n            INSERT INTO location.location_search_cache ( key, value )\n            VALUES ( $1, $2 )\n            "
-  },
   "302a35e1056d812323112fd09f1268bd1893ac83101872fb2620a3e53e537395": {
     "describe": {
       "columns": [
@@ -287,6 +274,19 @@
       }
     },
     "query": "\n            INSERT INTO location.area(name, county_id)\n            SELECT * FROM UNNEST($1::text[], $2::uuid[]) ON CONFLICT DO NOTHING\n            "
+  },
+  "56ef9728eb07a24dd60a5d054e44e05134dbd853ac11a00bcaca492082b78ed8": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Jsonb"
+        ]
+      }
+    },
+    "query": "\n            INSERT INTO location.location_search_cache ( key, value )\n            VALUES ( $1, $2 ) ON CONFLICT (key)\n            DO UPDATE SET value = EXCLUDED.value\n            "
   },
   "6a1d966505f520b02ce5eff3b14e04506c674b1f76b639ed70ff2c5a83cb093d": {
     "describe": {

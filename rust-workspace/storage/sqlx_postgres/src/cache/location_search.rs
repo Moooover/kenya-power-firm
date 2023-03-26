@@ -80,7 +80,8 @@ impl Repository {
         let _ = sqlx::query!(
             r#"
             INSERT INTO location.location_search_cache ( key, value )
-            VALUES ( $1, $2 )
+            VALUES ( $1, $2 ) ON CONFLICT (key)
+            DO UPDATE SET value = EXCLUDED.value
             "#,
             key.as_str(),
             Json(response) as _

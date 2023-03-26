@@ -69,7 +69,7 @@ impl ImportAffectedAreas {
 #[async_trait]
 impl ImportPlannedBlackoutsInteractor for ImportAffectedAreas {
     async fn import(&self, actor: &dyn Actor, data: ImportInput) -> anyhow::Result<()> {
-        actor.check_for_permission(Permission::ImportAffectedAreas)?;
+        actor.check_for_permission(Permission::ImportAffectedRegions)?;
 
         let (data, errors): (Vec<_>, _) = data
             .0

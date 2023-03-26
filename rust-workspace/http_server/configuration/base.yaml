@@ -8,3 +8,6 @@ database:
 location:
   host: "https://maps.googleapis.com/maps/api"
   api_key: ""
+email:
+  host: "https://api.courier.com/send"
+  auth_token: ""

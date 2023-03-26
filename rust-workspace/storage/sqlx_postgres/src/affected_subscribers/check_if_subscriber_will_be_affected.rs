@@ -84,7 +84,6 @@ impl Repository {
     ) -> anyhow::Result<Option<Notification>> {
         let results = BareAffectedLine::lines_affected_in_the_future(self).await?;
         let affected_lines = results.values().flatten().collect_vec();
-
         self.directly_affected_subscriber_notification(subscriber_id, location_id, &affected_lines)
             .await
     }
@@ -103,6 +102,7 @@ impl Repository {
             searcheable_candidates,
             mapping_of_line_to_url,
         } = Mapping::generate(affected_lines);
+
         let primary_location = sqlx::query_as::<_, DbLocationSearchResults>(
             "
             SELECT * FROM location.search_specific_location_primary_text($1::text[], $2::uuid)

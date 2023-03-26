@@ -66,6 +66,15 @@ impl NotifySubscribersOfAffectedAreas for Notifier {
 }
 
 impl Notifier {
+    pub fn new(
+        subscriber_repo: Arc<dyn SubscriberRepo>,
+        subscriber_delivery_strategies: Arc<dyn GetPreferredDeliveryStrategies>,
+    ) -> Self {
+        Self {
+            subscriber_repo,
+            subscriber_delivery_strategies,
+        }
+    }
     async fn notify_affected_subscribers(
         &self,
         url: Url,

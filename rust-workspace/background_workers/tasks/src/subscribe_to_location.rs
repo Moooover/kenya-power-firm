@@ -109,12 +109,11 @@ pub async fn fetch_and_subscribe_to_locations(
     let direct_notification = REPO
         .get()
         .await
-        .subscriber_directly_affected(subscriber, EntityLocationId::from(id))
+        .subscriber_directly_affected(subscriber, location_id)
         .await
         .map_err(|err| TaskError::UnexpectedError(err.to_string()))?;
 
     let subscriber_directly_affected = direct_notification.is_some();
-
     if let Some(notification) = direct_notification {
         let _ = task
             .request

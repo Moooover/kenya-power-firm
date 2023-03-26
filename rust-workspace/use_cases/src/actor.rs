@@ -9,8 +9,8 @@ use uuid::Uuid;
 
 #[derive(Copy, Clone, Hash, Eq, PartialEq, Debug, Deserialize)]
 pub enum Permission {
-    #[serde(rename = "import:affected_areas")]
-    ImportAffectedAreas,
+    #[serde(rename = "import:affected_regions")]
+    ImportAffectedRegions,
 }
 
 pub struct Permissions {

@@ -1,10 +1,9 @@
 use anyhow::Context;
-use celery::prelude::Task;
+use celery::{prelude::Task, task::TaskResultExt};
 use celery::{prelude::TaskError, task::TaskResult};
 use secrecy::ExposeSecret;
 use serde::{Deserialize, Serialize};
 use shared_kernel::http_client::HttpClient;
-use sqlx_postgres::cache::location_search::LocationSearchApiResponse;
 use sqlx_postgres::cache::location_search::StatusCode;
 use url::Url;
 
@@ -16,6 +15,37 @@ use crate::{
     configuration::{REPO, SETTINGS_CONFIG},
     utils::callbacks::failure_callback,
 };
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct LocationSearchApiResponsePrediction {
+    pub description: String,
+    pub place_id: Option<String>,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct LocationSearchApiResponse {
+    status: StatusCode,
+    pub predictions: Vec<LocationSearchApiResponsePrediction>,
+    error_message: Option<String>,
+}
+
+impl LocationSearchApiResponse {
+    fn is_cacheable(&self) -> bool {
+        self.status.is_cacheable()
+    }
+
+    fn remove_invalid_predictions(self) -> Self {
+        let predictions = self
+            .predictions
+            .into_iter()
+            .filter(|prediction| prediction.place_id.is_some())
+            .collect::<Vec<_>>();
+        Self {
+            predictions,
+            ..self
+        }
+    }
+}
 
 pub fn generate_search_url(text: String) -> anyhow::Result<Url> {
     let search_path = "/place/queryautocomplete/json";
@@ -54,17 +84,23 @@ pub async fn search_locations_by_text(task: &Self, text: String) -> TaskResult<(
         return Task::retry_with_countdown(task, 1);
     }
 
-    let api_response = HttpClient::get_json::<serde_json::Value>(url.clone())
+    let api_response = HttpClient::get_json::<LocationSearchApiResponse>(url.clone())
         .await
-        .map_err(|err| TaskError::ExpectedError(format!("{err}")))?;
+        .map_err(|err| TaskError::ExpectedError(err.to_string()))?;
 
-    let response = serde_json::from_value::<LocationSearchApiResponse>(api_response.clone())
-        .map_err(|err| TaskError::ExpectedError(format!("{err}")))?;
+    let response = api_response.remove_invalid_predictions();
+
+    let api_response = serde_json::to_string(&response)
+        .with_unexpected_err(|| "Failed to convert api_response to string")?;
+
+    let api_response = serde_json::from_str(&api_response)
+        .with_unexpected_err(|| "Failed to convert api_response to JSON value")?;
+
     if response.is_cacheable() {
         return repo
             .set_cached_text_search_response(&url, &api_response)
             .await
-            .map_err(|err| TaskError::UnexpectedError(format!("{err}")));
+            .map_err(|err| TaskError::UnexpectedError(err.to_string()));
     }
 
     Err(TaskError::UnexpectedError(format!(
