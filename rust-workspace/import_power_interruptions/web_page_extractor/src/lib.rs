@@ -2,6 +2,7 @@ pub mod pdf_extractor;
 
 use anyhow::Context;
 use async_trait::async_trait;
+use chrono::{Datelike, NaiveDate, Utc};
 use lazy_static::lazy_static;
 use std::collections::HashMap;
 use std::error::Error;
@@ -58,13 +59,21 @@ impl WebPageExtractor {
                     .expect("PDF_LINKS_REGEX to compile");
         }
 
+        let this_year = Utc::now().year().to_string();
+
         let page_content = self.get_page_contents().await?;
-        PDF_LINKS_REGEX
+        let urls = PDF_LINKS_REGEX
             .find_iter(&page_content)
             .into_iter()
             .map(|a_match| Url::parse(a_match.as_str()))
             .collect::<Result<Vec<_>, _>>()
-            .context("Invalid URL")
+            .context("Invalid URL")?;
+
+        let this_years_pdf_urls = urls
+            .into_iter()
+            .filter(|url| url.to_string().contains(&this_year))
+            .collect();
+        Ok(this_years_pdf_urls)
     }
 }
 
