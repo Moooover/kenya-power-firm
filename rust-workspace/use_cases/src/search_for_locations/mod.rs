@@ -11,6 +11,7 @@ use crate::{
 pub struct LocationApiResponse {
     pub id: ExternalLocationId,
     pub name: String,
+    pub address: String,
 }
 
 #[async_trait]

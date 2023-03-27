@@ -23,12 +23,14 @@ struct LocationSearchResponse {
 struct Location {
     name: String,
     id: String,
+    address: String,
 }
 
 impl From<LocationApiResponse> for Location {
     fn from(value: LocationApiResponse) -> Self {
         Self {
             name: value.name,
+            address: value.address,
             id: value.id.inner(),
         }
     }

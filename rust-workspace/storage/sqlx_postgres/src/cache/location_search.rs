@@ -28,9 +28,16 @@ impl StatusCode {
 }
 
 #[derive(Deserialize, Serialize, Debug)]
+pub struct StructuredFormatting {
+    pub main_text: String,
+    pub secondary_text: String,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
 pub struct LocationSearchApiResponsePrediction {
     pub description: String,
     pub place_id: String,
+    pub structured_formatting: StructuredFormatting,
 }
 
 #[derive(Deserialize, Serialize, Debug)]

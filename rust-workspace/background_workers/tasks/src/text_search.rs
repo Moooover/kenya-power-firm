@@ -18,8 +18,11 @@ use crate::{
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct LocationSearchApiResponsePrediction {
-    pub description: String,
-    pub place_id: Option<String>,
+    description: String,
+    place_id: Option<String>,
+    /// At this point, we don't need to fully define the structure of the values
+    matched_substrings: serde_json::Value,
+    structured_formatting: serde_json::Value,
 }
 
 #[derive(Deserialize, Serialize, Debug)]

@@ -32,7 +32,8 @@ impl LocationSearchApi for Producer {
                 .into_iter()
                 .map(|prediction| LocationApiResponse {
                     id: prediction.place_id.into(),
-                    name: prediction.description,
+                    name: prediction.structured_formatting.main_text,
+                    address: prediction.structured_formatting.secondary_text,
                 })
                 .collect());
         }
