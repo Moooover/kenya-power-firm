@@ -1,7 +1,7 @@
 use actix_web::{web, HttpRequest};
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
-use use_cases::search_for_locations::LocationApiResponse;
+use use_cases::search_for_locations::{LocationApiResponse, Status};
 
 use crate::{
     authentication::AuthenticatedUserInfo, errors::ApiError,
@@ -13,10 +13,29 @@ struct Request {
     term: String,
 }
 
-#[derive(Serialize)]
+impl From<Status> for StatusResponse {
+    fn from(value: Status) -> Self {
+        match value {
+            Status::Pending => StatusResponse::Pending,
+            Status::Success => StatusResponse::Success,
+            Status::Failure => StatusResponse::Failure,
+            Status::NotFound => StatusResponse::NotFound,
+        }
+    }
+}
 
+#[derive(Serialize)]
+pub enum StatusResponse {
+    Pending,
+    Success,
+    Failure,
+    NotFound,
+}
+
+#[derive(Serialize)]
 struct LocationSearchResponse {
     items: Vec<Location>,
+    status: StatusResponse,
 }
 
 #[derive(Serialize)]
@@ -47,8 +66,11 @@ async fn search_for_location(
         .search(&user, data.into_inner().term)
         .await
         .map_err(ApiError::InternalServerError)?;
-    let items = results.into_iter().map_into().collect();
-    Ok(web::Json(LocationSearchResponse { items }))
+    let items = results.responses.into_iter().map_into().collect();
+    Ok(web::Json(LocationSearchResponse {
+        items,
+        status: results.status.into(),
+    }))
 }
 
 pub fn init_routes(cfg: &mut web::ServiceConfig) {

@@ -8,15 +8,28 @@ use crate::{
     actor::Actor, authentication::subscriber_authentication::SubscriberResolverInteractor,
 };
 
+#[derive(Copy, Clone)]
+pub enum Status {
+    Pending,
+    Success,
+    Failure,
+    NotFound,
+}
+
 pub struct LocationApiResponse {
     pub id: ExternalLocationId,
     pub name: String,
     pub address: String,
 }
 
+pub struct LocationResponseWithStatus {
+    pub responses: Vec<LocationApiResponse>,
+    pub status: Status,
+}
+
 #[async_trait]
 pub trait LocationSearchApi: Send + Sync {
-    async fn search(&self, text: String) -> anyhow::Result<Vec<LocationApiResponse>>;
+    async fn search(&self, text: String) -> anyhow::Result<LocationResponseWithStatus>;
 }
 
 #[async_trait]
@@ -25,7 +38,7 @@ pub trait LocationSearchInteractor {
         &self,
         actor: &dyn Actor,
         text: String,
-    ) -> anyhow::Result<Vec<LocationApiResponse>>;
+    ) -> anyhow::Result<LocationResponseWithStatus>;
 }
 
 pub struct LocationSearchInteractorImpl {
@@ -51,7 +64,7 @@ impl LocationSearchInteractor for LocationSearchInteractorImpl {
         &self,
         actor: &dyn Actor,
         text: String,
-    ) -> anyhow::Result<Vec<LocationApiResponse>> {
+    ) -> anyhow::Result<LocationResponseWithStatus> {
         // you just need to be authenticated in order to do the search
         let _ = self.subscriber_resolver.resolve_from_actor(actor).await?;
         self.search_api.search(text).await

@@ -1,12 +1,15 @@
-use crate::actor::Actor;
 use crate::authentication::subscriber_authentication::SubscriberResolverInteractor;
 use crate::subscriber_locations::data::{LocationInput, LocationWithId};
+use crate::{actor::Actor, search_for_locations::Status};
+use anyhow::anyhow;
 use async_trait::async_trait;
 use entities::locations::ExternalLocationId;
 use entities::locations::LocationId;
 use entities::subscriptions::SubscriberId;
+use shared_kernel::string_key;
 use std::sync::Arc;
-use uuid::Uuid;
+
+string_key!(TaskId);
 
 #[async_trait]
 pub trait SubscribeToLocationInteractor: Send + Sync {
@@ -14,7 +17,9 @@ pub trait SubscribeToLocationInteractor: Send + Sync {
         &self,
         actor: &dyn Actor,
         location: LocationInput<String>,
-    ) -> anyhow::Result<()>;
+    ) -> anyhow::Result<TaskId>;
+
+    async fn progress(&self, actor: &dyn Actor, task_id: TaskId) -> anyhow::Result<Status>;
 }
 
 #[async_trait]
@@ -57,7 +62,9 @@ pub trait LocationSubscriber: Send + Sync {
         &self,
         location: LocationInput<ExternalLocationId>,
         subscriber: SubscriberId,
-    ) -> anyhow::Result<()>;
+    ) -> anyhow::Result<TaskId>;
+
+    async fn progress(&self, task_id: TaskId) -> anyhow::Result<Status>;
 }
 
 #[async_trait]
@@ -66,7 +73,7 @@ impl SubscribeToLocationInteractor for SubscribeToLocationImpl {
         &self,
         actor: &dyn Actor,
         location: LocationInput<String>,
-    ) -> anyhow::Result<()> {
+    ) -> anyhow::Result<TaskId> {
         let id = self.subscriber_resolver.resolve_from_actor(actor).await?;
         let location = LocationInput {
             id: ExternalLocationId::new(location.id),
@@ -79,5 +86,11 @@ impl SubscribeToLocationInteractor for SubscribeToLocationImpl {
         self.location_subscriber
             .subscribe_to_location(location, id)
             .await
+    }
+
+    async fn progress(&self, actor: &dyn Actor, task_id: TaskId) -> anyhow::Result<Status> {
+        // we just want to ensure that the user is valid
+        let _ = self.subscriber_resolver.resolve_from_actor(actor).await?;
+        self.location_subscriber.progress(task_id).await
     }
 }

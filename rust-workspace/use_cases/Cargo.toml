@@ -18,6 +18,8 @@ serde = {  version= "1.0.152", features=["derive"] }
 serde_json = { version = "1.0.93" }
 tokio = { version = "1.25.0", features = ["full"] }
 
+shared_kernel = { path = "../shared_kernel" }
+
 [dependencies.uuid]
 version = "1.3.0"
 features = ["v4"]

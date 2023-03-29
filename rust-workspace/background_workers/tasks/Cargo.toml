@@ -22,6 +22,8 @@ url = "2.3.1"
 async_once = "0.2.6"
 lazy_static = "1.4.0"
 futures = "0.3"
+strum = { version = "0.24", features = ["derive"] }
+strum_macros = "0.24"
 entities = { path = "../../entities" }
 shared_kernel = { path = "../../shared_kernel" }
 use_cases = { path = "../../use_cases" }

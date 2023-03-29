@@ -12,16 +12,18 @@ use sqlx_postgres::locations::insert_location::LocationInput;
 use url::Url;
 
 use crate::{
-    send_notifications::email::send_email_notification, utils::get_token::get_token_count,
+    send_notifications::email::send_email_notification,
+    utils::{get_token::get_token_count, progress_tracking::generate_key},
 };
 use entities::locations::LocationId;
 use redis_client::client::CLIENT;
 use serde::Deserialize;
 use serde::Serialize;
 use sqlx_postgres::cache::location_search::StatusCode;
+use use_cases::subscriber_locations::subscribe_to_location::TaskId;
 use uuid::Uuid;
 
-use crate::constants::GOOGLE_API_TOKEN_KEY;
+use crate::utils::progress_tracking::set_progress_status;
 use crate::{
     configuration::{REPO, SETTINGS_CONFIG},
     utils::callbacks::failure_callback,
@@ -44,6 +46,7 @@ pub async fn get_and_subscribe_to_nearby_location(
     subscriber_primary_location_id: Uuid,
     subscriber_id: SubscriberId,
     subscriber_directly_affected: bool,
+    task_id: TaskId,
 ) -> TaskResult<()> {
     let repo = REPO.get().await;
     let id = try_get_location_from_cache(&external_id).await?;
@@ -71,6 +74,8 @@ pub async fn get_and_subscribe_to_nearby_location(
         .await
         .map_err(|err| TaskError::UnexpectedError(format!("{err}")))?;
 
+    decr_count_by_one(task_id).await?;
+
     if let Some(notification) = notification {
         let _ = task
             .request
@@ -83,13 +88,28 @@ pub async fn get_and_subscribe_to_nearby_location(
     Ok(())
 }
 
+async fn decr_count_by_one(task_id: TaskId) -> TaskResult<()> {
+    let key = generate_key(task_id.as_ref());
+    let client = CLIENT.get().await;
+
+    client
+        .decr_count(&key, 1)
+        .await
+        .map_err(|err| TaskError::UnexpectedError(err.to_string()))
+}
+
 #[celery::task(max_retries = 200, bind = true, retry_for_unexpected = false, on_failure = failure_callback)]
 pub async fn fetch_and_subscribe_to_locations(
     task: &Self,
     primary_location: ExternalLocationId,
     nearby_locations: Vec<ExternalLocationId>,
     subscriber: SubscriberId,
+    task_id: TaskId,
 ) -> TaskResult<()> {
+    let total_count_locations = nearby_locations.len() + 1;
+    set_progress_status(task_id.as_ref(), total_count_locations, |_| Ok(()))
+        .await
+        .map_err(|err| TaskError::UnexpectedError(err.to_string()))?;
     let id = try_get_location_from_cache(&primary_location).await?;
     let location_id = match id {
         None => {
@@ -113,6 +133,8 @@ pub async fn fetch_and_subscribe_to_locations(
         .await
         .map_err(|err| TaskError::UnexpectedError(err.to_string()))?;
 
+    decr_count_by_one(task_id.clone()).await?;
+
     let subscriber_directly_affected = direct_notification.is_some();
     if let Some(notification) = direct_notification {
         let _ = task
@@ -133,6 +155,7 @@ pub async fn fetch_and_subscribe_to_locations(
                     id,
                     subscriber,
                     subscriber_directly_affected,
+                    task_id.clone(),
                 ))
         })
         .collect();
