@@ -5,6 +5,9 @@ use search_for_locations::{
     LocationSearchApi, LocationSearchInteractor, LocationSearchInteractorImpl,
 };
 use subscriber_locations::{
+    delete_locations_subscribed_to::{
+        DeleteLocationsSubscribedToImpl, DeleteLocationsSubscribedToInteractor,
+    },
     list_subscribed_locations::{ListSubscribedLocationsImpl, ListSubscribedLocationsInteractor},
     subscribe_to_location::{
         LocationSubscriber, SubscribeToLocationImpl, SubscribeToLocationInteractor,
@@ -28,6 +31,7 @@ pub trait App {
     fn location_searcher(&self) -> &dyn LocationSearchInteractor;
     fn subscribe_to_location(&self) -> &dyn SubscribeToLocationInteractor;
     fn list_locations_subcribed_to(&self) -> &dyn ListSubscribedLocationsInteractor;
+    fn delete_subscribed_location(&self) -> &dyn DeleteLocationsSubscribedToInteractor;
     fn import_planned_blackouts(&self) -> &dyn ImportPlannedBlackoutsInteractor;
 }
 
@@ -36,6 +40,7 @@ pub struct AppImpl {
     location_searcher_interactor: Arc<dyn LocationSearchInteractor>,
     locations_subscribed_to_interactor: Arc<dyn ListSubscribedLocationsInteractor>,
     subscribe_to_location_interactor: Arc<dyn SubscribeToLocationInteractor>,
+    delete_subscribed_location: Arc<dyn DeleteLocationsSubscribedToInteractor>,
     import_planned_blackouts_interactor: Arc<dyn ImportPlannedBlackoutsInteractor>,
 }
 
@@ -58,6 +63,10 @@ impl App for AppImpl {
 
     fn import_planned_blackouts(&self) -> &dyn ImportPlannedBlackoutsInteractor {
         self.import_planned_blackouts_interactor.as_ref()
+    }
+
+    fn delete_subscribed_location(&self) -> &dyn DeleteLocationsSubscribedToInteractor {
+        self.delete_subscribed_location.as_ref()
     }
 }
 
@@ -96,14 +105,20 @@ impl AppImpl {
         let import_planned_blackouts_interactor =
             ImportAffectedAreas::new(repository.clone(), notification);
 
-        let locations_subscribed_to_interactor =
-            ListSubscribedLocationsImpl::new(repository, subscriber_authentication_checker);
+        let locations_subscribed_to_interactor = ListSubscribedLocationsImpl::new(
+            repository.clone(),
+            subscriber_authentication_checker.clone(),
+        );
+
+        let delete_subscribed_locations =
+            DeleteLocationsSubscribedToImpl::new(repository, subscriber_authentication_checker);
 
         Self {
             authentication: Arc::new(authentication_interactor),
             locations_subscribed_to_interactor: Arc::new(locations_subscribed_to_interactor),
             location_searcher_interactor: Arc::new(location_searcher_interactor),
             subscribe_to_location_interactor: Arc::new(subscribe_to_locations_interactor),
+            delete_subscribed_location: Arc::new(delete_subscribed_locations),
             import_planned_blackouts_interactor: Arc::new(import_planned_blackouts_interactor),
         }
     }

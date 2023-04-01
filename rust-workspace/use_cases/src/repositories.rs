@@ -4,7 +4,7 @@ use crate::{
     },
     subscriber_locations::{
         list_subscribed_locations::LocationsSubscribedRepo,
-        subscribe_to_location::SubscribeToLocationRepo,
+        subscribe_to_location::SubscribeToLocationRepo, delete_locations_subscribed_to::DeleteSubscribedLocationsRepo,
     },
 };
 use crate::{
@@ -19,6 +19,7 @@ pub trait Repository:
     + SubscribeToLocationRepo
     + SubscriberRepo
     + LocationsSubscribedRepo
+    + DeleteSubscribedLocationsRepo
     + Clone
 {
 }
@@ -30,6 +31,7 @@ impl<T> Repository for T where
         + SubscriberResolverRepo
         + SubscribeToLocationRepo
         + LocationsSubscribedRepo
+        + DeleteSubscribedLocationsRepo
         + SubscriberRepo
 {
 }
