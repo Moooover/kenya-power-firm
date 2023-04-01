@@ -1,5 +1,6 @@
 use actix_web::web;
 
+pub mod delete_location;
 mod list_locations_subscribed_to;
 pub mod search_locations;
 pub mod subscribe_to_location;
@@ -9,6 +10,7 @@ pub fn init_routes(cfg: &mut web::ServiceConfig) {
         web::scope("/locations")
             .configure(search_locations::init_routes)
             .configure(subscribe_to_location::init_routes)
-            .configure(list_locations_subscribed_to::init_routes),
+            .configure(list_locations_subscribed_to::init_routes)
+            .configure(delete_location::init_routes),
     );
 }
