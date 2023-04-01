@@ -11,3 +11,5 @@ location:
 email:
   host: "https://api.courier.com/send"
   auth_token: ""
+redis:
+  host: "redis://127.0.0.1:6379/"

@@ -17,6 +17,15 @@ impl<T: Clone> LocationInput<T> {
     }
 }
 
+pub struct AdjuscentLocation {
+    pub id: LocationId,
+    pub name: String,
+    pub address: String,
+}
+
 pub struct LocationWithId {
     pub id: LocationId,
+    pub name: String,
+    pub address: String,
+    pub adjuscent_locations: Vec<AdjuscentLocation>,
 }

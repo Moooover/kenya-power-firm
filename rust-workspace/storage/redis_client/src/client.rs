@@ -1,11 +1,23 @@
 use async_once::AsyncOnce;
 use lazy_static::lazy_static;
 use redis::aio::MultiplexedConnection;
+use serde::Deserialize;
+use shared_kernel::configuration::config;
 
+#[derive(Deserialize)]
+struct Settings {
+    redis: RedisConfig,
+}
+
+#[derive(Deserialize)]
+struct RedisConfig {
+    host: String,
+}
 lazy_static! {
+    static ref SETTINGS: RedisConfig = config::<Settings>().expect("settings to be defined").redis;
     pub static ref CLIENT: AsyncOnce<Client> = AsyncOnce::new(async {
         Client {
-            conn: redis::Client::open("redis://127.0.0.1:6379/")
+            conn: redis::Client::open(SETTINGS.host.as_ref())
                 .unwrap()
                 .get_multiplexed_tokio_connection()
                 .await

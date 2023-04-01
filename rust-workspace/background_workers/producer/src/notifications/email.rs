@@ -1,4 +1,4 @@
-use anyhow::{bail, Context};
+use anyhow::bail;
 use async_trait::async_trait;
 use celery::Celery;
 use entities::notifications::{DeliveryStrategy, Notification};

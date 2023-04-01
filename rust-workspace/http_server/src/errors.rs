@@ -1,11 +1,9 @@
 use actix_web::{
     error,
     http::{header::ContentType, StatusCode},
-    App, HttpResponse,
+    HttpResponse,
 };
-use serde::Serialize;
-use serde_json::{json, to_string_pretty};
-use std::fmt::{Display, Formatter};
+use serde_json::json;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -25,6 +23,7 @@ impl error::ResponseError for ApiError {
     }
 
     fn error_response(&self) -> HttpResponse {
+        // TODO: Tracing
         println!("{self:?}");
         let err_json = json!({ "error": self.to_string() });
         HttpResponse::build(self.status_code())

@@ -1,4 +1,4 @@
-use actix_web::{web, HttpRequest, HttpResponse};
+use actix_web::{web, HttpRequest};
 use serde::{Deserialize, Serialize};
 use use_cases::subscriber_locations::data::LocationInput;
 

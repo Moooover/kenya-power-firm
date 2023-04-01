@@ -1,0 +1,5 @@
+redis:
+  host: "redis://127.0.0.1:6379/"
+external_apis:
+  email: 100
+  location: 100

@@ -21,6 +21,7 @@ url = { version = "2.3.1", features = ["serde"] }
 producer = { path = "../background_workers/producer" }
 use_cases = { path = "../use_cases" }
 sqlx_postgres = { path = "../storage/sqlx_postgres" }
+shared_kernel = { path = "../shared_kernel" }
 itertools = "0.10.5"
 
 

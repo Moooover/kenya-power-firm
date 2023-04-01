@@ -1,9 +1,7 @@
 use crate::repository::Repository;
 use anyhow::Context;
-use async_trait::async_trait;
 use entities::locations::ExternalLocationId;
 use entities::locations::LocationId;
-use std::collections::HashMap;
 
 impl Repository {
     pub async fn find_location_id(

@@ -7,7 +7,7 @@ use std::sync::Arc;
 use uuid::Uuid;
 
 #[async_trait]
-pub trait ListSubscribedLocations: Send + Sync {
+pub trait ListSubscribedLocationsInteractor: Send + Sync {
     async fn list(&self, actor: &dyn Actor) -> anyhow::Result<Vec<LocationWithId>>;
 }
 
@@ -34,7 +34,7 @@ pub trait LocationsSubscribedRepo: Send + Sync {
 }
 
 #[async_trait]
-impl ListSubscribedLocations for ListSubscribedLocationsImpl {
+impl ListSubscribedLocationsInteractor for ListSubscribedLocationsImpl {
     async fn list(&self, actor: &dyn Actor) -> anyhow::Result<Vec<LocationWithId>> {
         let id = self.subscriber_resolver.resolve_from_actor(actor).await?;
 

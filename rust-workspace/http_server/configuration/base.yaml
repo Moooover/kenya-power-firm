@@ -11,3 +11,7 @@ location:
 email:
   host: "https://api.courier.com/send"
   auth_token: ""
+auth:
+  jwks: "blackouts-development.eu.auth0.com"
+  authorities: "blackouts-development.eu.auth0.com"
+  audiences: "https://blackouts.co.ke, https://blackouts-development.eu.auth0.com/userinfo"

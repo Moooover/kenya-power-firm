@@ -8,10 +8,7 @@ use chrono::{DateTime, Utc};
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use url::Url;
-use use_cases::{
-    authentication::SubscriberDetailsInput,
-    import_affected_areas::{Area, County, ImportInput, Region},
-};
+use use_cases::import_affected_areas::{Area, County, ImportInput, Region};
 
 #[derive(Serialize, Deserialize)]
 struct AreaRequest {

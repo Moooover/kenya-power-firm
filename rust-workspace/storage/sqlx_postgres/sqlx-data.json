@@ -1,5 +1,37 @@
 {
   "db": "PostgreSQL",
+  "0ca41a01a99b3356ebfccc9669fbcbb9b563437e06dfb5ff7dedfce470e5bb1f": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "initial_location_id",
+          "ordinal": 1,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "adjuscent_location_id",
+          "ordinal": 2,
+          "type_info": "Uuid"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "UuidArray"
+        ]
+      }
+    },
+    "query": "\n            SELECT id, initial_location_id, adjuscent_location_id FROM location.adjuscent_locations WHERE initial_location_id = ANY($1)\n            "
+  },
   "1633c34c3f83b52c72a5b664e8f1284b347dc1134b9c008f5d73647682aaa698": {
     "describe": {
       "columns": [],
@@ -261,6 +293,32 @@
       }
     },
     "query": "\n            INSERT INTO location.area(name, county_id)\n            SELECT * FROM UNNEST($1::text[], $2::uuid[]) ON CONFLICT DO NOTHING\n            "
+  },
+  "4f85bf587c72c807edca3ab0b20a98fcde34d9003b2700e5c5f52b83ab5171a6": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "location_id",
+          "ordinal": 1,
+          "type_info": "Uuid"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      }
+    },
+    "query": "\n            SELECT id, location_id FROM location.subscriber_locations WHERE subscriber_id = $1\n            "
   },
   "56ef9728eb07a24dd60a5d054e44e05134dbd853ac11a00bcaca492082b78ed8": {
     "describe": {
@@ -584,6 +642,38 @@
       }
     },
     "query": "\n            INSERT INTO location.locations (name, external_id, address, sanitized_address, external_api_response) \n            VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING\n            "
+  },
+  "e5db8d70d73ef7941f83ec7547160fc25512fd47b116d433b96eef42458fd5bf": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "address",
+          "ordinal": 2,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "UuidArray"
+        ]
+      }
+    },
+    "query": "\n            SELECT id, name, address FROM location.locations WHERE id = ANY($1)\n            "
   },
   "f3ac55e2b438d6ca309cb1fe35a2ebc56ecd131c6985e2090391c4e9285519f3": {
     "describe": {

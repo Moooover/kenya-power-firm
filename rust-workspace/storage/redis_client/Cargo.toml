@@ -10,7 +10,10 @@ anyhow = "1.0.69"
 
 redis = { version = "0.22", features = ["tokio-comp"] }
 tokio = { version = "1.26.0", features = ["full"] }
+serde = {  version= "1.0.152", features=["derive"] }
+secrecy = { version = "0.8", features = ["serde"] }
 
+shared_kernel = { path = "../../shared_kernel" }
 async-trait = "0.1.67"
 async_once = "0.2.6"
 lazy_static = "1.4.0"

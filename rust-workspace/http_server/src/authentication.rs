@@ -2,18 +2,38 @@ use crate::errors::ApiError;
 use actix_web::http::header::Header;
 use actix_web::HttpRequest;
 use actix_web_httpauth::headers::authorization;
-use anyhow::{anyhow, Context};
+use anyhow::Context;
+use itertools::Itertools;
 use jsonwebtoken::jwk::AlgorithmParameters;
 use jsonwebtoken::{decode, decode_header, jwk, Algorithm, DecodingKey, Validation};
 use lazy_static::lazy_static;
 use serde::Deserialize;
 use serde::Serialize;
-use std::collections::HashSet;
-use use_cases::actor::{Actor, ExternalId, Permissions, SubscriberExternalId};
+use shared_kernel::configuration::config;
+use use_cases::actor::{Actor, Permissions, SubscriberExternalId};
+
+#[derive(Deserialize)]
+struct AuthSettings {
+    jwks: String,
+    authorities: String,
+    audiences: String,
+}
+
+#[derive(Deserialize)]
+struct Settings {
+    auth: AuthSettings,
+}
 
 lazy_static! {
-    static ref JWKS: String = "blackouts-development.eu.auth0.com".to_string();
-    static ref AUTHORITIES: Vec<String> = vec!["blackouts-development.eu.auth0.com".to_string()];
+    static ref SETTINGS: AuthSettings = config::<Settings>()
+        .expect("Failed to unwrap settings")
+        .auth;
+    static ref JWKS: String = SETTINGS.jwks.to_owned();
+    static ref AUTHORITIES: Vec<String> = SETTINGS
+        .authorities
+        .split(',')
+        .map(|audience| audience.trim().to_owned())
+        .collect_vec();
     static ref JWKS_SET: jwk::JwkSet = {
         let uri = &format!("https://{}/{}", JWKS.as_str(), ".well-known/jwks.json");
         let res: serde_json::Value = ureq::get(uri)
@@ -23,10 +43,11 @@ lazy_static! {
             .expect("Parsed into json");
         serde_json::from_value(res).unwrap()
     };
-    static ref AUDIENCES: Vec<String> = vec![
-        "https://blackouts.co.ke".to_string(),
-        "https://blackouts-development.eu.auth0.com/userinfo".to_string()
-    ];
+    static ref AUDIENCES: Vec<String> = SETTINGS
+        .audiences
+        .split(',')
+        .map(|audience| audience.trim().to_owned())
+        .collect_vec();
 }
 
 #[derive(Debug, Serialize, Deserialize)]

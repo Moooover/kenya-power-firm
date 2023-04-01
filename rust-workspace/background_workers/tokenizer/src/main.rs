@@ -4,6 +4,7 @@ use redis::aio::ConnectionLike;
 use redis::{AsyncCommands, RedisResult};
 use serde::de::Unexpected::Option;
 use serde::Deserialize;
+use shared_kernel::configuration::config;
 use std::time::Duration;
 use tokio::time::interval;
 
@@ -74,16 +75,42 @@ impl ExternalApi {
     }
 }
 
+#[derive(Deserialize)]
+struct RedisSettings {
+    host: String,
+}
+
+#[derive(Deserialize)]
+struct ExternalApiRateLimits {
+    email: usize,
+    location: usize,
+}
+
+#[derive(Deserialize)]
+struct Settings {
+    redis: RedisSettings,
+    external_apis: ExternalApiRateLimits,
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
-    let client = redis::Client::open("redis://127.0.0.1:6379/")?
+    let settings = config::<Settings>()?;
+    let redis_host = settings.redis.host;
+
+    let client = redis::Client::open(redis_host.as_str())?
         .get_multiplexed_tokio_connection()
         .await?;
-
-    let apis = vec![ExternalApi {
-        rate_per_second: 100.0,
-        name: "location".to_string(),
-    }];
+    let external_apis = settings.external_apis;
+    let apis = vec![
+        ExternalApi {
+            name: "email".to_string(),
+            rate_per_second: external_apis.email as f64,
+        },
+        ExternalApi {
+            name: "location".to_string(),
+            rate_per_second: external_apis.location as f64,
+        },
+    ];
 
     let fut: Vec<_> = apis
         .iter()
