@@ -103,7 +103,7 @@ impl LocationsSubscribedRepo for Repository {
                             .collect_vec();
 
                         LocationWithId {
-                            id: primary_location.id.into(),
+                            id: primary_location.location_id.into(),
                             name: location.name.to_owned(),
                             address: location.address.to_owned(),
                             adjuscent_locations,

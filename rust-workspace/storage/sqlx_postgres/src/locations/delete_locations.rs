@@ -13,6 +13,7 @@ impl DeleteSubscribedLocationsRepo for Repository {
     ) -> anyhow::Result<()> {
         let subscriber_id = subscriber_id.inner();
         let location_id = location_id.inner();
+        
         let _ = sqlx::query!(
             "DELETE FROM location.subscriber_locations 
             WHERE subscriber_id = $1 AND location_id = $2",
