@@ -32,6 +32,19 @@
     },
     "query": "\n            SELECT id, initial_location_id, adjuscent_location_id FROM location.adjuscent_locations WHERE initial_location_id = ANY($1)\n            "
   },
+  "11b4823b9e2d3c95df0746830c2a91e63505d45c70500e0311fa22704bb12d36": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Uuid",
+          "Uuid"
+        ]
+      }
+    },
+    "query": "DELETE FROM location.subscriber_locations \n            WHERE subscriber_id = $1 AND location_id = $2"
+  },
   "1633c34c3f83b52c72a5b664e8f1284b347dc1134b9c008f5d73647682aaa698": {
     "describe": {
       "columns": [],
@@ -561,6 +574,19 @@
       }
     },
     "query": "\n            SELECT id FROM location.subscriber_locations WHERE subscriber_id = $1 AND location_id = $2\n            "
+  },
+  "cd10a8713cf3407b011a022c645ff763e0e17eb05da163366554138c2fdd66c0": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Uuid",
+          "Uuid"
+        ]
+      }
+    },
+    "query": "\n            DELETE FROM location.adjuscent_locations a \n            WHERE a.adjuscent_location_id = $1 \n            AND a.initial_location_id IN (select id FROM location.subscriber_locations WHERE subscriber_id = $2);\n            "
   },
   "cf434383b4f134f006bb5b9da0bf96938d17f33ca4fe572ef119a7df83265660": {
     "describe": {
