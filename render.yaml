@@ -14,12 +14,39 @@ services:
     dockerfilePath: ./background_workers/consumer/Dockerfile
     autoDeploy: false
     envVars:
-      - fromGroup: redis-key
-      - fromGroup: pg-db-keys
+      - key: APP_REDIS__HOST
+        fromService:
+          name: redis-service
+          type: redis
+          property: connectionString
+
       - key: APP_LOCATION__API_KEY
         sync: false
       - key: APP_EMAIL__AUTH_TOKEN
         sync: false
+
+      - key: APP_DATABASE__HOST
+        fromDatabase:
+          name: prod
+          property: host
+      - key: APP_DATABASE__PORT
+        fromDatabase:
+          name: prod
+          property: port
+      - key: APP_DATABASE__USERNAME
+        fromDatabase:
+          name: prod
+          property: user
+      - key: APP_DATABASE__PASSWORD
+        fromDatabase:
+          name: prod
+          property: password
+      - key: APP_DATABASE__DATABASE_NAME
+        fromDatabase:
+          name: prod
+          property: database
+      - key: APP_DATABASE__REQUIRE_SSL
+        value: true
 databases:
   - name: prod
     region: frankfurt
@@ -32,35 +59,3 @@ databases:
     postgresMajorVersion: 15
 
 
-envVarGroups:
-  - name: pg-db-keys
-    envVars:
-    - key: APP_DATABASE__HOST
-      fromDatabase:
-        name: prod
-        property: host
-    - key: APP_DATABASE__PORT
-      fromDatabase:
-        name: prod
-        property: port
-    - key: APP_DATABASE__USERNAME
-      fromDatabase:
-        name: prod
-        property: user
-    - key: APP_DATABASE__PASSWORD
-      fromDatabase:
-        name: prod
-        property: password
-    - key: APP_DATABASE__DATABASE_NAME
-      fromDatabase:
-        name: prod
-        property: database
-    - key: APP_DATABASE__REQUIRE_SSL
-      value: true
-  - name: redis-key
-    envVars:
-      - key: APP_REDIS__HOST
-        fromService:
-          name: redis-service
-          type: redis
-          property: connectionString
