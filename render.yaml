@@ -11,7 +11,7 @@ services:
     name: consumer
     region: frankfurt
     env: docker
-    dockerfilePath: ./rust-workspace/background_workers/consumer/Dockerfile
+    dockerfilePath: ./Dockerfile
     rootDir: ./rust-workspace/background_workers/consumer
     autoDeploy: false
     envVars:
