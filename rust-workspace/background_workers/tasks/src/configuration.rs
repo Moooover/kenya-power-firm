@@ -18,9 +18,15 @@ pub struct EmailConfig {
 }
 
 #[derive(Debug, Deserialize)]
+pub struct RedisSettings {
+    pub host: String,
+}
+
+#[derive(Debug, Deserialize)]
 pub struct Settings {
     pub location: LocationSearcherConfig,
     pub email: EmailConfig,
+    pub redis: RedisSettings,
 }
 
 impl Settings {
