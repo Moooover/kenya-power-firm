@@ -11,8 +11,8 @@ services:
     name: consumer
     region: frankfurt
     env: docker
-    dockerfilePath: ./Dockerfile
-    rootDir: ./rust-workspace/background_workers/consumer
+    dockerfilePath: ./docker/consumer.Dockerfile
+    rootDir: ./rust-workspace
     autoDeploy: false
     envVars:
       - key: APP_REDIS__HOST
