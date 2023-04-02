@@ -12,6 +12,7 @@ services:
     region: frankfurt
     env: docker
     dockerfilePath: ./background_workers/consumer/Dockerfile
+    dockerContext: ./background_workers/consumer
     autoDeploy: false
     envVars:
       - key: APP_REDIS__HOST
