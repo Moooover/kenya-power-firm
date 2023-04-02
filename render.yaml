@@ -13,7 +13,7 @@ services:
     env: docker
     dockerfilePath: ./docker/consumer.Dockerfile
     rootDir: ./rust-workspace
-    autoDeploy: false
+    autoDeploy: true
     envVars:
       - key: APP_REDIS__HOST
         fromService:
