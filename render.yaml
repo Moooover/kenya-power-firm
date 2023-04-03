@@ -1,5 +1,4 @@
 services:
-  # Redis 3 - no external connections allowed
   - type: redis
     name: redis-service
     region: frankfurt
@@ -84,6 +83,42 @@ services:
         sync: false
       - key: APP_EMAIL__ADMIN_EMAIL
         sync: false
+
+  - type: web
+    name: http_server
+    region: frankfurt
+    env: rust
+    buildCommand: cargo build --release --bin http_server
+    startCommand: cargo run --release --bin http_server
+    rootDir: ./rust-workspace
+    autoDeploy: true
+    envVars:
+      - key: APP_LOCATION__API_KEY
+        sync: false
+      - key: APP_EMAIL__AUTH_TOKEN
+        sync: false
+      - key: APP_DATABASE__HOST
+        fromDatabase:
+          name: prod
+          property: host
+      - key: APP_DATABASE__PORT
+        fromDatabase:
+          name: prod
+          property: port
+      - key: APP_DATABASE__USERNAME
+        fromDatabase:
+          name: prod
+          property: user
+      - key: APP_DATABASE__PASSWORD
+        fromDatabase:
+          name: prod
+          property: password
+      - key: APP_DATABASE__DATABASE_NAME
+        fromDatabase:
+          name: prod
+          property: database
+      - key: APP_DATABASE__REQUIRE_SSL
+        value: true
 
 databases:
   - name: prod
