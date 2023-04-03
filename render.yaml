@@ -72,11 +72,10 @@ services:
   - type: cron
     name: dry_run_import
     region: frankfurt
-    env: rust
-    buildCommand: cargo build --release --bin dry_run
-    startCommand: cargo run --release --bin dry_run
+    env: docker
+    dockerfilePath: ./docker/dry_run.Dockerfile
     rootDir: ./rust-workspace
-    schedule: "0 3 * * *"
+    schedule: "0 6 * * *"
     autoDeploy: true
     envVars:
       - key: APP_EMAIL__AUTH_TOKEN

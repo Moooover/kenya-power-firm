@@ -63,6 +63,7 @@ async fn main() {
     let extractor = WebPageExtractor::new(importer, file_ops, Arc::new(pdf_extractor));
 
     if let Err(err) = extractor.run(&DryRunActor {}).await {
+        println!("{err:?}");
         if let Err(err) = send_alert(err).await {
             println!("{}", err)
         }
