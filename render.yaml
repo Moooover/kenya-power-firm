@@ -85,7 +85,7 @@ services:
         sync: false
 
   - type: web
-    name: http_server
+    name: blackouts_api
     region: frankfurt
     env: rust
     buildCommand: cargo build --release --bin http_server
@@ -124,8 +124,6 @@ services:
           property: database
       - key: APP_DATABASE__REQUIRE_SSL
         value: true
-    domains:
-      - blackouts-api.render.com
 databases:
   - name: prod
     region: frankfurt
