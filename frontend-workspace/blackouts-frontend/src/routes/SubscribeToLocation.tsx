@@ -17,7 +17,7 @@ function useAutoComplete() {
 
 export default function SubscribeToLocation() {
   const { data, setSearchTerm } = useAutoComplete();
-  console.log(data);
+
   return (
     <div>
       <SearchBox />

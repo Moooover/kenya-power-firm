@@ -6,7 +6,7 @@ import {
   Route,
   Link,
 } from "react-router-dom";
-import SubscribeToLocation from "./subscribe_to_location";
+import SubscribeToLocation from "./SubscribeToLocation";
 
 export const router = createBrowserRouter([
   {

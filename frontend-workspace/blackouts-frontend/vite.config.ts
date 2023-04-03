@@ -8,7 +8,7 @@ export default defineConfig({
   plugins: [react(), splitVendorChunkPlugin()],
   server: {
     proxy: {
-      "/api": `127.0.0.1:8080`,
+      "/api": process.env.VITE_API,
     },
   },
 });
