@@ -70,6 +70,20 @@ services:
       - shared-kernel/**
       - background_workers/tokenizer/**
       - configuration/**
+  - type: cron
+    name: dry_run_import
+    region: frankfurt
+    env: rust
+    buildCommand: cargo build --release --bin dry_run
+    startCommand: cargo run --release --bin dry_run
+    rootDir: ./rust-workspace
+    autoDeploy: true
+    envVars:
+      - key: APP_EMAIL__AUTH_TOKEN
+        sync: false
+      - key: APP_EMAIL__ADMIN_EMAIL
+        sync: false
+
 databases:
   - name: prod
     region: frankfurt
