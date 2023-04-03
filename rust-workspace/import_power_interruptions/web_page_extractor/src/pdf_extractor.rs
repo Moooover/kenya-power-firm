@@ -37,7 +37,7 @@ impl PdfExtractorImpl {
     }
     async fn fetch_and_extract(&self, url: Url) -> anyhow::Result<(Url, Vec<Region>)> {
         let res = HttpClient::get_bytes(url.clone()).await?;
-        let text = resolve_text_from_file(&url, &res).await?;
+        let text = resolve_text_from_file(&res).await?;
         let regions = self.text_extractor.extract(text).await?;
 
         Ok((url, regions))
@@ -78,44 +78,10 @@ impl PdfExtractor for PdfExtractorImpl {
     }
 }
 
-async fn resolve_text_from_file(url: &Url, file_bytes: &[u8]) -> anyhow::Result<String> {
+async fn resolve_text_from_file(file_bytes: &[u8]) -> anyhow::Result<String> {
     use pdf_extract::extract_text;
-    use std::env;
-    use tokio::fs::create_dir;
-    use tokio::fs::remove_file;
-    use tokio::fs::try_exists;
-    use tokio::fs::File;
-    use tokio::fs::OpenOptions;
-    use tokio::io::AsyncWriteExt;
-    let path = env::current_dir().context("Cannot read current_dir")?;
-    {
-        let folder = format!("{}/pdf_dump", path.display());
-        println!("{folder}");
-        let exists = try_exists(folder.clone())
-            .await
-            .context("Failed to check if pdf_dump folder exists")?;
-        println!("{exists}");
-        if !exists {
-            create_dir(folder).await.context("Failed to create dir")?;
-        }
-    }
-    let normalized_url = FORWARD_SLASH.replace_all(url.as_str(), "_");
-    let file_path = format!("{}/pdf_dump/pdf_{}", path.display(), normalized_url);
-    let mut file = OpenOptions::new()
-        .read(true)
-        .write(true)
-        .create(true)
-        .open(&file_path)
-        .await
-        .context("Failed to create file")?;
-
-    file.write_all(file_bytes)
-        .await
-        .context("Failed to write pdf content to file")?;
-
-    let result = extract_text(&file_path).context("Failed to extract pdf to text")?;
-
-    tokio::spawn(delete_file(file_path));
+    use pdf_extract::*;
+    let result = extract_text_from_mem(file_bytes).context("Failed to extract pdf to text")?;
     Ok(result)
 }
 
