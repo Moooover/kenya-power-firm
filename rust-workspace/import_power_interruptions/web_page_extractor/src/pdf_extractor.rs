@@ -89,7 +89,6 @@ async fn resolve_text_from_file(url: &Url, file_bytes: &[u8]) -> anyhow::Result<
     let path = env::current_dir().context("Cannot read current_dir")?;
     let normalized_url = FORWARD_SLASH.replace_all(url.as_str(), "_");
     let file_path = format!("{}/pdf_dump/pdf-{}", path.display(), normalized_url);
-    println!("{file_path}");
     let mut file = OpenOptions::new()
         .read(true)
         .write(true)
