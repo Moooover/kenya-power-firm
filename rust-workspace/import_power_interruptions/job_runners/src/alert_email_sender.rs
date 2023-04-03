@@ -16,7 +16,7 @@ struct Settings {
 struct EmailConfig {
     host: Url,
     auth_token: Secret<String>,
-    address_to_alert: String,
+    admin_email: String,
     dry_run_template_id: String,
 }
 
@@ -51,7 +51,7 @@ pub async fn send_alert(alert_message: impl ToString) -> anyhow::Result<()> {
     let body = Root {
         message: Message {
             to: To {
-                email: EMAIL.address_to_alert.to_string(),
+                email: EMAIL.admin_email.to_string(),
             },
             template: EMAIL.dry_run_template_id.to_string(),
             data: Data {

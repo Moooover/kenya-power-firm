@@ -89,7 +89,7 @@ struct ExternalApiRateLimits {
 #[derive(Deserialize)]
 struct Settings {
     redis: RedisSettings,
-    external_apis: ExternalApiRateLimits,
+    external_api_rate_limits: ExternalApiRateLimits,
 }
 
 #[tokio::main]
@@ -100,7 +100,7 @@ async fn main() -> Result<()> {
     let client = redis::Client::open(redis_host.as_str())?
         .get_multiplexed_tokio_connection()
         .await?;
-    let external_apis = settings.external_apis;
+    let external_apis = settings.external_api_rate_limits;
     let apis = vec![
         ExternalApi {
             name: "email".to_string(),

@@ -11,9 +11,14 @@ location:
 email:
   host: "https://api.courier.com/send"
   auth_token: ""
+  dry_run_template_id: "GGAB2KK5K340DPQX46EX01DQAG4H"
 redis:
   host: "redis://127.0.0.1:6379/"
 auth:
   jwks: "blackouts-development.eu.auth0.com"
   authorities: "blackouts-development.eu.auth0.com"
   audiences: "https://blackouts.co.ke, https://blackouts-development.eu.auth0.com/userinfo"
+external_api_rate_limits:
+  email: 100
+  location: 100
+
