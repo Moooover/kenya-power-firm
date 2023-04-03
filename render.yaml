@@ -50,7 +50,7 @@ services:
   - type: worker
     name: tokenizer
     region: frankfurt
-    env: docker
+    env: rust
     buildCommand: cargo run --release tokenizer
     startCommand: cargo run --release --bin tokenizer
     rootDir: ./rust-workspace
