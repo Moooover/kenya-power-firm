@@ -83,6 +83,7 @@ services:
       - key: APP_EMAIL__ADMIN_EMAIL
         sync: false
 
+
   - type: web
     name: http_server
     region: frankfurt
