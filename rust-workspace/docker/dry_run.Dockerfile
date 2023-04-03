@@ -27,4 +27,5 @@ RUN apt-get update -y \
     && rm -rf /var/lib/apt/lists/*
 COPY --from=builder /app/target/release/dry_run dry_run
 COPY configuration configuration
+COPY pdf_dump pdf_dump
 ENTRYPOINT ["./dry_run"]
