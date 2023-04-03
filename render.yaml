@@ -11,7 +11,7 @@ services:
     name: consumer
     region: frankfurt
     env: rust
-    buildCommand: cargo run --release consumer
+    buildCommand: cargo build --release --bin consumer
     startCommand: cargo run --release --bin consumer
     rootDir: ./rust-workspace
     autoDeploy: true
@@ -51,7 +51,7 @@ services:
     name: tokenizer
     region: frankfurt
     env: rust
-    buildCommand: cargo run --release tokenizer
+    buildCommand: cargo build --release --bin tokenizer
     startCommand: cargo run --release --bin tokenizer
     rootDir: ./rust-workspace
     autoDeploy: true
