@@ -59,15 +59,16 @@ services:
           name: redis-service
           type: redis
           property: connectionString
-      - key: APP_EXTERNAL_APIS_EMAIL
+      - key: APP_EXTERNAL_API_RATE_LIMITS_EMAIL
         sync: false
-      - key: APP_EXTERNAL_APIS_LOCATION
+      - key: APP_EXTERNAL_API_RATE_LIMITS_LOCATION
         sync: false
     buildFilter:
       paths:
       - docker/tokenizer.Dockerfile
       - shared-kernel/**
       - background_workers/tokenizer/**
+      - configuration/**
 databases:
   - name: prod
     region: frankfurt
