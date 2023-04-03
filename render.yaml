@@ -63,6 +63,11 @@ services:
         sync: false
       - key: APP_EXTERNAL_APIS_LOCATION
         sync: false
+    buildFilter:
+      paths:
+      - docker/tokenizer.Dockerfile
+      - shared-kernel/**
+      - background_workers/tokenizer/**
 databases:
   - name: prod
     region: frankfurt
