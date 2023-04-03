@@ -73,7 +73,8 @@ services:
     name: dry_run_import
     region: frankfurt
     env: docker
-    dockerfilePath: ./docker/dry_run.Dockerfile
+    buildCommand: cargo build --release --bin dry_run
+    startCommand: cargo run --release --bin dry_run
     rootDir: ./rust-workspace
     schedule: "0 6 * * *"
     autoDeploy: true
@@ -82,7 +83,6 @@ services:
         sync: false
       - key: APP_EMAIL__ADMIN_EMAIL
         sync: false
-
 
   - type: web
     name: http_server
@@ -124,7 +124,8 @@ services:
           property: database
       - key: APP_DATABASE__REQUIRE_SSL
         value: true
-
+    domains:
+      - blackouts-api.render.com
 databases:
   - name: prod
     region: frankfurt
