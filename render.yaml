@@ -46,7 +46,7 @@ services:
           property: database
       - key: APP_DATABASE__REQUIRE_SSL
         value: true
-  - type: pserv
+  - type: worker
     name: tokenizer
     region: frankfurt
     env: docker
