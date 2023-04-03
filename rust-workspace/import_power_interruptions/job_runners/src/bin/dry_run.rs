@@ -64,7 +64,7 @@ async fn main() {
 
     if let Err(err) = extractor.run(&DryRunActor {}).await {
         println!("{err:?}");
-        if let Err(err) = send_alert(err).await {
+        if let Err(err) = send_alert(&err).await {
             println!("{}", err)
         }
     }

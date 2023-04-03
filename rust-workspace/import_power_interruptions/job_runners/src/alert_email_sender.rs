@@ -47,7 +47,7 @@ struct Root {
     pub message: Message,
 }
 
-pub async fn send_alert(alert_message: impl ToString) -> anyhow::Result<()> {
+pub async fn send_alert(alert_message: &impl ToString) -> anyhow::Result<()> {
     let body = Root {
         message: Message {
             to: To {
