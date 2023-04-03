@@ -72,7 +72,7 @@ services:
   - type: cron
     name: dry_run_import
     region: frankfurt
-    env: docker
+    env: rust
     buildCommand: cargo build --release --bin dry_run
     startCommand: cargo run --release --bin dry_run
     rootDir: ./rust-workspace
