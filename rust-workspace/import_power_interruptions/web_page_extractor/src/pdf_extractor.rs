@@ -10,7 +10,7 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::path::Path;
 use std::sync::Arc;
-use tokio::fs::create_dir;
+use tokio::fs::{create_dir, try_exists};
 use url::Url;
 
 use shared_kernel::http_client::HttpClient;
@@ -81,12 +81,22 @@ impl PdfExtractor for PdfExtractorImpl {
 async fn resolve_text_from_file(url: &Url, file_bytes: &[u8]) -> anyhow::Result<String> {
     use pdf_extract::extract_text;
     use std::env;
+    use tokio::fs::create_dir;
     use tokio::fs::remove_file;
+    use tokio::fs::try_exists;
     use tokio::fs::File;
     use tokio::fs::OpenOptions;
     use tokio::io::AsyncWriteExt;
-
     let path = env::current_dir().context("Cannot read current_dir")?;
+    {
+        let folder = format!("{}/pdf_dump", path.display());
+        let exists = try_exists(folder.clone())
+            .await
+            .context("Failed to check if pdf_dump folder exists")?;
+        if !exists {
+            create_dir(folder).await.context("Failed to create dir")?;
+        }
+    }
     let normalized_url = FORWARD_SLASH.replace_all(url.as_str(), "_");
     let file_path = format!("{}/pdf_dump/pdf_{}", path.display(), normalized_url);
     let mut file = OpenOptions::new()
