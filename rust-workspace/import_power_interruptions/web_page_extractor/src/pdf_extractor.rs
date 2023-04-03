@@ -90,9 +90,11 @@ async fn resolve_text_from_file(url: &Url, file_bytes: &[u8]) -> anyhow::Result<
     let path = env::current_dir().context("Cannot read current_dir")?;
     {
         let folder = format!("{}/pdf_dump", path.display());
+        println!("{folder}");
         let exists = try_exists(folder.clone())
             .await
             .context("Failed to check if pdf_dump folder exists")?;
+        println!("{exists}");
         if !exists {
             create_dir(folder).await.context("Failed to create dir")?;
         }
@@ -106,8 +108,6 @@ async fn resolve_text_from_file(url: &Url, file_bytes: &[u8]) -> anyhow::Result<
         .open(&file_path)
         .await
         .context("Failed to create file")?;
-
-    println!("{file_path}");
 
     file.write_all(file_bytes)
         .await
