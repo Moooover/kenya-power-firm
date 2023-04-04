@@ -5,8 +5,6 @@ use futures::FutureExt;
 use redis_client::client::CLIENT;
 use std::str::FromStr;
 use std::string::ToString;
-use strum_macros::Display;
-use strum_macros::EnumString;
 use tasks::utils::progress_tracking::{get_progress_status, set_progress_status, TaskStatus};
 use tasks::{
     configuration::REPO,
@@ -21,7 +19,11 @@ impl LocationSearchApi for Producer {
     async fn search(&self, text: String) -> anyhow::Result<LocationResponseWithStatus> {
         let repository = REPO.get().await;
         let url = generate_search_url(text.clone())?;
+        println!("search text {}", text);
+        println!("search url {url}");
         let cached_response = repository.get_cached_text_search_response(&url).await?;
+
+        println!("{cached_response:?}");
 
         if let Some(response) = cached_response {
             let responses = response
@@ -46,6 +48,7 @@ impl LocationSearchApi for Producer {
         .await?;
 
         if let Some(progress) = progress {
+            println!("the progress {progress}");
             // for Success or Pending, just return Pending,
             if matches!(progress, TaskStatus::Pending | TaskStatus::Success) {
                 return Ok(LocationResponseWithStatus {
