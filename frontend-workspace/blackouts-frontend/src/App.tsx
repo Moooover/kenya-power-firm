@@ -15,18 +15,21 @@ function App() {
     <div>
       <div />
       <Layout>
-        <SWRConfig
-          value={{
-            fetcher: async (resource, init) => {
-              const apiURL = `/api${resource}`;
-              const res = await fetch(apiURL, init);
-              return await res.json();
-            },
-          }}
-        ></SWRConfig>
-        <div>
-          {!isAuthenticated ? <Login /> : <RouterProvider router={router} />}
-        </div>
+        {token && isAuthenticated ? (
+          <SWRConfig
+            value={{
+              fetcher: async (resource, init) => {
+                const apiURL = `/api${resource}`;
+                const res = await fetch(apiURL, init);
+                return await res.json();
+              },
+            }}
+          >
+            <RouterProvider router={router} />
+          </SWRConfig>
+        ) : (
+          <Login />
+        )}
       </Layout>
     </div>
   );

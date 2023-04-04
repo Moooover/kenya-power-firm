@@ -52,7 +52,6 @@ function AuthConsumer(props: React.PropsWithChildren<Props>) {
   const { trigger } = useSWRMutation("/api/authenticate", authenticate);
   const details =
     user?.name && user.email ? { name: user.name, email: user.email } : null;
-  console.log("user details ", user);
   useEffect(() => {
     async function authenticate() {
       if (isAuthenticated && details) {
