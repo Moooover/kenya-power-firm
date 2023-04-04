@@ -78,17 +78,23 @@ impl SubscribeToLocationRepo for Repository {
 
         let subscriber_id = subscriber.inner();
 
-        let record = sqlx::query!(
+        let _ = sqlx::query!(
             r#"
               INSERT INTO location.subscriber_locations (subscriber_id, location_id) 
-              VALUES ($1, $2) ON CONFLICT DO NOTHING RETURNING id
+              VALUES ($1, $2) ON CONFLICT DO NOTHING
             "#,
             subscriber_id,
             location.primary_id().inner()
         )
-        .fetch_one(&mut *transaction)
+        .execute(&mut *transaction)
         .await
         .context("Failed to subscribe to location")?;
+
+        let record = sqlx::query!(
+        "SELECT id from location.subscriber_locations WHERE subscriber_id = $1 AND location_id = $2",
+        subscriber_id,
+        location.primary_id().inner()
+    ).fetch_one(&mut *transaction).await.context("Failed to return id to subscribed location")?;
 
         let nearby_locations = location
             .nearby_locations

@@ -63,31 +63,26 @@
     },
     "query": "\n                INSERT INTO communication.notifications(source_id, directly_affected, subscriber_id, line, strategy_id, location_id_matched, external_id)\n                SELECT * FROM UNNEST($1::uuid[], $2::bool[], $3::uuid[], $4::text[], $5::uuid[], $6::uuid[], $7::text[]) ON CONFLICT DO NOTHING\n                "
   },
-  "302a35e1056d812323112fd09f1268bd1893ac83101872fb2620a3e53e537395": {
+  "244926279b78358e16ff1c70255b89b161f9ab52cfe7dd0e10e235df89d1d310": {
     "describe": {
       "columns": [
         {
           "name": "id",
           "ordinal": 0,
           "type_info": "Uuid"
-        },
-        {
-          "name": "url",
-          "ordinal": 1,
-          "type_info": "Varchar"
         }
       ],
       "nullable": [
-        false,
         false
       ],
       "parameters": {
         "Left": [
-          "Varchar"
+          "Uuid",
+          "Uuid"
         ]
       }
     },
-    "query": "INSERT INTO public.source(url) VALUES ($1) ON CONFLICT DO NOTHING RETURNING id, url "
+    "query": "SELECT id from location.subscriber_locations WHERE subscriber_id = $1 AND location_id = $2"
   },
   "327dec1d5c7f4cfcf908a1244ffc5419398c83e9e1a55c223b5d08e3240d743e": {
     "describe": {
@@ -346,6 +341,18 @@
     },
     "query": "\n            INSERT INTO location.location_search_cache ( key, value )\n            VALUES ( $1, $2 ) ON CONFLICT (key)\n            DO UPDATE SET value = EXCLUDED.value\n            "
   },
+  "62222bd92d828e65c07263943c62be78ddc016e04daa0fe7d8d55e88fb95650b": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Varchar"
+        ]
+      }
+    },
+    "query": "INSERT INTO public.source(url) VALUES ($1) ON CONFLICT DO NOTHING"
+  },
   "6a1d966505f520b02ce5eff3b14e04506c674b1f76b639ed70ff2c5a83cb093d": {
     "describe": {
       "columns": [
@@ -455,6 +462,32 @@
       }
     },
     "query": "SELECT id FROM communication.strategies WHERE name = $1"
+  },
+  "819537a6d9c70c2f8a15feb49205340845e4d0bf747489d1fc26d2dcc0276e79": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "url",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "SELECT id, url FROM public.source WHERE url = $1"
   },
   "8ca5b21d263deca294d82dff8d6a200da5438fb9d6c149cf8c89f85b963c4698": {
     "describe": {
@@ -715,27 +748,6 @@
       }
     },
     "query": "\n            INSERT INTO location.blackout_schedule(area_id, start_time, end_time, source_id) \n            SELECT * FROM UNNEST($1::uuid[], $2::timestamptz[], $3::timestamptz[], $4::uuid[]) ON CONFLICT DO NOTHING\n            "
-  },
-  "f3f2b762b8de31294a5a59f236f0199dd533eeed4d07e25694cd20b5e2b6d3dd": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Uuid"
-        }
-      ],
-      "nullable": [
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "Uuid",
-          "Uuid"
-        ]
-      }
-    },
-    "query": "\n              INSERT INTO location.subscriber_locations (subscriber_id, location_id) \n              VALUES ($1, $2) ON CONFLICT DO NOTHING RETURNING id\n            "
   },
   "faac91ef21b36f2e2302b536b35a490cbd0346372b8aa0351c1e2fb1ba3b03d9": {
     "describe": {

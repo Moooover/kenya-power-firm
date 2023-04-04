@@ -101,13 +101,18 @@ impl SourceFile {
         url: &Url,
     ) -> anyhow::Result<Self> {
         let url = url.as_str();
-        let source = sqlx::query!(
-            "INSERT INTO public.source(url) VALUES ($1) ON CONFLICT DO NOTHING RETURNING id, url ",
+        let _ = sqlx::query!(
+            "INSERT INTO public.source(url) VALUES ($1) ON CONFLICT DO NOTHING",
             url
         )
-        .fetch_one(&mut *transaction)
+        .execute(&mut *transaction)
         .await
         .context("Failed to insert source")?;
+
+        let source = sqlx::query!("SELECT id, url FROM public.source WHERE url = $1", url)
+            .fetch_one(&mut *transaction)
+            .await
+            .context("Failed to fetch source")?;
 
         let url = Url::parse(&source.url).context("Failed to parse inserted URL")?;
 
