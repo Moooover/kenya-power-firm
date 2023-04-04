@@ -69,7 +69,7 @@ impl WebPageExtractor {
     async fn get_pdf_links(&self) -> anyhow::Result<Vec<Url>> {
         lazy_static! {
             static ref PDF_LINKS_REGEX: Regex =
-                Regex::new(r"https://www\.kplc\.co\.ke/img/full/.*\.pdf")
+                Regex::new(r"https://.*kplc\.co\.ke/img/full/.*\.pdf")
                     .expect("PDF_LINKS_REGEX to compile");
         }
 

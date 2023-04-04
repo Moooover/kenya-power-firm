@@ -1,4 +1,4 @@
-use anyhow::{Context, Error};
+use anyhow::Context;
 use lazy_static::lazy_static;
 use secrecy::{ExposeSecret, Secret};
 use serde::Deserialize;

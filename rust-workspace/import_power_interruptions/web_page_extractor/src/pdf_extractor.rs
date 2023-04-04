@@ -79,22 +79,9 @@ impl PdfExtractor for PdfExtractorImpl {
 }
 
 async fn resolve_text_from_file(file_bytes: &[u8]) -> anyhow::Result<String> {
-    use pdf_extract::extract_text;
     use pdf_extract::*;
     let result = extract_text_from_mem(file_bytes).context("Failed to extract pdf to text")?;
     Ok(result)
-}
-
-async fn delete_file(path: String) {
-    use tokio::fs::remove_file;
-
-    let file_deleting_result = remove_file(&path)
-        .await
-        .context(format!("Failed to delete file {path} after extraction"));
-    if let Err(err) = file_deleting_result {
-        // TODO: Replace with tracing macro calls
-        println!("{err}")
-    }
 }
 
 #[cfg(test)]

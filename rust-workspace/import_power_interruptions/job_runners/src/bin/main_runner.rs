@@ -1,10 +1,8 @@
 use async_trait::async_trait;
-use job_runners::alert_email_sender::send_alert;
 use pdf_text_parser::PDFContentExtractor;
 use producer::producer::Producer;
 use sqlx_postgres::repository::Repository;
 use std::sync::Arc;
-use url::Url;
 use use_cases::actor::{Actor, Permissions, SubscriberExternalId};
 use use_cases::notifications::notify_subscribers::Notifier;
 use web_page_extractor::{pdf_extractor::PdfExtractorImpl, WebPageExtractor};

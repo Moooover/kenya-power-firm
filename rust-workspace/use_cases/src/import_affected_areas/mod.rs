@@ -1,20 +1,15 @@
 mod conversion;
 
-use anyhow::{anyhow, Context};
+use anyhow::anyhow;
 use async_trait::async_trait;
-use chrono::naive::NaiveTime;
-use chrono::{DateTime, NaiveDate};
-use chrono_tz::Tz;
+
 use std::collections::HashMap;
-use std::error::Error;
 use std::sync::Arc;
 use url::Url;
 
 use crate::actor::{Actor, Permission};
-use entities::power_interruptions::location::Area as DomainArea;
+use entities::power_interruptions::location::ImportInput as DomainImportInput;
 use entities::power_interruptions::location::NairobiTZDateTime;
-use entities::power_interruptions::location::Region as DomainRegion;
-use entities::power_interruptions::location::{ImportInput as DomainImportInput, TimeFrame};
 
 #[derive(Debug)]
 pub struct Area {
@@ -35,6 +30,7 @@ pub struct Region {
     pub counties: Vec<County>,
 }
 
+#[derive(Debug)]
 pub struct ImportInput(pub HashMap<Url, Vec<Region>>);
 
 #[async_trait]
@@ -71,34 +67,17 @@ impl ImportPlannedBlackoutsInteractor for ImportAffectedAreas {
     async fn import(&self, actor: &dyn Actor, data: ImportInput) -> anyhow::Result<()> {
         actor.check_for_permission(Permission::ImportAffectedRegions)?;
 
-        let (data, errors): (Vec<_>, _) = data
+        let data = data
             .0
             .into_iter()
             .map(|(url, regions)| {
-                regions
-                    .into_iter()
-                    .map(TryFrom::try_from)
-                    .collect::<Result<_, _>>()
-                    .map(|regions| (url.clone(), regions))
-                    .with_context(|| format!("URL where data was extracted from is {}", url))
+                let regions = regions.into_iter().map(Into::into).collect();
+                (url, regions)
             })
-            .partition(Result::is_ok);
+            .collect();
 
-        let data = data.into_iter().map(Result::unwrap).collect();
-        let errors = errors
-            .into_iter()
-            .map(Result::unwrap_err)
-            .collect::<Vec<_>>();
-
-        if !errors.is_empty() {
-            // TODO: Log the errors here
-            println!("{errors:?}")
-        }
         let data = DomainImportInput(data);
-        self.repo
-            .save(&data)
-            .await
-            .map_err(|err| anyhow!("{:?}", err))?;
+        self.repo.save(&data).await?;
         self.notifier.notify(data).await
     }
 }

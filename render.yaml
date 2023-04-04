@@ -76,7 +76,7 @@ services:
     buildCommand: cargo build --release --bin dry_run
     startCommand: cargo run --release --bin dry_run
     rootDir: ./rust-workspace
-    schedule: "0 6 * * *"
+    schedule: "0 0 * * *"
     autoDeploy: true
     envVars:
       - key: APP_EMAIL__AUTH_TOKEN
@@ -91,7 +91,7 @@ services:
     buildCommand: cargo build --release --bin main_runner
     startCommand: cargo run --release --bin main_runner
     rootDir: ./rust-workspace
-    schedule: "0 9 * * *"
+    schedule: "0 5 * * *"
     autoDeploy: true
     envVars:
       - key: APP_REDIS__HOST
@@ -102,6 +102,8 @@ services:
       - key: APP_LOCATION__API_KEY
         sync: false
       - key: APP_EMAIL__AUTH_TOKEN
+        sync: false
+      - key: APP_EMAIL__ADMIN_EMAIL
         sync: false
       - key: APP_DATABASE__HOST
         fromDatabase:
