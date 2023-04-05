@@ -178,10 +178,7 @@ services:
     autoDeploy: true
     envVars:
       - key: VITE_API_URL
-        fromService:
-          name: blackouts_api
-          type: web
-          property: hostport
+        sync: false
       - key: VITE_AUTH_DOMAIN
         sync: false
       - key: VITE_AUTH_CLIENT_ID
