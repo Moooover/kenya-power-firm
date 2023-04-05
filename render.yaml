@@ -171,7 +171,6 @@ services:
 
   - type: web
     name: blackouts_ui
-    region: frankfurt
     env: static
     buildCommand: npm run build
     staticPublishPath: ./dist
