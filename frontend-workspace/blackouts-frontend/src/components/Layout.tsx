@@ -18,7 +18,11 @@ import Typography from "@mui/material/Typography";
 import LogoutTwoToneIcon from "@mui/icons-material/LogoutTwoTone";
 import { useAuth0 } from "@auth0/auth0-react";
 import LightIcon from "@mui/icons-material/Light";
-const drawerWidth = 240;
+import AddLocationAltTwoToneIcon from "@mui/icons-material/AddLocationAltTwoTone";
+import ListAltTwoToneIcon from "@mui/icons-material/ListAltTwoTone";
+import { redirect, useLocation, useNavigate } from "react-router-dom";
+
+const drawerWidth = 300;
 
 interface Props {
   /**
@@ -38,25 +42,44 @@ const listItemButtonStyle = {
 
 const DrawerItems = () => {
   const { logout } = useAuth0();
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
 
   return (
     <div>
       <Toolbar />
       <Divider />
       <List>
-        {["Subscribe", "View subscribed"].map((text, index) => (
-          <ListItem key={text} disablePadding>
-            <ListItemButton sx={listItemButtonStyle}>
-              <ListItemIcon sx={{ my: "auto" }}>
-                {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-              </ListItemIcon>
-              <ListItemText primary={text} />
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List>
-      <Divider />
-      <List>
+        <ListItem disablePadding>
+          <ListItemButton
+            selected={pathname === "/"}
+            sx={listItemButtonStyle}
+            onClick={() => {
+              navigate("/");
+            }}
+          >
+            <ListItemIcon sx={{ my: "auto" }}>
+              <AddLocationAltTwoToneIcon />
+            </ListItemIcon>
+            <ListItemText primary={"Subscribe"} />
+          </ListItemButton>
+        </ListItem>
+        <ListItem disablePadding>
+          <ListItemButton
+            selected={pathname === "/subscribed"}
+            sx={listItemButtonStyle}
+            onClick={() => {
+              navigate("/subscribed");
+            }}
+          >
+            <ListItemIcon sx={{ my: "auto" }}>
+              <ListAltTwoToneIcon />
+            </ListItemIcon>
+            <ListItemText primary={"View subscribed"} />
+          </ListItemButton>
+        </ListItem>
+        <Divider />
+
         <ListItem disablePadding>
           <ListItemButton sx={listItemButtonStyle} onClick={() => logout()}>
             <ListItemIcon sx={{ my: "auto" }}>
@@ -77,6 +100,12 @@ export default function Layout(props: React.PropsWithChildren<Props>) {
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
+
+  let location = useLocation();
+
+  React.useEffect(() => {
+    if (mobileOpen) setMobileOpen(false);
+  }, [location]);
 
   const container =
     window !== undefined ? () => window().document.body : undefined;

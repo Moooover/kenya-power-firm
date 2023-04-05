@@ -7,7 +7,17 @@ import MenuIcon from "@mui/icons-material/Menu";
 import SearchIcon from "@mui/icons-material/Search";
 import DirectionsIcon from "@mui/icons-material/Directions";
 import PlaceTwoToneIcon from "@mui/icons-material/PlaceTwoTone";
-export default function SearchBox() {
+
+type Props = {
+  value: string;
+  handleChangeSearchTerm: (val: string) => void;
+};
+export default function SearchBox({ value, handleChangeSearchTerm }: Props) {
+  const handleChange = (
+    event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
+  ) => {
+    handleChangeSearchTerm(event.target.value);
+  };
   return (
     <Paper
       component="form"
@@ -20,6 +30,8 @@ export default function SearchBox() {
     >
       <InputBase
         sx={{ ml: 1, flex: 1 }}
+        value={value}
+        onChange={handleChange}
         placeholder="Search Google Maps"
         inputProps={{ "aria-label": "search google maps" }}
       />
