@@ -54,7 +54,7 @@ export default function SubscribedLocations() {
         >
           <div>
             {data.items.map((location) => (
-              <Location location={location} />
+              <Location key={location.id} location={location} />
             ))}
           </div>
         </List>

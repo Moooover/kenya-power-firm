@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { Auth0Provider, useAuth0 } from "@auth0/auth0-react";
 import useSWRMutation from "swr/mutation";
+import { instance } from "../axios";
 
 async function authenticate(
   url: string,
@@ -8,14 +9,15 @@ async function authenticate(
     arg: { name, email, token },
   }: { arg: { name: string; email: string; token: string } }
 ) {
-  return fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({ name, email }),
-  });
+  return instance.post(
+    url,
+    { name, email },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
 }
 
 type AuthProps = {
@@ -53,7 +55,7 @@ function AuthConsumer(props: React.PropsWithChildren<Props>) {
   const { getAccessTokenSilently, isAuthenticated, user } = useAuth0();
   const [token, setToken] = useState<string | null>(null);
   const [isAuth, setIsAuth] = React.useState(false);
-  const { trigger } = useSWRMutation("/api/authenticate", authenticate);
+  const { trigger } = useSWRMutation("/authenticate", authenticate);
   const details =
     user?.name && user.email ? { name: user.name, email: user.email } : null;
   useEffect(() => {

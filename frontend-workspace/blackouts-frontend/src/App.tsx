@@ -3,10 +3,7 @@ import { RouterProvider } from "react-router-dom";
 import { router } from "./routes";
 import { SWRConfig } from "swr";
 import { useAuth } from "./providers/Auth";
-import axios from "axios";
-
-const instance = axios.create();
-instance.defaults.headers.common["Content-Type"] = "application/json";
+import { instance } from "./axios";
 
 function App() {
   const { isAuthenticated, token } = useAuth();
@@ -20,8 +17,7 @@ function App() {
               instance.defaults.headers.common[
                 "Authorization"
               ] = `Bearer ${token}`;
-              const apiURL = `/api${resource}`;
-              const res = await instance(apiURL);
+              const res = await instance(resource);
               return await res.data;
             },
           }}
