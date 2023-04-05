@@ -22,8 +22,6 @@ async fn main() -> anyhow::Result<()> {
     let binding_address = format!("{host}:{port}");
     HttpServer::new(move || {
         let cors = Cors::default()
-            .allowed_origin("http://localhost:5173")
-            .allowed_origin("http://localhost:4173")
             .allowed_origin("https://blackouts-ui.onrender.com")
             .allow_any_method()
             .allowed_headers(vec![
