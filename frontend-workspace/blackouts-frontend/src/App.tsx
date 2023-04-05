@@ -3,9 +3,17 @@ import { RouterProvider } from "react-router-dom";
 import { router } from "./routes";
 import { SWRConfig } from "swr";
 import { useAuth } from "./providers/Auth";
-import axios from "axios";
+import axios, { CreateAxiosDefaults } from "axios";
 
-const instance = axios.create({});
+const baseURL: string = import.meta.env.VITE_API_URL;
+
+const config: CreateAxiosDefaults<any> | undefined = import.meta.env.PROD
+  ? {
+      baseURL,
+    }
+  : undefined;
+
+const instance = axios.create(config);
 instance.defaults.headers.common["Content-Type"] = "application/json";
 
 function App() {
