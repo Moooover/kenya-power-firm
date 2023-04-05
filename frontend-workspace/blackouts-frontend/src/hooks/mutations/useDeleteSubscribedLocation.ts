@@ -1,13 +1,14 @@
 import axios from "axios";
 import useSWRMutation from "swr/mutation";
 import { useToken } from "../../providers/Auth";
+import { instance } from "../../axios";
 
 type Props = {
   token: string;
 };
 
 async function subscribeToLocation(url: string, { arg }: { arg: Props }) {
-  return axios.delete(url, {
+  return instance.delete(url, {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${arg.token}`,
@@ -18,7 +19,7 @@ async function subscribeToLocation(url: string, { arg }: { arg: Props }) {
 export function useDeleteLocationSubscription(locationId: string) {
   const token = useToken();
   const { trigger, isMutating } = useSWRMutation(
-    `/api/locations/primary_location/${locationId}`,
+    `/locations/primary_location/${locationId}`,
     subscribeToLocation
   );
 

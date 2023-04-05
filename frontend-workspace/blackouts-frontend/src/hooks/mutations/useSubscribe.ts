@@ -1,9 +1,9 @@
 import useSWRMutation from "swr/mutation";
-import { useAuth, useToken } from "../../providers/Auth";
-import axios from "axios";
+import { useToken } from "../../providers/Auth";
 import { AxiosError } from "axios";
 import React from "react";
 import useSWR from "swr";
+import { instance } from "../../axios";
 
 type SubscriptionStatus = "Pending" | "Success" | "Failure" | "NotFound";
 
@@ -26,7 +26,7 @@ type SubscribeResponse = {
 };
 async function subscribeToLocation(url: string, { arg }: { arg: Props }) {
   const data = arg.data;
-  return axios
+  return instance
     .post<SubscribeResponse>(
       url,
       { location: data.location, nearby_locations: data.nearby_locations },
@@ -49,7 +49,7 @@ export function useSubscribeToLocation(props: SubscribeProps) {
   const [taskId, setTaskId] = React.useState<string | null>(null);
   const token = useToken();
   const { trigger } = useSWRMutation(
-    "/api/locations/subscribe",
+    "/locations/subscribe",
     subscribeToLocation
   );
   const { data: subscriptionStatus, mutate } = useSWR<
