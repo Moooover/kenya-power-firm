@@ -20,9 +20,12 @@ lazy_static! {
         ("apts".to_string(), "Apartments"),
         ("hqtrs".to_string(), "Headquaters"),
         ("mkt".to_string(), "Market"),
+        ("fact".to_string(), "Factory"),
+        ("t/fact".to_string(), "Tea Factory"),
+        ("c/fact".to_string(), "Coffee Factory")
     ]);
     static ref REGEX_STR: String = {
-        let keys = ACRONYM_MAP.keys().map(|key| key).join("|");
+        let keys = ACRONYM_MAP.keys().join("|");
         format!(r"\b(?:{})\b", keys)
     };
     static ref ACRONYMS_MATCHER: Regex = RegexBuilder::new(&REGEX_STR)
@@ -118,5 +121,22 @@ mod tests {
         let value = NonAcronymString::from(value.to_string());
         let expected_value = "Garden city Road";
         assert_eq!(value.to_string(), expected_value.to_string())
+    }
+
+    #[test]
+    fn test_acronym_with_list() {
+        let input_with_expected_result = vec![
+            ("Garden city Rd", "Garden city Road"),
+            ("Sombogo T/Fact", "Sombogo Tea Factory"),
+            ("DCI HQtrs", "DCI Headquaters"),
+        ];
+
+        input_with_expected_result
+            .iter()
+            .for_each(|(input, expected_result)| {
+                let value = NonAcronymString::from(input.to_string());
+
+                assert_eq!(value.to_string(), expected_result.to_string())
+            })
     }
 }

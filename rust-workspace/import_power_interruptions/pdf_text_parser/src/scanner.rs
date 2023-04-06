@@ -2,9 +2,9 @@ use multipeek::{multipeek, MultiPeek};
 use std::collections::HashMap;
 use std::iter;
 use std::str::Chars;
-use std::vec::IntoIter;
 
-use crate::parser::ParseError;
+
+
 use lazy_static::lazy_static;
 use regex::{Regex, RegexBuilder};
 
@@ -178,7 +178,7 @@ impl<'a> Scanner<'a> {
         let mut buffer = String::new();
         while self.source.peek_nth(position) != Some(&'\n') {
             buffer.push(*self.source.peek_nth(position)?);
-            position = position + 1;
+            position += 1;
         }
 
         let buffer = buffer.trim();

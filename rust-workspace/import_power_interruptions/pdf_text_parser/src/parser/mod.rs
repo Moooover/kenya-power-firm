@@ -2,15 +2,13 @@ use crate::parser::filter_out_comments::CommentsRemover;
 use crate::scanner::{Date, KeyWords, Time, Token};
 use crate::token::{Area, County, Region};
 use multipeek::{multipeek, MultiPeek};
-use std::collections::HashMap;
-use std::iter;
+
 use std::vec::IntoIter;
 
 use regex::{Regex, RegexBuilder};
 
 use anyhow::{anyhow, Context, Error};
-use chrono::{DateTime, Datelike, NaiveDate, NaiveTime, TimeZone, Timelike};
-use chrono_tz::Tz;
+use chrono::{NaiveDate, NaiveTime};
 use lazy_static::lazy_static;
 
 mod filter_out_comments;
@@ -21,8 +19,8 @@ pub struct Parser {
 
 #[derive(Debug)]
 pub struct UnexpectedToken {
-    found: Token,
-    expected: String,
+    pub found: Token,
+    pub expected: String,
 }
 
 impl Time {
@@ -50,24 +48,6 @@ pub enum ParseError {
     ValidationError(Error),
     UnexpectedEndOfFile,
     UnexpectedToken(UnexpectedToken),
-}
-
-impl Date {
-    fn to_nairobi_date_time(&self, time: NaiveTime) -> Result<DateTime<Tz>, ParseError> {
-        use chrono_tz::Africa::Nairobi;
-        let date = NaiveDate::parse_from_str(&self.date, "%d.%m.%Y")
-            .context("Failed to parse the Date.")
-            .map_err(ParseError::ValidationError)?;
-        let naive_dt = date.and_time(time);
-        Nairobi
-            .from_local_datetime(&naive_dt)
-            .single()
-            .ok_or_else(|| {
-                ParseError::ValidationError(anyhow!(
-                    "Failed to convert {naive_dt} to Nairobi timezone"
-                ))
-            })
-    }
 }
 
 macro_rules! consume_expected_token {
@@ -266,13 +246,13 @@ impl Parser {
             let token = self.tokens.next().ok_or(ParseError::UnexpectedEndOfFile)?;
 
             match token {
-                Token::Comma if self.digit_after_comma() => location_buffer.push_str(","),
+                Token::Comma if self.digit_after_comma() => location_buffer.push(','),
                 Token::Comma => {
                     results.push(location_buffer.clone());
                     location_buffer.clear();
                 }
                 Token::Identifier(identifier) => {
-                    location_buffer.push_str(" ");
+                    location_buffer.push(' ');
                     location_buffer.push_str(&identifier);
                 }
                 token => {
@@ -291,14 +271,13 @@ impl Parser {
 
         Ok(results
             .into_iter()
-            .map(|pin| self.extract_and_construct_location_phases(pin))
-            .flatten()
+            .flat_map(|pin| self.extract_and_construct_location_phases(pin))
             .collect())
     }
 
     fn digit_after_comma(&mut self) -> bool {
         let peeked = self.tokens.peek();
-        matches!(peeked, Some(&Token::Identifier(ref ident)) if ident.clone().trim().parse::<usize>().is_ok())
+        matches!(peeked, Some(Token::Identifier(ident)) if ident.clone().trim().parse::<usize>().is_ok())
     }
 
     /// Eg: "Dandora Phase 1 & 2" becomes -> ["Dandora Phase 1", "Dandora Phase 2"]
@@ -315,7 +294,7 @@ impl Parser {
             let phase_name = PHASE_NAME
                 .captures_iter(&location)
                 .into_iter()
-                .map(|capture| format!("{}", &capture[0]))
+                .map(|capture| (capture[0]).to_string())
                 .collect::<String>();
 
             return PHASE_NUMBERS

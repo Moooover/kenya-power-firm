@@ -3,9 +3,9 @@ use crate::authentication::subscriber_authentication::SubscriberResolverInteract
 use async_trait::async_trait;
 use entities::notifications::strategy::StrategyId;
 use entities::subscriptions::SubscriberId;
-use std::collections::{HashMap, HashSet};
+use std::collections::{HashSet};
 use std::sync::Arc;
-use uuid::Uuid;
+
 
 pub struct Strategy {
     pub id: StrategyId,

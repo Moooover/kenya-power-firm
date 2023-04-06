@@ -1,8 +1,7 @@
 use anyhow::Result;
-use futures_util::StreamExt as _;
 use redis::aio::ConnectionLike;
-use redis::{AsyncCommands, RedisResult};
-use serde::de::Unexpected::Option;
+use redis::RedisResult;
+
 use serde::Deserialize;
 use shared_kernel::configuration::config;
 use std::time::Duration;

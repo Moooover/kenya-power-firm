@@ -91,7 +91,7 @@ struct Response {
 }
 
 #[celery::task(max_retries = 200, bind=true, retry_for_unexpected = false, on_failure = failure_callback)]
-pub async fn send_email_notification(task: &Self, notification: Notification) -> TaskResult<()> {
+pub async fn send_email_notification(_task: &Self, notification: Notification) -> TaskResult<()> {
     let repo = REPO.get().await;
     let notification = repo
         .filter_email_notification_by_those_already_sent(notification)

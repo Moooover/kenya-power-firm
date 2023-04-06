@@ -8,7 +8,6 @@ use entities::subscriptions::{AffectedSubscriber, SubscriberId};
 use futures::stream::FuturesUnordered;
 use futures::StreamExt;
 use std::collections::HashMap;
-use std::error::Error;
 use std::sync::Arc;
 use url::Url;
 

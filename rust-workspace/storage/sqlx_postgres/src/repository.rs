@@ -1,8 +1,9 @@
 use crate::configuration::Settings;
-use anyhow::Context;
 use sqlx::postgres::PgPool;
-use sqlx::{Connection, Executor, PgConnection};
+#[cfg(test)]
+use sqlx::{Connection, PgConnection};
 use std::sync::Arc;
+#[cfg(test)]
 use uuid::Uuid;
 
 #[derive(Clone)]
@@ -16,6 +17,8 @@ impl Repository {
     }
     #[cfg(not(test))]
     pub async fn new() -> anyhow::Result<Self> {
+        use anyhow::Context;
+
         let pg_connection = Settings::with_db()?;
         let pg_pool = PgPool::connect_with(pg_connection)
             .await
@@ -31,6 +34,8 @@ impl Repository {
     }
     #[cfg(test)]
     pub async fn new_test_repo() -> Self {
+        use sqlx::Executor;
+
         let connection_options = Settings::without_db().unwrap().0;
 
         let mut connection = PgConnection::connect_with(&connection_options)

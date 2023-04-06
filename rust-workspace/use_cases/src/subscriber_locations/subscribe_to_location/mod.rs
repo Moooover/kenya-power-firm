@@ -1,7 +1,7 @@
 use crate::authentication::subscriber_authentication::SubscriberResolverInteractor;
-use crate::subscriber_locations::data::{LocationInput, LocationWithId};
+use crate::subscriber_locations::data::{LocationInput};
 use crate::{actor::Actor, search_for_locations::Status};
-use anyhow::anyhow;
+
 use async_trait::async_trait;
 use entities::locations::ExternalLocationId;
 use entities::locations::LocationId;

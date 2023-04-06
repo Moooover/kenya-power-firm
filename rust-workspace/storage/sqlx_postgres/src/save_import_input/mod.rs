@@ -1,6 +1,6 @@
 mod counties;
 use anyhow::{bail, Context};
-use itertools::Itertools;
+
 use sqlx::query;
 use std::{collections::HashMap, iter};
 
@@ -8,7 +8,7 @@ use crate::repository::Repository;
 use crate::save_import_input::counties::{DbCounty, DbCountyId};
 use async_trait::async_trait;
 use entities::power_interruptions::location::{
-    Area, County, FutureOrCurrentNairobiTZDateTime, NairobiTZDateTime, Region, TimeFrame,
+    Area, FutureOrCurrentNairobiTZDateTime, NairobiTZDateTime, Region,
 };
 use url::Url;
 use use_cases::import_affected_areas::SaveBlackoutAffectedAreasRepo;
@@ -92,7 +92,6 @@ async fn save_regions_data(
 
 struct SourceFile {
     id: Uuid,
-    url: Url,
 }
 
 impl SourceFile {
@@ -114,9 +113,7 @@ impl SourceFile {
             .await
             .context("Failed to fetch source")?;
 
-        let url = Url::parse(&source.url).context("Failed to parse inserted URL")?;
-
-        Ok(SourceFile { id: source.id, url })
+        Ok(SourceFile { id: source.id })
     }
 }
 
@@ -132,7 +129,7 @@ impl AreaWithId {
     ) -> Result<Vec<AreaWithId>, sqlx::Error> {
         let (area_names, county_ids): (Vec<_>, Vec<_>) = county_id_with_areas
             .iter()
-            .map(|(id, area)| (area.name.clone(), id.into_inner()))
+            .map(|(id, area)| (area.name.clone(), id.inner()))
             .unzip();
 
         sqlx::query!(
@@ -213,24 +210,14 @@ impl DbLine {
             .map(|line| (line.name, line.id))
             .collect::<HashMap<_, _>>();
 
-        struct LineIdWithScheduleId {
-            line_id: Uuid,
-            schedule_id: Uuid,
-        }
-
-        let insert = lines
+        let (line_ids, schedule_ids): (Vec<_>, Vec<_>) = lines
             .iter()
             .filter_map(|line| {
                 mapping_of_line_id_to_name
                     .get(&line.name)
-                    .map(|line_id| LineIdWithScheduleId {
-                        line_id: *line_id,
-                        schedule_id: line.blackout_schedule,
-                    })
+                    .map(|line_id| (*line_id, line.blackout_schedule))
             })
-            .collect::<Vec<_>>();
-        let line_ids = insert.iter().map(|line| line.line_id).collect_vec();
-        let schedule_ids = insert.iter().map(|line| line.schedule_id).collect_vec();
+            .unzip();
 
         sqlx::query!(
             "
@@ -248,11 +235,11 @@ impl DbLine {
     }
 }
 
-struct BlackoutSchedule {
-    id: Uuid,
-    area_id: Uuid,
-    start_time: NairobiTZDateTime,
-    end_time: NairobiTZDateTime,
+pub struct BlackoutSchedule {
+    pub id: Uuid,
+    pub area_id: Uuid,
+    pub start_time: NairobiTZDateTime,
+    pub end_time: NairobiTZDateTime,
 }
 
 #[derive(PartialEq, Eq, Hash)]

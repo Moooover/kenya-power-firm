@@ -2,7 +2,7 @@ use anyhow::Context;
 use celery::export::async_trait;
 use celery::prelude::*;
 use entities::locations::ExternalLocationId;
-use entities::locations::LocationId as EntityLocationId;
+
 use entities::subscriptions::SubscriberId;
 use futures::stream::FuturesUnordered;
 use futures::StreamExt;
@@ -18,7 +18,7 @@ use crate::{
 use entities::locations::LocationId;
 use redis_client::client::CLIENT;
 use serde::Deserialize;
-use serde::Serialize;
+
 use sqlx_postgres::cache::location_search::StatusCode;
 use use_cases::subscriber_locations::subscribe_to_location::TaskId;
 use uuid::Uuid;

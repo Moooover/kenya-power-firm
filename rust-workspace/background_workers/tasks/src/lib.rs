@@ -6,7 +6,7 @@ use crate::configuration::SETTINGS_CONFIG;
 use crate::send_notifications::email::send_email_notification;
 use anyhow::Context;
 use celery::Celery;
-use shared_kernel::configuration::config;
+
 use std::sync::Arc;
 use text_search::search_locations_by_text;
 

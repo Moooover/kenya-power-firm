@@ -1,9 +1,8 @@
 use crate::producer::Producer;
-use anyhow::{anyhow, Context};
+use anyhow::Context;
 use async_trait::async_trait;
 use entities::locations::ExternalLocationId;
 use entities::subscriptions::SubscriberId;
-use std::collections::HashMap;
 use tasks::{
     subscribe_to_location::fetch_and_subscribe_to_locations,
     utils::progress_tracking::{get_progress_status, TaskStatus},

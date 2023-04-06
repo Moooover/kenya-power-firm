@@ -1,5 +1,5 @@
 use entities::locations::LocationId;
-use uuid::Uuid;
+
 
 pub struct LocationInput<T: Clone> {
     pub id: T,

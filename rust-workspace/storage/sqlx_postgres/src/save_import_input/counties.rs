@@ -1,6 +1,6 @@
 use crate::repository::Repository;
 use anyhow::{anyhow, Context};
-use uuid::Uuid;
+use shared_kernel::uuid_key;
 
 pub struct DbCountyName(String);
 
@@ -32,20 +32,7 @@ impl DbCountyName {
     }
 }
 
-#[derive(Copy, Clone)]
-pub struct DbCountyId(Uuid);
-
-impl DbCountyId {
-    pub fn into_inner(&self) -> Uuid {
-        self.0
-    }
-}
-
-impl From<Uuid> for DbCountyId {
-    fn from(value: Uuid) -> Self {
-        DbCountyId(value)
-    }
-}
+uuid_key!(DbCountyId);
 
 pub struct DbCounty {
     pub id: DbCountyId,

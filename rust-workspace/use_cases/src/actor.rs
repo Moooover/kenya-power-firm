@@ -3,9 +3,9 @@ use entities::subscriptions::details::SubscriberExternalId as SubscriberExternal
 #[cfg(test)]
 use mockall::automock;
 use serde::Deserialize;
-use serde::Serialize;
+
 use std::collections::HashSet;
-use uuid::Uuid;
+
 
 #[derive(Copy, Clone, Hash, Eq, PartialEq, Debug, Deserialize)]
 pub enum Permission {

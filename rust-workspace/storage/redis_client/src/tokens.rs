@@ -4,7 +4,7 @@ use anyhow::Context;
 impl Client {
     pub async fn decr_count(&self, key: &str, count: usize) -> anyhow::Result<()> {
         let mut conn = self.conn.clone();
-        let _ = redis::Cmd::decr(key, count)
+        redis::Cmd::decr(key, count)
             .query_async(&mut conn)
             .await
             .with_context(|| format!("Failed to decr token count for key {key}"))?;

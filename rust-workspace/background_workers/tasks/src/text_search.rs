@@ -7,9 +7,9 @@ use shared_kernel::http_client::HttpClient;
 use sqlx_postgres::cache::location_search::StatusCode;
 use url::Url;
 
-use redis_client::client::CLIENT;
 
-use crate::constants::GOOGLE_API_TOKEN_KEY;
+
+
 use crate::utils::get_token::get_token_count;
 use crate::{
     configuration::{REPO, SETTINGS_CONFIG},

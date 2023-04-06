@@ -84,9 +84,9 @@ impl From<&str> for SearcheableCandidate {
 
 #[derive(sqlx::FromRow, Debug)]
 pub struct DbLocationSearchResults {
-    search_query: String,
-    location: String,
-    id: Uuid,
+    pub search_query: String,
+    pub location: String,
+    pub id: Uuid,
 }
 
 struct SubscriberWithLocation {
@@ -329,7 +329,7 @@ impl Repository {
     async fn get_potentially_affected_subscribers(
         &self,
         pool: &PgPool,
-        location_ids: &Vec<Uuid>,
+        location_ids: &[Uuid],
     ) -> anyhow::Result<HashMap<Uuid, Vec<Uuid>>> {
         // TODO: Set search path on pool;
         let potentially_affected_subscribers = sqlx::query!(
@@ -346,7 +346,7 @@ impl Repository {
         // however, we are still marking them as PottentiallyAffected because
         // we scanned the text in the API-Response via `search_locations_secondary_text()`
         let directly_affected_subscribers = self
-            .get_direct_subscribers_with_locations(&location_ids)
+            .get_direct_subscribers_with_locations(location_ids)
             .await?;
 
         Ok(potentially_affected_subscribers

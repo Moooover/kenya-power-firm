@@ -4,11 +4,11 @@ mod token;
 use crate::token::Area as TokenArea;
 use crate::token::County as TokenCounty;
 use crate::token::Region as TokenRegion;
-use anyhow::{anyhow, Context};
+use anyhow::{anyhow};
 use async_trait::async_trait;
 use use_cases::import_affected_areas::{Area, County, Region};
 use web_page_extractor::pdf_extractor::TextExtractor;
-use web_page_extractor::PdfExtractor;
+
 
 pub struct PDFContentExtractor;
 

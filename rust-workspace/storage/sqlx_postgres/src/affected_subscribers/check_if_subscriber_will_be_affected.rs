@@ -7,7 +7,6 @@ use crate::{
 use anyhow::anyhow;
 use anyhow::Context;
 use chrono::Utc;
-use chrono_tz::Tz;
 use entities::notifications::Notification;
 use entities::power_interruptions::location::{AffectedLine, NairobiTZDateTime, TimeFrame};
 use entities::subscriptions::{AffectedSubscriber, SubscriberId};
@@ -238,29 +237,25 @@ struct Mapping<'a> {
 
 impl<'a> Mapping<'a> {
     fn generate(affected_lines: &'a [&BareAffectedLine]) -> Self {
-        let mapping_of_line_to_time_frame = affected_lines
+        let (
+            mapping_of_line_to_time_frame,
+            mapping_of_line_to_url,
+            mapping_of_searcheble_candidate_to_original_line_candidate,
+            searcheable_candidates,
+        ): (HashMap<_, _>, HashMap<_, _>, HashMap<_, _>, Vec<_>) = affected_lines
             .iter()
-            .map(|line| (&line.line, &line.time_frame))
-            .collect::<HashMap<_, _>>();
-
-        let mapping_of_line_to_url = affected_lines
-            .iter()
-            .map(|line| (&line.line, &line.url))
-            .collect();
-
-        let mapping_of_searcheble_candidate_to_original_line_candidate = affected_lines
-            .iter()
-            .map(|data| {
+            .map(|line| {
                 (
-                    SearcheableCandidate::from(data.line.as_ref()).to_string(),
-                    &data.line,
+                    (&line.line, &line.time_frame),
+                    (&line.line, &line.url),
+                    (
+                        SearcheableCandidate::from(line.line.as_ref()).to_string(),
+                        &line.line,
+                    ),
+                    SearcheableCandidate::from(line.line.as_ref()).to_string(),
                 )
             })
-            .collect::<HashMap<_, _>>();
-        let searcheable_candidates = affected_lines
-            .iter()
-            .map(|data| SearcheableCandidate::from(data.line.as_ref()).to_string())
-            .collect_vec();
+            .multiunzip();
         Self {
             mapping_of_line_to_time_frame,
             mapping_of_searcheble_candidate_to_original_line_candidate,
@@ -276,7 +271,7 @@ mod tests {
 
     use chrono::{Days, Utc};
     use entities::{
-        locations::{ExternalLocationId, LocationId},
+        locations::ExternalLocationId,
         power_interruptions::location::{
             Area, County, ImportInput, NairobiTZDateTime, Region, TimeFrame,
         },

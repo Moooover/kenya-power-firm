@@ -2,14 +2,14 @@ pub mod pdf_extractor;
 
 use anyhow::Context;
 use async_trait::async_trait;
-use chrono::{Datelike, NaiveDate, Utc};
+use chrono::{Datelike, Utc};
 use lazy_static::lazy_static;
 use std::collections::HashMap;
-use std::error::Error;
+
 use std::sync::Arc;
 use use_cases::actor::Actor;
 use use_cases::import_affected_areas::{
-    Area, ImportInput, ImportPlannedBlackoutsInteractor, Region,
+    ImportInput, ImportPlannedBlackoutsInteractor, Region,
 };
 
 use regex::Regex;

@@ -53,34 +53,28 @@ impl Repository {
             })
             .collect_vec();
 
-        let source_ids = notification_inserts
+        let (
+            source_ids,
+            directly_affected,
+            subscriber_id,
+            line,
+            strategy_id,
+            location_id_matched,
+            external_ids,
+        ): (Vec<_>, Vec<_>, Vec<_>, Vec<_>, Vec<_>, Vec<_>, Vec<_>) = notification_inserts
             .iter()
-            .map(|notification| notification.source)
-            .collect_vec();
-        let directly_affected = notification_inserts
-            .iter()
-            .map(|data| data.directly_affected)
-            .collect_vec();
-        let subscriber_id = notification_inserts
-            .iter()
-            .map(|data| data.subscriber)
-            .collect_vec();
-        let line = notification_inserts
-            .iter()
-            .map(|data| data.line.clone())
-            .collect_vec();
-        let strategy_id = notification_inserts
-            .iter()
-            .map(|data| data.strategy_id)
-            .collect_vec();
-        let location_id_matched = notification_inserts
-            .iter()
-            .map(|data| data.location_matched)
-            .collect_vec();
-        let external_ids = notification_inserts
-            .iter()
-            .map(|data| data.external_id.clone())
-            .collect_vec();
+            .map(|notification| {
+                (
+                    notification.source,
+                    notification.directly_affected,
+                    notification.subscriber,
+                    notification.line.clone(),
+                    notification.strategy_id,
+                    notification.location_matched,
+                    notification.external_id.clone(),
+                )
+            })
+            .multiunzip();
 
         sqlx::query!(
                 "

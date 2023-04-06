@@ -1,21 +1,21 @@
 use crate::PdfExtractor;
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
-use chrono::{NaiveDate, NaiveTime};
+
 use futures::stream::FuturesUnordered;
 use futures::StreamExt;
 use lazy_static::lazy_static;
 use regex::Regex;
 use std::collections::HashMap;
-use std::error::Error;
-use std::path::Path;
+
+
 use std::sync::Arc;
-use tokio::fs::{create_dir, try_exists};
+
 use url::Url;
 
 use shared_kernel::http_client::HttpClient;
 
-use use_cases::import_affected_areas::{Area, Region};
+use use_cases::import_affected_areas::{Region};
 
 lazy_static! {
     static ref FORWARD_SLASH: Regex =
@@ -114,6 +114,6 @@ mod tests {
                 Url::parse("https://www.kplc.co.ke/img/full/Interruptions%20-%2023.02.2023.pdf")
                     .unwrap(),
             ];
-        let res = extractor.extract(links).await.expect("Expected result");
+        let _res = extractor.extract(links).await.expect("Expected result");
     }
 }

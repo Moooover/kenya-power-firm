@@ -4,7 +4,7 @@ use crate::subscriber_locations::data::LocationWithId;
 use async_trait::async_trait;
 use entities::subscriptions::SubscriberId;
 use std::sync::Arc;
-use uuid::Uuid;
+
 
 #[async_trait]
 pub trait ListSubscribedLocationsInteractor: Send + Sync {

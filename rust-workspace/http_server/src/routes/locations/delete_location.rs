@@ -3,9 +3,7 @@ use crate::{
     use_case_app_container::UseCaseAppContainer,
 };
 use actix_web::{web, HttpRequest, HttpResponse};
-use itertools::Itertools;
-use serde::Serialize;
-use use_cases::subscriber_locations::data::{AdjuscentLocation, LocationWithId};
+
 use uuid::Uuid;
 
 async fn delete_primary_location(

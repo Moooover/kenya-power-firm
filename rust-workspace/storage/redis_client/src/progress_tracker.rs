@@ -11,7 +11,7 @@ impl Client {
     {
         let mut conn = self.conn.clone();
 
-        let _ = redis::Cmd::set_ex(key.clone(), value, 1200)
+        redis::Cmd::set_ex(key.clone(), value, 1200)
             .query_async(&mut conn)
             .await
             .with_context(|| format!("Failed to set status for key {key}"))?;
