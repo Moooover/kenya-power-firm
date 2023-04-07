@@ -2,7 +2,10 @@ mod counties;
 use anyhow::{bail, Context};
 
 use sqlx::query;
-use std::{collections::HashMap, iter};
+use std::{
+    collections::{HashMap, HashSet},
+    iter,
+};
 
 use crate::repository::Repository;
 use crate::save_import_input::counties::{DbCounty, DbCountyId};
@@ -81,7 +84,7 @@ async fn save_regions_data(
                 })
         })
         .flatten()
-        .collect::<Vec<_>>();
+        .collect::<HashSet<_>>();
 
     DbLine::save_many(transaction, lines)
         .await
@@ -163,6 +166,7 @@ impl AreaWithId {
     }
 }
 
+#[derive(Debug, Hash, PartialEq, Eq)]
 struct DbLine {
     area_id: Uuid,
     name: String,
@@ -172,13 +176,12 @@ struct DbLine {
 impl DbLine {
     async fn save_many(
         transaction: &mut sqlx::Transaction<'_, sqlx::Postgres>,
-        lines: Vec<DbLine>,
+        lines: HashSet<DbLine>,
     ) -> anyhow::Result<()> {
-        let line_names = lines
+        let (line_names, line_area_ids): (Vec<_>, Vec<_>) = lines
             .iter()
-            .map(|line| line.name.clone())
-            .collect::<Vec<_>>();
-        let line_area_ids = lines.iter().map(|line| line.area_id).collect::<Vec<_>>();
+            .map(|line| (line.name.clone(), line.area_id))
+            .unzip();
 
         sqlx::query!(
             "
