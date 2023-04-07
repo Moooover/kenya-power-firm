@@ -131,7 +131,7 @@ export default function Layout(props: React.PropsWithChildren<Props>) {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap component="div">
-            Blackout
+            Blackout Alerts
           </Typography>
           <IconButton aria-label="bulb" color="secondary">
             <LightIcon />

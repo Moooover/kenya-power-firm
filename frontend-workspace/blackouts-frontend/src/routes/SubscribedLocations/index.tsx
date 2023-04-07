@@ -7,16 +7,15 @@ import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import Collapse from "@mui/material/Collapse";
-import InboxIcon from "@mui/icons-material/MoveToInbox";
-import DraftsIcon from "@mui/icons-material/Drafts";
-import SendIcon from "@mui/icons-material/Send";
+
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
-import StarBorder from "@mui/icons-material/StarBorder";
-import MyLocationTwoToneIcon from "@mui/icons-material/MyLocationTwoTone";
+
 import DeleteTwoToneIcon from "@mui/icons-material/DeleteTwoTone";
 import NearMeTwoToneIcon from "@mui/icons-material/NearMeTwoTone";
-import { useDeleteLocationSubscription } from "../../hooks/mutations/useDeleteSubscribedLocation";
+import { useDeleteLocationSubscription } from "./useDeleteSubscribedLocation";
+import Avatar from "@mui/material/Avatar";
+import UnsubscribeDialog from "./UnsubscribeDialog";
 
 type AdjuscentLocation = {
   id: string;
@@ -66,27 +65,27 @@ export default function SubscribedLocations() {
 function Location({ location }: { location: Location }) {
   const [open, setOpen] = React.useState(false);
 
-  const { trigger } = useDeleteLocationSubscription(location.id);
+  const [openDialog, setOpenDialog] = React.useState(false);
 
   const handleToggleAdjuscentLocations = () => {
     setOpen(!open);
   };
-  const handleDeleteSubscribed = async () => {
-    await trigger();
-    mutate("/locations/list/subscribed");
+
+  const handleCloseAlertDialog = () => {
+    setOpenDialog(false);
   };
   return (
     <>
       <ListItemButton disableRipple>
         <ListItemIcon>
-          <MyLocationTwoToneIcon />
+          <Avatar>{location.name[0]}</Avatar>
         </ListItemIcon>
         <ListItemText
           primary={location.name}
           secondary={location.address}
           onClick={handleToggleAdjuscentLocations}
         />
-        <ListItemIcon onClick={handleDeleteSubscribed}>
+        <ListItemIcon onClick={() => setOpenDialog(true)}>
           <DeleteTwoToneIcon />
         </ListItemIcon>
         {location.adjuscent_locations.length > 0 ? (
@@ -105,6 +104,11 @@ function Location({ location }: { location: Location }) {
           />
         )}
       </ListItemButton>
+      <UnsubscribeDialog
+        open={openDialog}
+        location={location}
+        closeDialog={handleCloseAlertDialog}
+      />
       {location && (
         <Collapse in={open} timeout="auto" unmountOnExit>
           <List component="div" disablePadding>

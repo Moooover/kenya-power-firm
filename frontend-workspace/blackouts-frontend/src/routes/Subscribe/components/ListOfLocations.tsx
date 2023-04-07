@@ -1,14 +1,13 @@
 import * as React from "react";
 import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
 import Divider from "@mui/material/Divider";
 import ListItemText from "@mui/material/ListItemText";
 import ListItemAvatar from "@mui/material/ListItemAvatar";
 import Avatar from "@mui/material/Avatar";
 import Typography from "@mui/material/Typography";
 import { LocationSearchData } from "./SearchForLocation";
-import AddLocationAltTwoToneIcon from "@mui/icons-material/AddLocationAltTwoTone";
 import { ListItemButton } from "@mui/material";
+import ListItemIcon from "@mui/material/ListItemIcon";
 
 type Props = {
   items: LocationSearchData[];
@@ -31,9 +30,9 @@ export default function ListOfLocations(props: Props) {
               }}
             >
               <ListItemAvatar>
-                <Avatar>
-                  <AddLocationAltTwoToneIcon />
-                </Avatar>
+                <ListItemIcon>
+                  <Avatar>{item.name[0]}</Avatar>
+                </ListItemIcon>
               </ListItemAvatar>
               <ListItemText
                 primary={item.name}

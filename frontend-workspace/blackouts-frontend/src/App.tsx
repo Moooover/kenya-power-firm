@@ -1,4 +1,4 @@
-import Login from "./components/Login";
+import Login from "./components/LoginContainer/Login";
 import { RouterProvider } from "react-router-dom";
 import { router } from "./routes";
 import { SWRConfig } from "swr";
