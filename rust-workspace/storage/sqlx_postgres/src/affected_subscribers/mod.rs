@@ -102,7 +102,7 @@ impl Repository {
         let time_frame = area.time_frame.clone();
         let candidates = &area.locations;
 
-        let mapping_of_searcheable_candidate_to_candidate = candidates
+        let mapping_of_searcheable_location_candidate_to_candidate = candidates
             .iter()
             .map(|candidate| {
                 (
@@ -112,19 +112,26 @@ impl Repository {
             })
             .collect::<HashMap<_, _>>();
 
-        let mapping_of_searcheable_candidate_to_candidate_copy =
-            mapping_of_searcheable_candidate_to_candidate.clone();
+        let mapping_of_searcheable_location_candidate_to_candidate_copy =
+            mapping_of_searcheable_location_candidate_to_candidate.clone();
 
-        let searcheable_candidates = mapping_of_searcheable_candidate_to_candidate
+        let searcheable_candidates = mapping_of_searcheable_location_candidate_to_candidate
             .keys()
             .map(|candidate| candidate.as_ref())
             .collect_vec();
 
+        let searcheable_area_names = area
+            .name
+            .split(",")
+            .map(|s| SearcheableCandidate::from(s))
+            .collect_vec();
+
         let (directly_affected_subscribers, mapping_of_subscriber_to_directly_affected_locations) =
             self.directly_affected_subscribers(
+                &searcheable_area_names,
                 &searcheable_candidates,
                 &time_frame,
-                &mapping_of_searcheable_candidate_to_candidate,
+                &mapping_of_searcheable_location_candidate_to_candidate,
             )
             .await?;
 
@@ -132,9 +139,10 @@ impl Repository {
 
         let potentially_affected_subscribers = self
             .potentially_affected_subscribers(
-                searcheable_candidates,
+                &searcheable_area_names,
+                &searcheable_candidates,
                 &time_frame,
-                mapping_of_searcheable_candidate_to_candidate_copy,
+                mapping_of_searcheable_location_candidate_to_candidate_copy,
                 mapping_of_subscriber_to_directly_affected_locations,
                 area_name,
             )
@@ -148,6 +156,7 @@ impl Repository {
 
     async fn directly_affected_subscribers(
         &self,
+        searcheable_area_names: &[SearcheableCandidate],
         searcheable_candidates: &[&str],
         time_frame: &TimeFrame<FutureOrCurrentNairobiTZDateTime>,
         mapping_of_searcheable_candidate_to_original_candidate: &HashMap<
@@ -163,15 +172,25 @@ impl Repository {
             from: NairobiTZDateTime::from(&time_frame.from),
             to: NairobiTZDateTime::from(&time_frame.to),
         };
-        let primary_locations = sqlx::query_as::<_, DbLocationSearchResults>(
-            "
-            SELECT * FROM location.search_locations_primary_text($1::text[])
-            ",
-        )
-        .bind(searcheable_candidates)
-        .fetch_all(pool)
-        .await
-        .context("Failed to get primary search results from db")?;
+
+        let mut futures: FuturesUnordered<_> = searcheable_area_names
+            .into_iter()
+            .map(|area_name| {
+                sqlx::query_as::<_, DbLocationSearchResults>(
+                    "
+                        SELECT * FROM location.search_locations_primary_text($1::text[], $2::text)
+                        ",
+                )
+                .bind(searcheable_candidates)
+                .bind(area_name.to_string())
+                .fetch_all(pool)
+            })
+            .collect();
+        let mut primary_locations = vec![];
+        while let Some(result) = futures.next().await {
+            primary_locations.push(result.context("Failed to get primary search results from db")?);
+        }
+        let primary_locations = primary_locations.into_iter().flatten().collect_vec();
 
         let location_ids = primary_locations
             .iter()
@@ -236,7 +255,8 @@ impl Repository {
 
     async fn potentially_affected_subscribers(
         &self,
-        searcheable_candidates: Vec<&str>,
+        searcheable_area_names: &[SearcheableCandidate],
+        searcheable_candidates: &[&str],
         time_frame: &TimeFrame<FutureOrCurrentNairobiTZDateTime>,
         mapping_of_searcheable_candidate_to_original_candidate: HashMap<SearcheableCandidate, &str>,
         mapping_of_subscriber_to_directly_affected_locations: HashMap<Uuid, Vec<Uuid>>,
@@ -255,15 +275,28 @@ impl Repository {
             to: NairobiTZDateTime::from(&time_frame.to),
         };
 
-        let nearby_locations = sqlx::query_as::<_, DbLocationSearchResults>(
-            "
-                SELECT * FROM location.search_locations_secondary_text($1::text[])
+        let mut futures: FuturesUnordered<_> = searcheable_area_names
+            .iter()
+            .map(|area_name| {
+                sqlx::query_as::<_, DbLocationSearchResults>(
+                    "
+                SELECT * FROM location.search_locations_secondary_text($1::text[], $2::text)
                 ",
-        )
-        .bind(searcheable_candidates)
-        .fetch_all(pool)
-        .await
-        .context("Failed to get nearby location search results from db")?;
+                )
+                .bind(&searcheable_candidates)
+                .bind(area_name.to_string())
+                .fetch_all(pool)
+            })
+            .collect();
+
+        let mut nearby_locations = vec![];
+
+        while let Some(result) = futures.next().await {
+            nearby_locations
+                .push(result.context("Failed to get nearby location search results from db")?);
+        }
+
+        let nearby_locations = nearby_locations.into_iter().flatten().collect_vec();
 
         let location_ids = nearby_locations
             .iter()
@@ -383,7 +416,7 @@ impl Repository {
 }
 
 fn include_area_name_to_searcheable_candidates<'a>(
-    searcheable_candidates: Vec<&str>,
+    searcheable_candidates: &[&str],
     mapping_of_searcheable_candidate_to_original_candidate: HashMap<SearcheableCandidate, &'a str>,
     area_name: &'a str,
 ) -> (HashMap<SearcheableCandidate, &'a str>, Vec<String>) {
@@ -579,5 +612,89 @@ mod tests {
         assert!(results.contains_key(&key));
         let value = results.get(&key).unwrap().first().unwrap();
         assert_eq!(&value.line, "Garden City") // The area name
+    }
+
+    #[tokio::test]
+    async fn test_locations_with_generic_names_are_first_matched_to_area() {
+        let repository = Repository::new_test_repo().await;
+        let subscriber_id = authenticate(&repository).await;
+        let contents = include_str!("mock_data/generic_name/citam_nairobi_pentecostal.json");
+        let api_response: Value = serde_json::from_str(contents).unwrap();
+
+        let location_id = repository
+            .insert_location(LocationInput {
+                name: "Nairobi Pentecostal Church".to_string(),
+                external_id: ExternalLocationId::from("ChIJhVbiHlwVLxgRUzt5QN81vPA".to_string()),
+                address: "CITAM BURU BURU PREMISES,NZIU, Starehe, Kenya".to_string(),
+                api_response,
+            })
+            .await
+            .unwrap();
+        repository
+            .subscribe_to_location(subscriber_id, location_id)
+            .await
+            .unwrap();
+
+        let contents = include_str!("mock_data/generic_name/fishermens_pentecostal.json");
+        let api_response: Value = serde_json::from_str(contents).unwrap();
+
+        let location_id = repository
+            .insert_location(LocationInput {
+                name: "Fisher's of men Pentecostal church".to_string(),
+                external_id: ExternalLocationId::from("ChIJwxGb7pVrLxgRdxwwMVASs-c".to_string()),
+                address: "PXV6+JVG, Kangundo Rd, Nairobi, Kenya".to_string(),
+                api_response,
+            })
+            .await
+            .unwrap();
+        repository
+            .subscribe_to_location(subscriber_id, location_id)
+            .await
+            .unwrap();
+
+        let contents = include_str!("mock_data/generic_name/victory_pentecostal_church.json");
+        let api_response: Value = serde_json::from_str(contents).unwrap();
+
+        let location_id = repository
+            .insert_location(LocationInput {
+                name: "Victory Pentecostal Church (Jabez Experience Centre)".to_string(),
+                external_id: ExternalLocationId::from("ChIJSx8C4LERLxgR-ml5tyOEkPw".to_string()),
+                address: "MQRQ+GVF, Nairobi, Kenya".to_string(),
+                api_response,
+            })
+            .await
+            .unwrap();
+        repository
+            .subscribe_to_location(subscriber_id, location_id)
+            .await
+            .unwrap();
+
+        let region = Region {
+            region: "Nairobi".to_string(),
+            counties: vec![County {
+                name: "Nairobi".to_string(),
+                areas: vec![Area {
+                    name: "Kibera".to_string(),
+                    time_frame: TimeFrame {
+                        from: NairobiTZDateTime::today().try_into().unwrap(),
+                        to: NairobiTZDateTime::today().try_into().unwrap(),
+                    },
+                    locations: vec!["Pentecostal church".to_string()],
+                }],
+            }],
+        };
+
+        let results = repository
+            .get_affected_subscribers(&[region])
+            .await
+            .unwrap();
+
+        let empty_vec = vec![];
+
+        let affected_lines = results
+            .get(&AffectedSubscriber::DirectlyAffected(subscriber_id))
+            .unwrap_or(&empty_vec);
+
+        assert_eq!(affected_lines.len(), 1)
     }
 }

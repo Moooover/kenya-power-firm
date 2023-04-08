@@ -13,6 +13,7 @@ use entities::subscriptions::{AffectedSubscriber, SubscriberId};
 use entities::{locations::LocationId, power_interruptions::location::AreaName};
 use itertools::Itertools;
 use sqlx::types::chrono::DateTime;
+use sqlx::PgPool;
 use url::Url;
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
@@ -75,6 +76,15 @@ impl BareAffectedLine {
     }
 }
 
+impl SearcheableCandidate {
+    fn from_area_names(area: &AreaName) -> Vec<Self> {
+        area.as_ref()
+            .split(',')
+            .map(SearcheableCandidate::from)
+            .collect_vec()
+    }
+}
+
 impl Repository {
     pub async fn subscriber_directly_affected(
         &self,
@@ -82,16 +92,30 @@ impl Repository {
         location_id: LocationId,
     ) -> anyhow::Result<Option<Notification>> {
         let results = BareAffectedLine::lines_affected_in_the_future(self).await?;
-        let affected_lines = results.values().flatten().collect_vec();
-        self.directly_affected_subscriber_notification(subscriber_id, location_id, &affected_lines)
-            .await
+
+        for (area_name, affected_lines) in results.iter() {
+            let notification = self
+                .directly_affected_subscriber_notification(
+                    subscriber_id,
+                    location_id,
+                    area_name,
+                    affected_lines,
+                )
+                .await?;
+            if let Some(notification) = notification {
+                return Ok(Some(notification));
+            }
+        }
+
+        Ok(None)
     }
 
     async fn directly_affected_subscriber_notification(
         &self,
         subscriber_id: SubscriberId,
         location_id: LocationId,
-        affected_lines: &[&BareAffectedLine],
+        area_name: &AreaName,
+        affected_lines: &[BareAffectedLine],
     ) -> anyhow::Result<Option<Notification>> {
         let pool = self.pool();
 
@@ -102,23 +126,20 @@ impl Repository {
             mapping_of_line_to_url,
         } = Mapping::generate(affected_lines);
 
-        let primary_location = sqlx::query_as::<_, DbLocationSearchResults>(
-            "
-            SELECT * FROM location.search_specific_location_primary_text($1::text[], $2::uuid)
-            ",
+        let primary_location = Self::get_primary_location_search_result(
+            location_id,
+            area_name,
+            pool,
+            searcheable_candidates,
         )
-        .bind(searcheable_candidates)
-        .bind(location_id.inner())
-        .fetch_optional(pool)
-        .await
-        .context("Failed to fetch results from search_specific_location_primary_text")?;
+        .await?;
 
         if let Some(location) = primary_location {
             let original_line_candidate =
                 mapping_of_searcheble_candidate_to_original_line_candidate
                     .get(&location.search_query)
                     .ok_or(anyhow!(
-                        "Failed to get orinal_line_candidate from search_query {}",
+                        "Failed to get original_line_candidate from search_query {}",
                         location.search_query
                     ))?;
 
@@ -147,6 +168,44 @@ impl Repository {
         }
     }
 
+    async fn get_primary_location_search_result(
+        location_id: LocationId,
+        area_name: &AreaName,
+        pool: &PgPool,
+        searcheable_candidates: Vec<String>,
+    ) -> anyhow::Result<Option<DbLocationSearchResults>> {
+        let mut primary_location: Option<DbLocationSearchResults> = None;
+
+        for (searcheable_candidates, location_id, searcheable_area) in
+            SearcheableCandidate::from_area_names(area_name)
+                .into_iter()
+                .map(|area_candidate| {
+                    (
+                        searcheable_candidates.clone(),
+                        location_id.inner(),
+                        area_candidate,
+                    )
+                })
+        {
+            let location = sqlx::query_as::<_, DbLocationSearchResults>(
+                "
+                    SELECT * FROM location.search_specific_location_primary_text($1::text[], $2::uuid, $3::text)
+                    ",
+            )
+                .bind(searcheable_candidates)
+                .bind(location_id)
+                .bind(searcheable_area.to_string())
+                .fetch_optional(pool)
+                .await
+                .context("Failed to fetch results from search_specific_location_primary_text")?;
+            if let Some(location) = location {
+                primary_location = Some(location);
+                break;
+            }
+        }
+        Ok(primary_location)
+    }
+
     pub async fn subscriber_potentially_affected(
         &self,
         subscriber_id: SubscriberId,
@@ -155,28 +214,46 @@ impl Repository {
         let mapping_of_areas_with_affected_lines =
             BareAffectedLine::lines_affected_in_the_future(self).await?;
 
-        let map_areas_as_locations = mapping_of_areas_with_affected_lines
-            .into_iter()
-            .filter_map(|(area, affected_lines)| {
-                let time_frame_and_url = affected_lines
-                    .first()
-                    .map(|line| (line.time_frame.clone(), line.url.clone()));
-                time_frame_and_url.map(|(time_frame, url)| {
-                    affected_lines
-                        .into_iter()
-                        .chain(once_with(|| BareAffectedLine {
-                            line: area.inner(),
-                            time_frame,
-                            url,
-                        }))
-                        .collect_vec()
-                })
-            })
-            .flatten()
-            .collect_vec();
+        for (area_name, affected_lines) in mapping_of_areas_with_affected_lines.into_iter() {
+            let (time_frame, url) = affected_lines
+                .first()
+                .map(|line| (line.time_frame.clone(), line.url.clone()))
+                .ok_or(anyhow!("Failed to get time_frame and url"))?;
 
-        let affected_lines = map_areas_as_locations.iter().collect_vec();
+            let searcheable_area_names = SearcheableCandidate::from_area_names(&area_name);
 
+            let affected_lines = affected_lines
+                .into_iter()
+                .chain(once_with(|| BareAffectedLine {
+                    line: area_name.to_string(),
+                    time_frame,
+                    url,
+                }))
+                .collect_vec();
+
+            let maybe_notification = self
+                .potentially_affected_notification(
+                    subscriber_id,
+                    location_id,
+                    searcheable_area_names,
+                    &affected_lines,
+                )
+                .await?;
+            if maybe_notification.is_some() {
+                return Ok(maybe_notification);
+            }
+        }
+
+        Ok(None)
+    }
+
+    async fn potentially_affected_notification(
+        &self,
+        subscriber_id: SubscriberId,
+        location_id: LocationId,
+        searcheable_area_names: Vec<SearcheableCandidate>,
+        affected_lines: &Vec<BareAffectedLine>,
+    ) -> anyhow::Result<Option<Notification>> {
         let Mapping {
             mapping_of_line_to_time_frame,
             mapping_of_searcheble_candidate_to_original_line_candidate,
@@ -184,47 +261,66 @@ impl Repository {
             mapping_of_line_to_url,
         } = Mapping::generate(&affected_lines);
 
-        let nearby_location = sqlx::query_as::<_, DbLocationSearchResults>(
-            "
-            SELECT * FROM location.search_specific_location_secondary_text($1::text[], $2::uuid)
-            ",
-        )
-        .bind(searcheable_candidates)
-        .bind(location_id.to_string())
-        .fetch_optional(self.pool())
-        .await
-        .context("Failed to fetch results from search_specific_location_secondary_text")?;
+        for searcheable_area_name in searcheable_area_names.into_iter() {
+            let nearby_location = self
+                .get_potentially_affected_nearby_location(
+                    location_id,
+                    searcheable_candidates.clone(),
+                    searcheable_area_name,
+                )
+                .await?;
 
-        if let Some(location) = nearby_location {
-            let original_line_candidate =
-                mapping_of_searcheble_candidate_to_original_line_candidate
-                    .get(&location.search_query)
+            if let Some(location) = nearby_location {
+                let original_line_candidate =
+                    mapping_of_searcheble_candidate_to_original_line_candidate
+                        .get(&location.search_query)
+                        .ok_or(anyhow!(
+                            "Failed to get orinal_line_candidate from search_query {}",
+                            location.search_query
+                        ))?;
+
+                let time_frame = *mapping_of_line_to_time_frame.get(original_line_candidate).ok_or(anyhow!("Failed to get time_frame when we should have for candidate {original_line_candidate}"))?;
+
+                let url = *mapping_of_line_to_url
+                    .get(original_line_candidate)
                     .ok_or(anyhow!(
-                        "Failed to get orinal_line_candidate from search_query {}",
-                        location.search_query
-                    ))?;
-
-            let time_frame = *mapping_of_line_to_time_frame.get(original_line_candidate).ok_or(anyhow!("Failed to get time_frame when we should have for candidate {original_line_candidate}"))?;
-
-            let url = *mapping_of_line_to_url
-                .get(original_line_candidate)
-                .ok_or(anyhow!(
                 "Failed to get url from mapping_of_line_to_url for line {original_line_candidate}"
             ))?;
-            let affected_line = AffectedLine {
-                location_matched: location_id,
-                line: original_line_candidate.to_string(),
-                time_frame: time_frame.clone(),
-            };
-            let notification = Notification {
-                url: url.to_owned(),
-                subscriber: AffectedSubscriber::PotentiallyAffected(subscriber_id),
-                lines: vec![affected_line],
-            };
-            Ok(Some(notification))
-        } else {
-            Ok(None)
+                let affected_line = AffectedLine {
+                    location_matched: location_id,
+                    line: original_line_candidate.to_string(),
+                    time_frame: time_frame.clone(),
+                };
+                let notification = Notification {
+                    url: url.to_owned(),
+                    subscriber: AffectedSubscriber::PotentiallyAffected(subscriber_id),
+                    lines: vec![affected_line],
+                };
+                return Ok(Some(notification));
+            }
         }
+
+        Ok(None)
+    }
+
+    async fn get_potentially_affected_nearby_location(
+        &self,
+        location_id: LocationId,
+        searcheable_candidates: Vec<String>,
+        searcheable_area_name: SearcheableCandidate,
+    ) -> anyhow::Result<Option<DbLocationSearchResults>> {
+        let nearby_location = sqlx::query_as::<_, DbLocationSearchResults>(
+            "
+            SELECT * FROM location.search_specific_location_secondary_text($1::text[], $2::uuid, $3::text)
+            ",
+        )
+            .bind(searcheable_candidates.clone())
+            .bind(location_id.to_string())
+            .bind(searcheable_area_name.to_string())
+            .fetch_optional(self.pool())
+            .await
+            .context("Failed to fetch results from search_specific_location_secondary_text")?;
+        Ok(nearby_location)
     }
 }
 
@@ -236,7 +332,7 @@ struct Mapping<'a> {
 }
 
 impl<'a> Mapping<'a> {
-    fn generate(affected_lines: &'a [&BareAffectedLine]) -> Self {
+    fn generate(affected_lines: &'a [BareAffectedLine]) -> Self {
         let (
             mapping_of_line_to_time_frame,
             mapping_of_line_to_url,

@@ -31,7 +31,6 @@ impl SaveBlackoutAffectedAreasRepo for Repository {
             .context("Failed to begin transaction")?;
 
         for (url, regions) in data.0.iter() {
-            println!("saving url -> {url}");
             let source = SourceFile::save(&mut transaction, url).await?;
 
             save_regions_data(regions, &counties, &mut transaction, source.id).await?;
