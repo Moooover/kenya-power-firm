@@ -24,7 +24,6 @@ pub struct WebPageExtractor {
 
 #[async_trait]
 pub trait FileOperations: Send + Sync {
-    async fn save_files(&self, files: Vec<Url>) -> anyhow::Result<()>;
     async fn return_unprocessed_files(&self, files: Vec<Url>) -> anyhow::Result<Vec<Url>>;
 }
 
@@ -55,9 +54,8 @@ impl WebPageExtractor {
 
         let result = self.pdf_reader.extract(unprocessed_files.clone()).await?;
 
-        self.importer.import(actor, ImportInput(result)).await?;
+        self.importer.import(actor, ImportInput(result)).await
 
-        self.file_operations.save_files(unprocessed_files).await
     }
 
     async fn get_page_contents(&self) -> anyhow::Result<String> {

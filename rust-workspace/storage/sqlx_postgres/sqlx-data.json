@@ -1,5 +1,25 @@
 {
   "db": "PostgreSQL",
+  "05822a8d2940161e60142db59b2c0510d4a858d9bbd1dc85b623973132d6bc5c": {
+    "describe": {
+      "columns": [
+        {
+          "name": "url",
+          "ordinal": 0,
+          "type_info": "Varchar"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "TextArray"
+        ]
+      }
+    },
+    "query": "\n            SELECT url FROM source WHERE url = ANY($1)\n            "
+  },
   "0ca41a01a99b3356ebfccc9669fbcbb9b563437e06dfb5ff7dedfce470e5bb1f": {
     "describe": {
       "columns": [
@@ -533,26 +553,6 @@
       }
     },
     "query": "\n            INSERT INTO location.line_schedule(line_id, schedule_id)\n            SELECT * FROM UNNEST($1::uuid[], $2::uuid[]) ON CONFLICT DO NOTHING\n            "
-  },
-  "bb19244d8dc027cdd6c33d58e84f7caa5b6036d334ece33b3e513668d4d979b9": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Varchar"
-        }
-      ],
-      "nullable": [
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "TextArray"
-        ]
-      }
-    },
-    "query": "\n            SELECT id FROM importer.processed_files WHERE id = ANY($1)\n            "
   },
   "bc798c3d32d01de408e0ecf7dc778012857c6316302fee764e89ea45ec99ac23": {
     "describe": {

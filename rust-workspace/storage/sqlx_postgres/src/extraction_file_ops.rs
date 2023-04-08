@@ -10,38 +10,23 @@ use anyhow::Context;
 
 #[async_trait]
 impl FileOperations for Repository {
-    async fn save_files(&self, files: Vec<Url>) -> anyhow::Result<()> {
-        let keys = files.into_iter().map(|file| file.to_string()).collect_vec();
-        sqlx::query!(
-            "
-              INSERT INTO importer.processed_files(id) 
-              SELECT * FROM UNNEST($1::text[]) ON CONFLICT DO NOTHING
-            ",
-            &keys[..],
-        )
-        .execute(self.pool())
-        .await
-        .context("Failed to save_files")?;
-
-        Ok(())
-    }
 
     async fn return_unprocessed_files(&self, files: Vec<Url>) -> anyhow::Result<Vec<Url>> {
         let keys = files.into_iter().map(|file| file.to_string()).collect_vec();
 
         let records = sqlx::query!(
             "
-            SELECT id FROM importer.processed_files WHERE id = ANY($1)
+            SELECT url FROM source WHERE url = ANY($1)
             ",
             &keys[..]
         )
         .fetch_all(self.pool())
         .await
-        .context("Failed to fetch processed files")?;
+        .context("Failed to fetch urls from source table")?;
         let all_provided_keys = keys.into_iter().collect::<HashSet<_>>();
         let existing_records = records
             .into_iter()
-            .map(|record| record.id)
+            .map(|record| record.url)
             .collect::<HashSet<_>>();
 
         let (difference, errors): (Vec<_>, Vec<_>) = all_provided_keys
