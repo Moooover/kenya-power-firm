@@ -85,6 +85,53 @@ impl SearcheableCandidate {
     }
 }
 
+struct NotificationGenerator<'a> {
+    subscriber: AffectedSubscriber,
+    mapping: &'a Mapping<'a>,
+}
+
+impl<'a> NotificationGenerator<'a> {
+    fn generate(&self, location: DbLocationSearchResults) -> anyhow::Result<Notification> {
+        let Mapping {
+            mapping_of_line_to_time_frame,
+            mapping_of_searcheble_candidate_to_original_line_candidate,
+            mapping_of_line_to_url,
+            ..
+        } = self.mapping;
+        let original_line_candidate = mapping_of_searcheble_candidate_to_original_line_candidate
+            .get(&location.search_query)
+            .ok_or(anyhow!(
+                "Failed to get original_line_candidate from search_query {}",
+                location.search_query
+            ))?;
+
+        let time_frame = *mapping_of_line_to_time_frame
+            .get(original_line_candidate)
+            .ok_or(anyhow!(
+            "Failed to get time_frame when we should have for candidate {original_line_candidate}"
+        ))?;
+
+        let url = *mapping_of_line_to_url
+            .get(original_line_candidate)
+            .ok_or(anyhow!(
+                "Failed to get url from mapping_of_line_to_url for line {original_line_candidate}"
+            ))?;
+        let affected_line = AffectedLine {
+            location_matched: location.id.into(),
+            line: original_line_candidate.to_string(),
+            time_frame: time_frame.clone(),
+        };
+
+        let notification = Notification {
+            url: url.to_owned(),
+            subscriber: self.subscriber,
+            lines: vec![affected_line],
+        };
+
+        Ok(notification)
+    }
+}
+
 impl Repository {
     pub async fn subscriber_directly_affected(
         &self,
@@ -119,48 +166,22 @@ impl Repository {
     ) -> anyhow::Result<Option<Notification>> {
         let pool = self.pool();
 
-        let Mapping {
-            mapping_of_line_to_time_frame,
-            mapping_of_searcheble_candidate_to_original_line_candidate,
-            searcheable_candidates,
-            mapping_of_line_to_url,
-        } = Mapping::generate(affected_lines);
+        let mapping = Mapping::generate(affected_lines);
 
         let primary_location = Self::get_primary_location_search_result(
             location_id,
             area_name,
             pool,
-            searcheable_candidates,
+            mapping.searcheable_candidates.clone(),
         )
         .await?;
 
         if let Some(location) = primary_location {
-            let original_line_candidate =
-                mapping_of_searcheble_candidate_to_original_line_candidate
-                    .get(&location.search_query)
-                    .ok_or(anyhow!(
-                        "Failed to get original_line_candidate from search_query {}",
-                        location.search_query
-                    ))?;
-
-            let time_frame = *mapping_of_line_to_time_frame.get(original_line_candidate).ok_or(anyhow!("Failed to get time_frame when we should have for candidate {original_line_candidate}"))?;
-
-            let url = *mapping_of_line_to_url
-                .get(original_line_candidate)
-                .ok_or(anyhow!(
-                "Failed to get url from mapping_of_line_to_url for line {original_line_candidate}"
-            ))?;
-            let affected_line = AffectedLine {
-                location_matched: location_id,
-                line: original_line_candidate.to_string(),
-                time_frame: time_frame.clone(),
-            };
-
-            let notification = Notification {
-                url: url.to_owned(),
+            let notification = NotificationGenerator {
                 subscriber: AffectedSubscriber::DirectlyAffected(subscriber_id),
-                lines: vec![affected_line],
-            };
+                mapping: &mapping,
+            }
+            .generate(location)?;
 
             Ok(Some(notification))
         } else {
@@ -254,48 +275,23 @@ impl Repository {
         searcheable_area_names: Vec<SearcheableCandidate>,
         affected_lines: &Vec<BareAffectedLine>,
     ) -> anyhow::Result<Option<Notification>> {
-        let Mapping {
-            mapping_of_line_to_time_frame,
-            mapping_of_searcheble_candidate_to_original_line_candidate,
-            searcheable_candidates,
-            mapping_of_line_to_url,
-        } = Mapping::generate(&affected_lines);
+        let mapping = Mapping::generate(&affected_lines);
 
         for searcheable_area_name in searcheable_area_names.into_iter() {
             let nearby_location = self
                 .get_potentially_affected_nearby_location(
                     location_id,
-                    searcheable_candidates.clone(),
+                    mapping.searcheable_candidates.clone(),
                     searcheable_area_name,
                 )
                 .await?;
 
             if let Some(location) = nearby_location {
-                let original_line_candidate =
-                    mapping_of_searcheble_candidate_to_original_line_candidate
-                        .get(&location.search_query)
-                        .ok_or(anyhow!(
-                            "Failed to get orinal_line_candidate from search_query {}",
-                            location.search_query
-                        ))?;
-
-                let time_frame = *mapping_of_line_to_time_frame.get(original_line_candidate).ok_or(anyhow!("Failed to get time_frame when we should have for candidate {original_line_candidate}"))?;
-
-                let url = *mapping_of_line_to_url
-                    .get(original_line_candidate)
-                    .ok_or(anyhow!(
-                "Failed to get url from mapping_of_line_to_url for line {original_line_candidate}"
-            ))?;
-                let affected_line = AffectedLine {
-                    location_matched: location_id,
-                    line: original_line_candidate.to_string(),
-                    time_frame: time_frame.clone(),
-                };
-                let notification = Notification {
-                    url: url.to_owned(),
+                let notification = NotificationGenerator {
+                    mapping: &mapping,
                     subscriber: AffectedSubscriber::PotentiallyAffected(subscriber_id),
-                    lines: vec![affected_line],
-                };
+                }
+                .generate(location)?;
                 return Ok(Some(notification));
             }
         }
