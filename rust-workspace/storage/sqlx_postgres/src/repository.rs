@@ -25,13 +25,9 @@ impl Repository {
             .context("Failed to connect to DB")
             .map(Arc::new)?;
 
-        sqlx::migrate!()
-            .run(&*pg_pool)
-            .await
-            .context("Failed to run migration")?;
-
         Ok(Self { pg_pool })
     }
+
     #[cfg(test)]
     pub async fn new_test_repo() -> Self {
         use sqlx::Executor;
