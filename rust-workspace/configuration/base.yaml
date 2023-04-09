@@ -6,7 +6,7 @@ database:
   database_name: "blackout"
   require_ssl: false
 location:
-  host: "https://maps.googleapis.com/maps/api"
+  host: "https://maps.googleapis.com/maps/api/place/autocomplete/json"
   api_key: ""
 email:
   host: "https://api.courier.com/send"
