@@ -13,7 +13,7 @@ use url::Url;
 
 use crate::{
     send_notifications::email::send_email_notification,
-    utils::{get_token::get_token_count, progress_tracking::generate_key},
+    utils::{get_token::get_location_token, progress_tracking::generate_key},
 };
 use entities::locations::LocationId;
 use redis_client::client::CLIENT;
@@ -52,7 +52,7 @@ pub async fn get_and_subscribe_to_nearby_location(
     let id = try_get_location_from_cache(&external_id).await?;
     let location_id = match id {
         None => {
-            let token_count = get_token_count().await?;
+            let token_count = get_location_token().await?;
 
             if token_count < 0 {
                 return Task::retry_with_countdown(task, 1);
@@ -113,7 +113,7 @@ pub async fn fetch_and_subscribe_to_locations(
     let id = try_get_location_from_cache(&primary_location).await?;
     let location_id = match id {
         None => {
-            let token_count = get_token_count().await?;
+            let token_count = get_location_token().await?;
 
             if token_count < 0 {
                 return Task::retry_with_countdown(task, 1);

@@ -3,9 +3,10 @@ use crate::{
     utils::callbacks::failure_callback,
 };
 use celery::error::TaskError;
-use celery::prelude::TaskResultExt;
+use celery::prelude::{Task, TaskResultExt};
 use celery::task::TaskResult;
 
+use crate::utils::get_token::get_email_token;
 use entities::{
     locations::LocationName,
     notifications::Notification,
@@ -91,7 +92,7 @@ struct Response {
 }
 
 #[celery::task(max_retries = 200, bind=true, retry_for_unexpected = false, on_failure = failure_callback)]
-pub async fn send_email_notification(_task: &Self, notification: Notification) -> TaskResult<()> {
+pub async fn send_email_notification(task: &Self, notification: Notification) -> TaskResult<()> {
     let repo = REPO.get().await;
     let notification = repo
         .filter_email_notification_by_those_already_sent(notification)
@@ -100,6 +101,12 @@ pub async fn send_email_notification(_task: &Self, notification: Notification) -
 
     if notification.already_sent() {
         return Ok(());
+    }
+
+    let token_count = get_email_token().await?;
+
+    if token_count < 0 {
+        return Task::retry_with_countdown(task, 1);
     }
 
     let body = generate_email_body(&notification).await?;

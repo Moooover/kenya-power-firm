@@ -4,7 +4,7 @@ use crate::repository::Repository;
 use anyhow::Context;
 use async_trait::async_trait;
 use entities::locations::LocationId;
-use entities::power_interruptions::location::{Area, NairobiTZDateTime, TimeFrame};
+use entities::power_interruptions::location::{Area, AreaName, NairobiTZDateTime, TimeFrame};
 use entities::subscriptions::AffectedSubscriber;
 use entities::{
     power_interruptions::location::{AffectedLine, FutureOrCurrentNairobiTZDateTime, Region},
@@ -36,7 +36,7 @@ impl SubscriberRepo for Repository {
 
         let mut futures: FuturesUnordered<_> = areas
             .into_iter()
-            .map(|area| self.get_location_subscribers(area))
+            .map(|area| self.get_subscribers_with_their_affected_lines_in_an_area(area))
             .collect();
 
         let mut result = vec![];
@@ -95,7 +95,7 @@ struct SubscriberWithLocation {
 }
 
 impl Repository {
-    async fn get_location_subscribers(
+    async fn get_subscribers_with_their_affected_lines_in_an_area(
         &self,
         area: &Area<FutureOrCurrentNairobiTZDateTime>,
     ) -> anyhow::Result<HashMap<AffectedSubscriber, Vec<AffectedLine<NairobiTZDateTime>>>> {
@@ -120,11 +120,7 @@ impl Repository {
             .map(|candidate| candidate.as_ref())
             .collect_vec();
 
-        let searcheable_area_names = area
-            .name
-            .split(",")
-            .map(|s| SearcheableCandidate::from(s))
-            .collect_vec();
+        let searcheable_area_names = SearcheableCandidate::from_area_name(&area.name);
 
         let (directly_affected_subscribers, mapping_of_subscriber_to_directly_affected_locations) =
             self.directly_affected_subscribers(
@@ -260,7 +256,7 @@ impl Repository {
         time_frame: &TimeFrame<FutureOrCurrentNairobiTZDateTime>,
         mapping_of_searcheable_candidate_to_original_candidate: HashMap<SearcheableCandidate, &str>,
         mapping_of_subscriber_to_directly_affected_locations: HashMap<Uuid, Vec<Uuid>>,
-        area_name: String,
+        area_name: AreaName,
     ) -> anyhow::Result<HashMap<AffectedSubscriber, Vec<AffectedLine<NairobiTZDateTime>>>> {
         let (mapping_of_searcheable_candidate_to_original_candidate, searcheable_candidates) =
             include_area_name_to_searcheable_candidates(
@@ -418,9 +414,9 @@ impl Repository {
 fn include_area_name_to_searcheable_candidates<'a>(
     searcheable_candidates: &[&str],
     mapping_of_searcheable_candidate_to_original_candidate: HashMap<SearcheableCandidate, &'a str>,
-    area_name: &'a str,
+    area_name: &'a AreaName,
 ) -> (HashMap<SearcheableCandidate, &'a str>, Vec<String>) {
-    let area = area_name.split(',').collect_vec();
+    let area = area_name.as_ref().split(',').collect_vec();
 
     let area_mapping = area.iter().map(|area_name_candidate| {
         (
@@ -437,7 +433,7 @@ fn include_area_name_to_searcheable_candidates<'a>(
 
     let area_as_searcheable = area
         .iter()
-        .map(|area| SearcheableCandidate::from(*area))
+        .map(|area| SearcheableCandidate::from(area.as_ref()))
         .map(|area| area.to_string());
 
     let searcheable_candidates = searcheable_candidates
@@ -505,7 +501,7 @@ mod tests {
                 name: "Nairobi".to_string(),
                 areas: vec![
                     Area {
-                        name: "Garden City".to_string(),
+                        name: "Garden City".to_string().into(),
                         time_frame: TimeFrame {
                             from: NairobiTZDateTime::today().try_into().unwrap(),
                             to: NairobiTZDateTime::today().try_into().unwrap(),
@@ -516,7 +512,7 @@ mod tests {
                         ],
                     },
                     Area {
-                        name: "Lumumba".to_string(),
+                        name: "Lumumba".to_string().into(),
                         time_frame: TimeFrame {
                             from: NairobiTZDateTime::today().try_into().unwrap(),
                             to: NairobiTZDateTime::today().try_into().unwrap(),
@@ -674,7 +670,7 @@ mod tests {
             counties: vec![County {
                 name: "Nairobi".to_string(),
                 areas: vec![Area {
-                    name: "Kibera".to_string(),
+                    name: "Kibera".to_string().into(),
                     time_frame: TimeFrame {
                         from: NairobiTZDateTime::today().try_into().unwrap(),
                         to: NairobiTZDateTime::today().try_into().unwrap(),

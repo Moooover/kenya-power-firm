@@ -11,7 +11,7 @@ use crate::repository::Repository;
 use crate::save_import_input::counties::{DbCounty, DbCountyId};
 use async_trait::async_trait;
 use entities::power_interruptions::location::{
-    Area, FutureOrCurrentNairobiTZDateTime, NairobiTZDateTime, Region,
+    Area, AreaName, FutureOrCurrentNairobiTZDateTime, NairobiTZDateTime, Region,
 };
 use url::Url;
 use use_cases::import_affected_areas::SaveBlackoutAffectedAreasRepo;
@@ -30,7 +30,7 @@ impl SaveBlackoutAffectedAreasRepo for Repository {
             .await
             .context("Failed to begin transaction")?;
 
-        for (url, regions) in data.0.iter() {
+        for (url, regions) in data.iter() {
             let source = SourceFile::save(&mut transaction, url).await?;
 
             save_regions_data(regions, &counties, &mut transaction, source.id).await?;
@@ -131,7 +131,7 @@ impl AreaWithId {
     ) -> Result<Vec<AreaWithId>, sqlx::Error> {
         let (area_names, county_ids): (Vec<_>, Vec<_>) = county_id_with_areas
             .iter()
-            .map(|(id, area)| (area.name.clone(), id.inner()))
+            .map(|(id, area)| (area.name.to_string(), id.inner()))
             .unzip();
 
         sqlx::query!(
@@ -152,7 +152,7 @@ impl AreaWithId {
         .await?;
         let mapping_of_area_name_to_id = inserted_areas
             .into_iter()
-            .map(|record| (record.name, record.id))
+            .map(|record| (AreaName::from(record.name), record.id))
             .collect::<HashMap<_, _>>();
         Ok(county_id_with_areas
             .into_iter()
@@ -315,7 +315,7 @@ mod tests {
             counties: vec![County {
                 name: "Nairobi".to_string(),
                 areas: vec![Area {
-                    name: "Garden city".to_string(),
+                    name: "Garden city".to_string().into(),
                     time_frame: TimeFrame {
                         from: NairobiTZDateTime::today().try_into().unwrap(),
                         to: NairobiTZDateTime::today().try_into().unwrap(),
@@ -325,7 +325,7 @@ mod tests {
             }],
         };
         let data = HashMap::from_iter([(url, vec![region])]);
-        ImportInput(data)
+        ImportInput::new(data)
     }
     #[tokio::test]
     async fn test_can_save_data_successfully() {

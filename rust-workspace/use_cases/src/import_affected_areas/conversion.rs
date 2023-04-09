@@ -35,7 +35,7 @@ impl TryFrom<Area> for DomainArea<FutureOrCurrentNairobiTZDateTime> {
         let from = FutureOrCurrentNairobiTZDateTime::try_from(value.from)?;
         let to = FutureOrCurrentNairobiTZDateTime::try_from(value.to)?;
         Ok(DomainArea {
-            name: value.name,
+            name: value.name.into(),
             time_frame: TimeFrame { from, to },
             locations: value.locations,
         })

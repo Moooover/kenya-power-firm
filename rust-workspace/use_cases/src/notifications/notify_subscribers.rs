@@ -47,7 +47,6 @@ pub trait GetPreferredDeliveryStrategies: Send + Sync {
 impl NotifySubscribersOfAffectedAreas for Notifier {
     async fn notify(&self, data: ImportInput) -> anyhow::Result<()> {
         let mut futures: FuturesUnordered<_> = data
-            .0
             .iter()
             .map(|(url, regions)| self.notify_affected_subscribers(url.clone(), regions))
             .collect();

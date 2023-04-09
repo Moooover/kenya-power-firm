@@ -9,6 +9,7 @@ use celery::Celery;
 
 use std::sync::Arc;
 use text_search::search_locations_by_text;
+extern crate num_cpus;
 
 pub mod configuration;
 pub mod constants;
@@ -21,6 +22,7 @@ const QUEUE_NAME: &str = "celery";
 
 pub async fn app() -> anyhow::Result<Arc<Celery>> {
     let redis_host = SETTINGS_CONFIG.redis.host.to_string();
+    let pre_fetch_count = get_pre_fetch_count();
     celery::app!(
         broker = RedisBroker { redis_host },
         tasks = [
@@ -35,10 +37,19 @@ pub async fn app() -> anyhow::Result<Arc<Celery>> {
             "search_locations_by_text" => "search_locations_by_text",
             "send_email_notification" => "send_email_notification"
         ],
-        prefetch_count = 2,
+        prefetch_count = pre_fetch_count,
         heartbeat = Some(10),
         acks_late = true
     )
     .await
     .context("Failed to initialize app")
+}
+
+fn get_pre_fetch_count() -> u16 {
+    // https://rusty-celery.github.io/best-practices/index.html#prefetch-count
+    //A good starting point for prefetch_count would be either 100 x NUM_CPUS for IO-bound tasks
+    // or 2 * NUM_CPUS for CPU-bound tasks.
+    let cpus = num_cpus::get();
+
+    (cpus * 100) as u16
 }

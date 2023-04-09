@@ -1,6 +1,5 @@
 mod conversion;
 
-
 use async_trait::async_trait;
 
 use std::collections::HashMap;
@@ -76,7 +75,7 @@ impl ImportPlannedBlackoutsInteractor for ImportAffectedAreas {
             })
             .collect();
 
-        let data = DomainImportInput(data);
+        let data = DomainImportInput::new(data);
         self.repo.save(&data).await?;
         self.notifier.notify(data).await
     }

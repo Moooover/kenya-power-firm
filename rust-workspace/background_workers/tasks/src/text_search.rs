@@ -7,10 +7,7 @@ use shared_kernel::http_client::HttpClient;
 use sqlx_postgres::cache::location_search::StatusCode;
 use url::Url;
 
-
-
-
-use crate::utils::get_token::get_token_count;
+use crate::utils::get_token::get_location_token;
 use crate::{
     configuration::{REPO, SETTINGS_CONFIG},
     utils::callbacks::failure_callback,
@@ -60,6 +57,7 @@ pub fn generate_search_url(text: String) -> anyhow::Result<Url> {
         &[
             ("key", SETTINGS_CONFIG.location.api_key.expose_secret()),
             ("input", &text),
+            ("components", &"country:ke".to_string()),
         ],
     )
     .context("Failed to parse url")
@@ -81,7 +79,7 @@ pub async fn search_locations_by_text(task: &Self, text: String) -> TaskResult<(
         return Ok(());
     }
 
-    let token_count = get_token_count().await?;
+    let token_count = get_location_token().await?;
 
     if token_count < 0 {
         return Task::retry_with_countdown(task, 1);

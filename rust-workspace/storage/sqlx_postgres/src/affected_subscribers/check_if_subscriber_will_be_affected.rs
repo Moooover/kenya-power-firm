@@ -77,7 +77,7 @@ impl BareAffectedLine {
 }
 
 impl SearcheableCandidate {
-    fn from_area_names(area: &AreaName) -> Vec<Self> {
+    pub fn from_area_name(area: &AreaName) -> Vec<Self> {
         area.as_ref()
             .split(',')
             .map(SearcheableCandidate::from)
@@ -198,7 +198,7 @@ impl Repository {
         let mut primary_location: Option<DbLocationSearchResults> = None;
 
         for (searcheable_candidates, location_id, searcheable_area) in
-            SearcheableCandidate::from_area_names(area_name)
+            SearcheableCandidate::from_area_name(area_name)
                 .into_iter()
                 .map(|area_candidate| {
                     (
@@ -241,7 +241,7 @@ impl Repository {
                 .map(|line| (line.time_frame.clone(), line.url.clone()))
                 .ok_or(anyhow!("Failed to get time_frame and url"))?;
 
-            let searcheable_area_names = SearcheableCandidate::from_area_names(&area_name);
+            let searcheable_area_names = SearcheableCandidate::from_area_name(&area_name);
 
             let affected_lines = affected_lines
                 .into_iter()
@@ -390,7 +390,7 @@ mod tests {
             counties: vec![County {
                 name: "Nairobi".to_string(),
                 areas: vec![Area {
-                    name: "Garden City".to_string(),
+                    name: "Garden City".to_string().into(),
                     time_frame: TimeFrame {
                         from: tomorrow.clone().try_into().unwrap(),
                         to: tomorrow.try_into().unwrap(),
@@ -406,7 +406,7 @@ mod tests {
 
     fn generate_import_input() -> ImportInput {
         let url = Url::parse("https://example.net").unwrap();
-        ImportInput(HashMap::from([(url, vec![generate_region()])]))
+        ImportInput::new(HashMap::from([(url, vec![generate_region()])]))
     }
 
     #[tokio::test]
