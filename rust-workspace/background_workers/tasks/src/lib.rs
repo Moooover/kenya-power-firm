@@ -23,6 +23,7 @@ const QUEUE_NAME: &str = "celery";
 pub async fn app() -> anyhow::Result<Arc<Celery>> {
     let redis_host = SETTINGS_CONFIG.redis.host.to_string();
     let pre_fetch_count = get_pre_fetch_count();
+
     celery::app!(
         broker = RedisBroker { redis_host },
         tasks = [
@@ -32,10 +33,10 @@ pub async fn app() -> anyhow::Result<Arc<Celery>> {
             send_email_notification
         ],
         task_routes = [
-            "*" => QUEUE_NAME,
-            "fetch_and_subscribe_to_locations" => "fetch_and_subscribe_to_locations",
-            "search_locations_by_text" => "search_locations_by_text",
-            "send_email_notification" => "send_email_notification"
+            "fetch_and_subscribe_to_locations" => "locations_queue",
+            "search_locations_by_text" => "locations_queue",
+            "send_email_notification" => "email_notifications_queue",
+            "*" => QUEUE_NAME
         ],
         prefetch_count = pre_fetch_count,
         heartbeat = Some(10),
