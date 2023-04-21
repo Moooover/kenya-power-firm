@@ -3,8 +3,6 @@ use std::collections::HashMap;
 use std::iter;
 use std::str::Chars;
 
-
-
 use lazy_static::lazy_static;
 use regex::{Regex, RegexBuilder};
 
@@ -86,6 +84,10 @@ fn is_not_new_line(c: char) -> bool {
     !is_nextline(c)
 }
 
+fn is_colon_or_semi_colon(c: char) -> bool {
+    matches!(c, ';' | ':')
+}
+
 fn add_nairobi_county_to_text(raw_text: &str) -> String {
     let nairobi_region = "NAIROBI REGION";
     let nairobi_county = "PARTS OF NAIROBI COUNTY";
@@ -148,7 +150,7 @@ impl<'a> Scanner<'a> {
         ]);
         let token = match self.current_lexeme.as_ref() {
             "DATE:" | "DATE;" => Token::Date(self.date()),
-            "TIME:" | "TIME;" => Token::Time(self.time()),
+            "TIME" | "TIME:" | "TIME;" => Token::Time(self.time()),
             "AREA:" | "AREA;" => Token::Area(self.area()),
             END_OF_LOCATIONS => Token::Keyword(KeyWords::EndOfAreaLocations),
             _ => self
@@ -198,6 +200,19 @@ impl<'a> Scanner<'a> {
         None
     }
 
+    fn does_next_keyword_match(&mut self, keyword: &str) -> bool {
+        let mut idx = 0;
+        let keyword_len = keyword.len();
+        let mut buffer = String::new();
+        while idx < keyword_len {
+            if let Some(c) = self.source.peek_nth(idx) {
+                buffer.push(*c);
+                idx += 1;
+            }
+        }
+        keyword.eq_ignore_ascii_case(&buffer)
+    }
+
     fn date(&mut self) -> Date {
         self.current_lexeme.clear();
         self.advance_but_discard(&is_whitespace);
@@ -205,7 +220,14 @@ impl<'a> Scanner<'a> {
         let day_of_the_week = self.current_lexeme.clone();
         self.current_lexeme.clear();
         self.advance_but_discard(&is_white_space_or_new_line);
-        self.advance_while(&is_alphanumeric);
+        loop {
+            self.advance_while(&is_alphanumeric);
+            self.advance_but_discard(&is_white_space_or_new_line);
+            if self.does_next_keyword_match("TIME") {
+                break;
+            }
+        }
+
         let date = self.current_lexeme.clone();
 
         Date {
@@ -216,6 +238,7 @@ impl<'a> Scanner<'a> {
 
     fn time(&mut self) -> Time {
         self.current_lexeme.clear();
+        self.advance_but_discard(&is_colon_or_semi_colon);
         self.advance_while(&is_not_dash);
         // skip the dash
         self.source.next();
@@ -232,7 +255,15 @@ impl<'a> Scanner<'a> {
 
     fn area(&mut self) -> String {
         self.current_lexeme.clear();
-        self.advance_while(&is_not_new_line);
+
+        loop {
+            self.advance_while(&is_not_new_line);
+            self.advance_but_discard(&is_whitespace);
+            if self.does_next_keyword_match("DATE") {
+                break;
+            }
+        }
+
         let area = self.current_lexeme.to_owned();
         area.replace("PART OF", "").replace("PARTS OF", "")
     }
@@ -666,7 +697,8 @@ Farm,  Ashut  Plastics,  Brilliant  EPZ,  Mombasa  Apparel,  Rembo  Apts,  Kariu
 Farm,  Kwa  Mwavitswa,  Toto  Dogo,  Biladi,  Mtwapa  Pri,  Pwani  Fish  Farm  & 
 adjacent customers. 
  
-AREA: PART OF MTWAPA 
+AREA: PART OF MTWAPA,
+COMSOR
 DATE: Thursday 16.02.2023               TIME: 9.00 A.M. – 5.00 P.M. 
 Mtwapa  Rhino,  Mtwapa  Plaza,  Jambo  Jipya  Medical,  Mtwapa  Gardens, 
 Moorings,  Kwa  Wapokomo,  Funyula,  Mtomondoni  Chief’s  Camp,  Mikanjuni, 

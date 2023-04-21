@@ -241,8 +241,6 @@ impl Repository {
                 .map(|line| (line.time_frame.clone(), line.url.clone()))
                 .ok_or(anyhow!("Failed to get time_frame and url"))?;
 
-            let searcheable_area_names = SearcheableCandidate::from_area_name(&area_name);
-
             let affected_lines = affected_lines
                 .into_iter()
                 .chain(once_with(|| BareAffectedLine {
@@ -253,12 +251,7 @@ impl Repository {
                 .collect_vec();
 
             let maybe_notification = self
-                .potentially_affected_notification(
-                    subscriber_id,
-                    location_id,
-                    searcheable_area_names,
-                    &affected_lines,
-                )
+                .potentially_affected_notification(subscriber_id, location_id, &affected_lines)
                 .await?;
             if maybe_notification.is_some() {
                 return Ok(maybe_notification);
@@ -272,28 +265,24 @@ impl Repository {
         &self,
         subscriber_id: SubscriberId,
         location_id: LocationId,
-        searcheable_area_names: Vec<SearcheableCandidate>,
         affected_lines: &Vec<BareAffectedLine>,
     ) -> anyhow::Result<Option<Notification>> {
         let mapping = Mapping::generate(&affected_lines);
 
-        for searcheable_area_name in searcheable_area_names.into_iter() {
-            let nearby_location = self
-                .get_potentially_affected_nearby_location(
-                    location_id,
-                    mapping.searcheable_candidates.clone(),
-                    searcheable_area_name,
-                )
-                .await?;
+        let nearby_location = self
+            .get_potentially_affected_nearby_location(
+                location_id,
+                mapping.searcheable_candidates.clone(),
+            )
+            .await?;
 
-            if let Some(location) = nearby_location {
-                let notification = NotificationGenerator {
-                    mapping: &mapping,
-                    subscriber: AffectedSubscriber::PotentiallyAffected(subscriber_id),
-                }
-                .generate(location)?;
-                return Ok(Some(notification));
+        if let Some(location) = nearby_location {
+            let notification = NotificationGenerator {
+                mapping: &mapping,
+                subscriber: AffectedSubscriber::PotentiallyAffected(subscriber_id),
             }
+            .generate(location)?;
+            return Ok(Some(notification));
         }
 
         Ok(None)
@@ -303,19 +292,17 @@ impl Repository {
         &self,
         location_id: LocationId,
         searcheable_candidates: Vec<String>,
-        searcheable_area_name: SearcheableCandidate,
     ) -> anyhow::Result<Option<DbLocationSearchResults>> {
         let nearby_location = sqlx::query_as::<_, DbLocationSearchResults>(
             "
-            SELECT * FROM location.search_specific_location_secondary_text($1::text[], $2::uuid, $3::text)
+            SELECT * FROM location.search_specific_location_secondary_text($1::text[], $2::uuid)
             ",
         )
-            .bind(searcheable_candidates.clone())
-            .bind(location_id.to_string())
-            .bind(searcheable_area_name.to_string())
-            .fetch_optional(self.pool())
-            .await
-            .context("Failed to fetch results from search_specific_location_secondary_text")?;
+        .bind(searcheable_candidates.clone())
+        .bind(location_id.to_string())
+        .fetch_optional(self.pool())
+        .await
+        .context("Failed to fetch results from search_specific_location_secondary_text")?;
         Ok(nearby_location)
     }
 }

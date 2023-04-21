@@ -204,7 +204,7 @@ impl Parser {
             self.tokens,
             Token::Date(Date { date, .. }),
             NaiveDate::parse_from_str(&date, "%d.%m.%Y")
-                .context("Failed to parse the Date.")
+                .with_context(|| format!("Failed to parse the Date. {date:?}"))
                 .map_err(ParseError::ValidationError),
             "Date".to_owned()
         )??;
@@ -674,7 +674,8 @@ AREA: PARTS OF MTWAPA
 DATE: Sunday 26.02.2023                                        TIME: 9.00 A.M. – 5.00 P.M. 
 La Marina, Ndodo, Maweni, Parts of Mtwapa Town & adjacent customers. 
  
-AREA: PARTS OF MTWAPA 
+AREA: PARTS OF MTWAPA,
+COMSOR
 DATE: Tuesday 28.02.2023                                       TIME: 9.00 A.M. – 3.00 P.M. 
 Ogali’s,  Gassaro,  Aljazeera  Est,  Mwalimu  Omar,  Mzuri  Sweets,  Parts  of 
 Mzambarauni,  Greenwood,  KMA,  Mwatundo,  Radar,  Tropical  Sea  Life,  Dada 
@@ -696,5 +697,6 @@ www.kplc.co.ke
         let parsed_results = parser.parse();
 
         println!("{:?}", parsed_results);
+        assert!(parsed_results.is_ok())
     }
 }

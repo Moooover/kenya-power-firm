@@ -4,7 +4,7 @@ use crate::repository::Repository;
 use anyhow::Context;
 use async_trait::async_trait;
 use entities::locations::LocationId;
-use entities::power_interruptions::location::{Area, AreaName, NairobiTZDateTime, TimeFrame};
+use entities::power_interruptions::location::{Area, NairobiTZDateTime, TimeFrame};
 use entities::subscriptions::AffectedSubscriber;
 use entities::{
     power_interruptions::location::{AffectedLine, FutureOrCurrentNairobiTZDateTime, Region},
@@ -131,16 +131,12 @@ impl Repository {
             )
             .await?;
 
-        let area_name = area.name.clone();
-
         let potentially_affected_subscribers = self
             .potentially_affected_subscribers(
-                &searcheable_area_names,
                 &searcheable_candidates,
                 &time_frame,
                 mapping_of_searcheable_location_candidate_to_candidate_copy,
                 mapping_of_subscriber_to_directly_affected_locations,
-                area_name,
             )
             .await?;
 
@@ -251,48 +247,26 @@ impl Repository {
 
     async fn potentially_affected_subscribers(
         &self,
-        searcheable_area_names: &[SearcheableCandidate],
         searcheable_candidates: &[&str],
         time_frame: &TimeFrame<FutureOrCurrentNairobiTZDateTime>,
         mapping_of_searcheable_candidate_to_original_candidate: HashMap<SearcheableCandidate, &str>,
         mapping_of_subscriber_to_directly_affected_locations: HashMap<Uuid, Vec<Uuid>>,
-        area_name: AreaName,
     ) -> anyhow::Result<HashMap<AffectedSubscriber, Vec<AffectedLine<NairobiTZDateTime>>>> {
-        let (mapping_of_searcheable_candidate_to_original_candidate, searcheable_candidates) =
-            include_area_name_to_searcheable_candidates(
-                searcheable_candidates,
-                mapping_of_searcheable_candidate_to_original_candidate,
-                &area_name,
-            );
-
         let pool = self.pool();
         let time_frame = TimeFrame {
             from: NairobiTZDateTime::from(&time_frame.from),
             to: NairobiTZDateTime::from(&time_frame.to),
         };
 
-        let mut futures: FuturesUnordered<_> = searcheable_area_names
-            .iter()
-            .map(|area_name| {
-                sqlx::query_as::<_, DbLocationSearchResults>(
-                    "
-                SELECT * FROM location.search_locations_secondary_text($1::text[], $2::text)
+        let nearby_locations = sqlx::query_as::<_, DbLocationSearchResults>(
+            "
+                SELECT * FROM location.search_locations_secondary_text($1::text[])
                 ",
-                )
-                .bind(&searcheable_candidates)
-                .bind(area_name.to_string())
-                .fetch_all(pool)
-            })
-            .collect();
-
-        let mut nearby_locations = vec![];
-
-        while let Some(result) = futures.next().await {
-            nearby_locations
-                .push(result.context("Failed to get nearby location search results from db")?);
-        }
-
-        let nearby_locations = nearby_locations.into_iter().flatten().collect_vec();
+        )
+        .bind(&searcheable_candidates)
+        .fetch_all(pool)
+        .await
+        .context("Failed to get nearby location search results from db")?;
 
         let location_ids = nearby_locations
             .iter()
@@ -409,42 +383,6 @@ impl Repository {
             })
             .collect_vec())
     }
-}
-
-fn include_area_name_to_searcheable_candidates<'a>(
-    searcheable_candidates: &[&str],
-    mapping_of_searcheable_candidate_to_original_candidate: HashMap<SearcheableCandidate, &'a str>,
-    area_name: &'a AreaName,
-) -> (HashMap<SearcheableCandidate, &'a str>, Vec<String>) {
-    let area = area_name.as_ref().split(',').collect_vec();
-
-    let area_mapping = area.iter().map(|area_name_candidate| {
-        (
-            SearcheableCandidate::from(*area_name_candidate),
-            *area_name_candidate,
-        )
-    });
-
-    let mapping_of_searcheable_candidate_to_original_candidate =
-        mapping_of_searcheable_candidate_to_original_candidate
-            .into_iter()
-            .chain(area_mapping)
-            .collect::<HashMap<_, _>>();
-
-    let area_as_searcheable = area
-        .iter()
-        .map(|area| SearcheableCandidate::from(area.as_ref()))
-        .map(|area| area.to_string());
-
-    let searcheable_candidates = searcheable_candidates
-        .into_iter()
-        .map(|area| area.to_string())
-        .chain(area_as_searcheable)
-        .collect_vec();
-    (
-        mapping_of_searcheable_candidate_to_original_candidate,
-        searcheable_candidates,
-    )
 }
 
 fn filter_out_directly_affected_subscriber_locations_from_potentially_affected(
@@ -575,7 +513,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_searching_api_response_results_in_potentially_affected_subscriber() {
+    async fn test_searching_adjuscent_location_results_in_potentially_affected_subscriber() {
         let repository = Repository::new_test_repo().await;
         let subscriber_id = authenticate(&repository).await;
         let contents = include_str!("mock_data/mi_vida_homes.json");
@@ -591,8 +529,24 @@ mod tests {
             .await
             .unwrap();
 
-        repository
+        let initial_location_id = repository
             .subscribe_to_location(subscriber_id, location_id)
+            .await
+            .unwrap();
+        let contents = include_str!("mock_data/garden_city_details_response.json");
+        let api_response: Value = serde_json::from_str(contents).unwrap();
+        let adjuscent_location_id = repository
+            .insert_location(LocationInput {
+                name: "Garden city Mall".to_string(),
+                external_id: ExternalLocationId::from("ChIJGdueTt0VLxgRk19ir6oE8I0".to_string()),
+                address: "Thika Rd, Nairobi, Kenya".to_string(),
+                api_response,
+            })
+            .await
+            .unwrap();
+
+        repository
+            .subscribe_to_adjuscent_location(initial_location_id, adjuscent_location_id)
             .await
             .unwrap();
 
@@ -607,7 +561,7 @@ mod tests {
         let key = AffectedSubscriber::PotentiallyAffected(subscriber_id);
         assert!(results.contains_key(&key));
         let value = results.get(&key).unwrap().first().unwrap();
-        assert_eq!(&value.line, "Garden City") // The area name
+        assert_eq!(&value.line, "Garden City Mall")
     }
 
     #[tokio::test]
