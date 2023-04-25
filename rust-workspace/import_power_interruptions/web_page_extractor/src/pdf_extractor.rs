@@ -8,14 +8,13 @@ use lazy_static::lazy_static;
 use regex::Regex;
 use std::collections::HashMap;
 
-
 use std::sync::Arc;
 
 use url::Url;
 
 use shared_kernel::http_client::HttpClient;
 
-use use_cases::import_affected_areas::{Region};
+use use_cases::import_affected_areas::Region;
 
 lazy_static! {
     static ref FORWARD_SLASH: Regex =

@@ -52,6 +52,20 @@
     },
     "query": "\n            SELECT id, initial_location_id, adjuscent_location_id FROM location.adjuscent_locations WHERE initial_location_id = ANY($1)\n            "
   },
+  "0d9d866acbe9023633e6bb05833fe235f07662ea05a93918e694849c8113ce16": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Uuid",
+          "Jsonb"
+        ]
+      }
+    },
+    "query": "\n            INSERT INTO location.nearby_locations (source_url, location_id, response) \n            VALUES ($1, $2, $3) ON CONFLICT DO NOTHING\n            "
+  },
   "11b4823b9e2d3c95df0746830c2a91e63505d45c70500e0311fa22704bb12d36": {
     "describe": {
       "columns": [],
@@ -103,6 +117,30 @@
       }
     },
     "query": "SELECT id from location.subscriber_locations WHERE subscriber_id = $1 AND location_id = $2"
+  },
+  "325066dffe93e3e217fd6613e7b7c15fe47832a283c72f3b4ef33fe001aec91b": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Text",
+          "Text",
+          "Text",
+          "Jsonb"
+        ]
+      }
+    },
+    "query": "\n            INSERT INTO location.locations (name, external_id, address, sanitized_address, external_api_response)\n            VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING RETURNING id\n            "
   },
   "327dec1d5c7f4cfcf908a1244ffc5419398c83e9e1a55c223b5d08e3240d743e": {
     "describe": {
@@ -463,6 +501,19 @@
     },
     "query": "\n            SELECT * FROM public.subscriber WHERE id = $1\n            "
   },
+  "78c6594b144856b78c2bca6a43eb26013149c20c0ca3a62df3bd2a8f5bef67ab": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Uuid",
+          "Uuid"
+        ]
+      }
+    },
+    "query": "\n              INSERT INTO location.subscriber_locations (subscriber_id, location_id)\n              VALUES ($1, $2) ON CONFLICT DO NOTHING\n            "
+  },
   "80d5fe3abd56cd212bc5ced8310cba0762b633c75e904710a65d7653e02a908d": {
     "describe": {
       "columns": [
@@ -748,18 +799,6 @@
       }
     },
     "query": "\n            INSERT INTO location.blackout_schedule(area_id, start_time, end_time, source_id) \n            SELECT * FROM UNNEST($1::uuid[], $2::timestamptz[], $3::timestamptz[], $4::uuid[]) ON CONFLICT DO NOTHING\n            "
-  },
-  "faac91ef21b36f2e2302b536b35a490cbd0346372b8aa0351c1e2fb1ba3b03d9": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Left": [
-          "TextArray"
-        ]
-      }
-    },
-    "query": "\n              INSERT INTO importer.processed_files(id) \n              SELECT * FROM UNNEST($1::text[]) ON CONFLICT DO NOTHING\n            "
   },
   "fb902a1af28ca72f0f6f3617384874897e3e807f12f907e3ceb6de5bdc889d85": {
     "describe": {

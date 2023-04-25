@@ -1,0 +1,25 @@
+database:
+  host: "127.0.0.1"
+  port: 5432
+  username: "postgres"
+  password: "postgres"
+  database_name: "blackout"
+  require_ssl: false
+location:
+  host: "https://maps.googleapis.com/maps/api/place/autocomplete/json"
+  api_key: ""
+email:
+  host: "https://api.courier.com/send"
+  auth_token: ""
+  dry_run_template_id: "GGAB2KK5K340DPQX46EX01DQAG4H"
+  admin_email: "tevinthuku@gmail.com"
+redis:
+  host: "redis://127.0.0.1:6379/"
+auth:
+  jwks: "blackouts-development.eu.auth0.com"
+  authorities: "blackouts-development.eu.auth0.com"
+  audiences: "https://blackouts.co.ke, https://blackouts-development.eu.auth0.com/userinfo"
+external_api_rate_limits:
+  email: 100
+  location: 100
+

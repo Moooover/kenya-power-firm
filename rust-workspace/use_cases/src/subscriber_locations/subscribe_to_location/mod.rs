@@ -1,5 +1,4 @@
 use crate::authentication::subscriber_authentication::SubscriberResolverInteractor;
-use crate::subscriber_locations::data::{LocationInput};
 use crate::{actor::Actor, search_for_locations::Status};
 
 use async_trait::async_trait;
@@ -13,11 +12,7 @@ string_key!(TaskId);
 
 #[async_trait]
 pub trait SubscribeToLocationInteractor: Send + Sync {
-    async fn subscribe(
-        &self,
-        actor: &dyn Actor,
-        location: LocationInput<String>,
-    ) -> anyhow::Result<TaskId>;
+    async fn subscribe(&self, actor: &dyn Actor, location: String) -> anyhow::Result<TaskId>;
 
     async fn progress(&self, actor: &dyn Actor, task_id: TaskId) -> anyhow::Result<Status>;
 }
@@ -27,7 +22,7 @@ pub trait SubscribeToLocationRepo: Send + Sync {
     async fn subscribe(
         &self,
         subscriber: SubscriberId,
-        locations: LocationInput<LocationId>,
+        locations: LocationId,
     ) -> anyhow::Result<()>;
 }
 
@@ -49,18 +44,10 @@ impl SubscribeToLocationImpl {
 }
 
 #[async_trait]
-pub trait LocationDetailsFinder: Send + Sync {
-    async fn location_details(
-        &self,
-        location: LocationInput<ExternalLocationId>,
-    ) -> anyhow::Result<LocationInput<LocationId>>;
-}
-
-#[async_trait]
 pub trait LocationSubscriber: Send + Sync {
     async fn subscribe_to_location(
         &self,
-        location: LocationInput<ExternalLocationId>,
+        location: ExternalLocationId,
         subscriber: SubscriberId,
     ) -> anyhow::Result<TaskId>;
 
@@ -69,22 +56,11 @@ pub trait LocationSubscriber: Send + Sync {
 
 #[async_trait]
 impl SubscribeToLocationInteractor for SubscribeToLocationImpl {
-    async fn subscribe(
-        &self,
-        actor: &dyn Actor,
-        location: LocationInput<String>,
-    ) -> anyhow::Result<TaskId> {
+    async fn subscribe(&self, actor: &dyn Actor, location: String) -> anyhow::Result<TaskId> {
         let id = self.subscriber_resolver.resolve_from_actor(actor).await?;
-        let location = LocationInput {
-            id: ExternalLocationId::new(location.id),
-            nearby_locations: location
-                .nearby_locations
-                .into_iter()
-                .map(ExternalLocationId::new)
-                .collect(),
-        };
+
         self.location_subscriber
-            .subscribe_to_location(location, id)
+            .subscribe_to_location(ExternalLocationId::new(location), id)
             .await
     }
 

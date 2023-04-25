@@ -55,7 +55,6 @@ export default function SearchForLocation(props: Props) {
 
   const onSelectLocation = (location: LocationSearchData) => {
     props.onSelectLocation(location);
-    setSearchTerm("");
   };
 
   return (

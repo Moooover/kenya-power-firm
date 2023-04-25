@@ -96,8 +96,4 @@ impl CommentsRemover {
 }
 
 #[cfg(test)]
-mod tests {
-    
-    
-    
-}
+mod tests {}

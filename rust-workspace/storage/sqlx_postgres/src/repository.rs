@@ -1,10 +1,6 @@
 use crate::configuration::Settings;
 use sqlx::postgres::PgPool;
-#[cfg(test)]
-use sqlx::{Connection, PgConnection};
 use std::sync::Arc;
-#[cfg(test)]
-use uuid::Uuid;
 
 #[derive(Clone)]
 pub struct Repository {
@@ -28,10 +24,11 @@ impl Repository {
         Ok(Self { pg_pool })
     }
 
-    #[cfg(test)]
+    #[cfg(any(test, feature = "testing"))]
     pub async fn new_test_repo() -> Self {
         use sqlx::Executor;
-
+        use sqlx::{Connection, PgConnection};
+        use uuid::Uuid;
         let connection_options = Settings::without_db().unwrap().0;
 
         let mut connection = PgConnection::connect_with(&connection_options)
@@ -56,8 +53,12 @@ impl Repository {
             .await
             .expect("Failed to migrate the database");
 
-        Self {
+        let test_repo = Self {
             pg_pool: Arc::new(connection_pool),
-        }
+        };
+
+        test_repo.fixtures().await;
+
+        test_repo
     }
 }

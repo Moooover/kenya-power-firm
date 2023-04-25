@@ -13,7 +13,6 @@ type StatusWrapper = {
 
 type RequestData = {
   location: string;
-  nearby_locations: string[];
 };
 
 type Props = {
@@ -29,7 +28,7 @@ async function subscribeToLocation(url: string, { arg }: { arg: Props }) {
   return instance
     .post<SubscribeResponse>(
       url,
-      { location: data.location, nearby_locations: data.nearby_locations },
+      { location: data.location },
       {
         headers: {
           "Content-Type": "application/json",
@@ -67,7 +66,7 @@ export function useSubscribeToLocation(props: SubscribeProps) {
 
   const handleSubscribe = async (data: RequestData) => {
     setIsLoading(true);
-    trigger({ data, token }).then((data) => {
+    return trigger({ data, token }).then((data) => {
       if (data?.task_id) {
         setTaskId(data.task_id);
       }

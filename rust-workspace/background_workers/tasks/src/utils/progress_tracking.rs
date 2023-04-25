@@ -1,7 +1,6 @@
-
 use redis::{FromRedisValue, ToRedisArgs};
 use redis_client::client::CLIENT;
-use std::fmt::{Debug};
+use std::fmt::Debug;
 
 use strum_macros::{Display, EnumString};
 use use_cases::search_for_locations::Status;

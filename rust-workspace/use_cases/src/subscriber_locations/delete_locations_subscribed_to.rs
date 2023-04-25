@@ -13,21 +13,11 @@ pub trait DeleteLocationsSubscribedToInteractor {
         actor: &dyn Actor,
         location_id: LocationId,
     ) -> anyhow::Result<()>;
-    async fn delete_adjuscent_location(
-        &self,
-        actor: &dyn Actor,
-        location_id: LocationId,
-    ) -> anyhow::Result<()>;
 }
 
 #[async_trait]
 pub trait DeleteSubscribedLocationsRepo: Send + Sync {
     async fn delete_primary_location(
-        &self,
-        subscriber_id: SubscriberId,
-        location_id: LocationId,
-    ) -> anyhow::Result<()>;
-    async fn delete_adjuscent_location(
         &self,
         subscriber_id: SubscriberId,
         location_id: LocationId,
@@ -61,16 +51,6 @@ impl DeleteLocationsSubscribedToInteractor for DeleteLocationsSubscribedToImpl {
         let subscriber_id = self.subscriber_resolver.resolve_from_actor(actor).await?;
         self.repo
             .delete_primary_location(subscriber_id, location_id)
-            .await
-    }
-    async fn delete_adjuscent_location(
-        &self,
-        actor: &dyn Actor,
-        location_id: LocationId,
-    ) -> anyhow::Result<()> {
-        let subscriber_id = self.subscriber_resolver.resolve_from_actor(actor).await?;
-        self.repo
-            .delete_adjuscent_location(subscriber_id, location_id)
             .await
     }
 }

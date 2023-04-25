@@ -56,11 +56,9 @@ impl HttpClient {
     }
 
     pub async fn get_json<DTO: DeserializeOwned>(url: Url) -> anyhow::Result<DTO> {
-        Self::get(url.clone())
-            .await?
-            .json::<DTO>()
-            .await
-            .context("Failed to deserialize response")
+        let response = Self::get(url.clone()).await?;
+        let err_msg = format!("Failed to deserialize response {response:?}");
+        response.json::<DTO>().await.context(err_msg)
     }
 
     pub async fn post_json<DTO: DeserializeOwned>(

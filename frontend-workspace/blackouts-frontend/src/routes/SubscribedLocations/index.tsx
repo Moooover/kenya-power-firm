@@ -17,17 +17,10 @@ import { useDeleteLocationSubscription } from "./useDeleteSubscribedLocation";
 import Avatar from "@mui/material/Avatar";
 import UnsubscribeDialog from "./UnsubscribeDialog";
 
-type AdjuscentLocation = {
-  id: string;
-  name: string;
-  address: string;
-};
-
 type Location = {
   id: string;
   name: string;
   address: string;
-  adjuscent_locations: AdjuscentLocation[];
 };
 type Response = {
   items: Location[];
@@ -88,50 +81,12 @@ function Location({ location }: { location: Location }) {
         <ListItemIcon onClick={() => setOpenDialog(true)}>
           <DeleteTwoToneIcon />
         </ListItemIcon>
-        {location.adjuscent_locations.length > 0 ? (
-          <div>
-            {open ? (
-              <ExpandLess onClick={handleToggleAdjuscentLocations} />
-            ) : (
-              <ExpandMore onClick={handleToggleAdjuscentLocations} />
-            )}
-          </div>
-        ) : (
-          <ExpandLess
-            style={{
-              color: "transparent",
-            }}
-          />
-        )}
       </ListItemButton>
       <UnsubscribeDialog
         open={openDialog}
         location={location}
         closeDialog={handleCloseAlertDialog}
       />
-      {location && (
-        <Collapse in={open} timeout="auto" unmountOnExit>
-          <List component="div" disablePadding>
-            {location.adjuscent_locations.map((adjuscentLocation) => {
-              return (
-                <ListItemButton
-                  disableRipple
-                  sx={{ pl: 10 }}
-                  key={adjuscentLocation.id}
-                >
-                  <ListItemIcon>
-                    <NearMeTwoToneIcon />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={adjuscentLocation.name}
-                    secondary={adjuscentLocation.address}
-                  />
-                </ListItemButton>
-              );
-            })}
-          </List>
-        </Collapse>
-      )}
     </>
   );
 }

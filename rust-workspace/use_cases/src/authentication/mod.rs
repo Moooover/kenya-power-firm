@@ -1,6 +1,6 @@
 pub mod subscriber_authentication;
 
-use crate::actor::{Actor};
+use crate::actor::Actor;
 use anyhow::anyhow;
 use async_trait::async_trait;
 use entities::subscriptions::details::SubscriberDetails;
@@ -67,14 +67,12 @@ impl AuthenticationInteractorImpl {
 #[cfg(test)]
 mod tests {
 
-    
     use crate::actor::{MockActor, SubscriberExternalId};
     use crate::authentication::MockSubscriberAuthenticationRepo;
     use crate::authentication::{
-        AuthenticationInteractor, AuthenticationInteractorImpl,
-        SubscriberDetailsInput,
+        AuthenticationInteractor, AuthenticationInteractorImpl, SubscriberDetailsInput,
     };
-    
+
     use std::sync::Arc;
 
     fn mock_actor() -> MockActor {

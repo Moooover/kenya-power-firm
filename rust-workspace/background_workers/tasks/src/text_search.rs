@@ -48,9 +48,10 @@ impl LocationSearchApiResponse {
 }
 
 pub fn generate_search_url(text: String) -> anyhow::Result<Url> {
-    let host = &SETTINGS_CONFIG.location.host;
+    let path_details = "/place/autocomplete/json";
+    let host_with_path = &format!("{}{}", SETTINGS_CONFIG.location.host, path_details);
     Url::parse_with_params(
-        host,
+        host_with_path,
         &[
             ("key", SETTINGS_CONFIG.location.api_key.expose_secret()),
             ("input", &text),
@@ -84,7 +85,7 @@ pub async fn search_locations_by_text(task: &Self, text: String) -> TaskResult<(
 
     let api_response = HttpClient::get_json::<LocationSearchApiResponse>(url.clone())
         .await
-        .map_err(|err| TaskError::ExpectedError(err.to_string()))?;
+        .map_err(|err| TaskError::UnexpectedError(err.to_string()))?;
 
     let response = api_response.remove_invalid_predictions();
 

@@ -1,11 +1,9 @@
-mod check_if_subscriber_will_be_affected;
-
 use crate::repository::Repository;
 use anyhow::Context;
 use async_trait::async_trait;
-use entities::locations::LocationId;
 use entities::power_interruptions::location::{Area, NairobiTZDateTime, TimeFrame};
 use entities::subscriptions::AffectedSubscriber;
+use entities::{locations::LocationId, power_interruptions::location::AreaName};
 use entities::{
     power_interruptions::location::{AffectedLine, FutureOrCurrentNairobiTZDateTime, Region},
     subscriptions::SubscriberId,
@@ -61,7 +59,7 @@ impl SubscriberRepo for Repository {
 }
 
 #[derive(Debug, Eq, PartialEq, Hash, Clone)]
-struct SearcheableCandidate(String);
+pub struct SearcheableCandidate(String);
 
 impl ToString for SearcheableCandidate {
     fn to_string(&self) -> String {
@@ -75,9 +73,22 @@ impl AsRef<str> for SearcheableCandidate {
     }
 }
 
+impl SearcheableCandidate {
+    pub fn from_area_name(area: &AreaName) -> Vec<Self> {
+        area.as_ref()
+            .split(',')
+            .map(SearcheableCandidate::from)
+            .collect_vec()
+    }
+
+    pub fn original_value(&self) -> String {
+        self.0.replace(" <-> ", " ")
+    }
+}
+
 impl From<&str> for SearcheableCandidate {
     fn from(value: &str) -> Self {
-        let value = value.trim().replace(' ', " & ");
+        let value = value.trim().replace(' ', " <-> ");
         SearcheableCandidate(value)
     }
 }
@@ -130,6 +141,23 @@ impl Repository {
                 &mapping_of_searcheable_location_candidate_to_candidate,
             )
             .await?;
+
+        let searcheable_candidates = searcheable_area_names
+            .iter()
+            .map(|name| name.as_ref())
+            .chain(searcheable_candidates.into_iter())
+            .collect_vec();
+
+        let mapping_of_searcheable_location_candidate_to_candidate_copy =
+            mapping_of_searcheable_location_candidate_to_candidate_copy
+                .into_iter()
+                .map(|(candidate, original_value)| (candidate, original_value.to_owned()))
+                .chain(
+                    searcheable_area_names
+                        .iter()
+                        .map(|area| (area.clone(), area.original_value())),
+                )
+                .collect();
 
         let potentially_affected_subscribers = self
             .potentially_affected_subscribers(
@@ -249,7 +277,10 @@ impl Repository {
         &self,
         searcheable_candidates: &[&str],
         time_frame: &TimeFrame<FutureOrCurrentNairobiTZDateTime>,
-        mapping_of_searcheable_candidate_to_original_candidate: HashMap<SearcheableCandidate, &str>,
+        mapping_of_searcheable_candidate_to_original_candidate: HashMap<
+            SearcheableCandidate,
+            String,
+        >,
         mapping_of_subscriber_to_directly_affected_locations: HashMap<Uuid, Vec<Uuid>>,
     ) -> anyhow::Result<HashMap<AffectedSubscriber, Vec<AffectedLine<NairobiTZDateTime>>>> {
         let pool = self.pool();
@@ -258,9 +289,15 @@ impl Repository {
             to: NairobiTZDateTime::from(&time_frame.to),
         };
 
-        let nearby_locations = sqlx::query_as::<_, DbLocationSearchResults>(
+        #[derive(sqlx::FromRow, Debug)]
+        pub struct NearbySearchResult {
+            candidate: String,
+            location_id: Uuid,
+        }
+
+        let nearby_locations = sqlx::query_as::<_, NearbySearchResult>(
             "
-                SELECT * FROM location.search_locations_secondary_text($1::text[])
+                SELECT * FROM location.search_nearby_locations($1::text[])
                 ",
         )
         .bind(&searcheable_candidates)
@@ -270,7 +307,7 @@ impl Repository {
 
         let location_ids = nearby_locations
             .iter()
-            .map(|location| location.id)
+            .map(|location| location.location_id)
             .collect_vec();
 
         let potentially_affected_subscribers = self
@@ -285,17 +322,14 @@ impl Repository {
 
         let location_ids_to_search_query = nearby_locations
             .iter()
-            .map(|data| (data.id, data.search_query.clone()))
+            .map(|data| (data.location_id, data.candidate.clone()))
             .collect::<HashMap<_, _>>();
 
         let mapping_of_searcheable_candidate_to_candidate =
             mapping_of_searcheable_candidate_to_original_candidate
-                .iter()
+                .into_iter()
                 .map(|(searcheable_candidate, original_candidate)| {
-                    (
-                        searcheable_candidate.to_string(),
-                        original_candidate.to_string(),
-                    )
+                    (searcheable_candidate.to_string(), original_candidate)
                 })
                 .collect::<HashMap<_, _>>();
         let result = potentially_affected_subscribers
@@ -412,239 +446,157 @@ fn filter_out_directly_affected_subscriber_locations_from_potentially_affected(
         .collect::<HashMap<_, _>>()
 }
 
-#[cfg(test)]
-mod tests {
-
-    use crate::locations::insert_location::LocationInput;
-    use entities::{
-        locations::ExternalLocationId,
-        power_interruptions::location::{Area, County, NairobiTZDateTime, Region, TimeFrame},
-        subscriptions::{
-            details::{SubscriberDetails, SubscriberExternalId},
-            AffectedSubscriber, SubscriberId,
-        },
-    };
-    use serde_json::Value;
-    use use_cases::{
-        authentication::SubscriberAuthenticationRepo,
-        notifications::notify_subscribers::SubscriberRepo,
-    };
-
+mod test_fixtures {
     use crate::repository::Repository;
+    use entities::locations::{ExternalLocationId, LocationId};
+    use entities::subscriptions::SubscriberId;
+    use sqlx::types::Json;
+    use url::Url;
 
-    fn generate_region() -> Region {
-        Region {
-            region: "Nairobi".to_string(),
-            counties: vec![County {
-                name: "Nairobi".to_string(),
-                areas: vec![
-                    Area {
-                        name: "Garden City".to_string().into(),
-                        time_frame: TimeFrame {
-                            from: NairobiTZDateTime::today().try_into().unwrap(),
-                            to: NairobiTZDateTime::today().try_into().unwrap(),
-                        },
-                        locations: vec![
-                            "Will Mary Estate".to_string(),
-                            "Garden City Mall".to_string(),
-                        ],
-                    },
-                    Area {
-                        name: "Lumumba".to_string().into(),
-                        time_frame: TimeFrame {
-                            from: NairobiTZDateTime::today().try_into().unwrap(),
-                            to: NairobiTZDateTime::today().try_into().unwrap(),
-                        },
-                        locations: vec![
-                            "Lumumba dr".to_string(),
-                            "Pan Africa Christian University".to_string(),
-                        ],
-                    },
-                ],
-            }],
+    pub struct LocationInput {
+        name: String,
+        address: String,
+        external_id: ExternalLocationId,
+        api_response: serde_json::Value,
+    }
+    impl Repository {
+        pub async fn insert_location_and_subscribe(
+            &self,
+            location: LocationInput,
+            subscriber: SubscriberId,
+        ) -> LocationId {
+            let external_id = location.external_id.as_ref();
+            let address = location.address.clone();
+            struct Location {
+                id: uuid::Uuid,
+            }
+            let result = sqlx::query!(
+            "
+            INSERT INTO location.locations (name, external_id, address, sanitized_address, external_api_response)
+            VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING RETURNING id
+            ",
+            location.name,
+            external_id,
+            address.clone(),
+            address,
+            Json(location.api_response) as _
+        )
+        .fetch_one(self.pool())
+        .await.unwrap();
+
+            let location_id: LocationId = result.id.into();
+
+            let _ = sqlx::query!(
+                r#"
+              INSERT INTO location.subscriber_locations (subscriber_id, location_id)
+              VALUES ($1, $2) ON CONFLICT DO NOTHING
+            "#,
+                subscriber.inner(),
+                location_id.inner()
+            )
+            .execute(self.pool())
+            .await
+            .unwrap();
+
+            location_id
+        }
+
+        pub async fn save_nearby_locations(
+            &self,
+            primary_location: LocationId,
+            api_response: serde_json::Value,
+        ) {
+            let pool = self.pool();
+            let url =
+                Url::parse("https://www.kplc.co.ke/img/full/Interruption%20-%2022.12.2022.pdf")
+                    .unwrap();
+            sqlx::query!(
+                "
+            INSERT INTO location.nearby_locations (source_url, location_id, response) 
+            VALUES ($1, $2, $3) ON CONFLICT DO NOTHING
+            ",
+                url.to_string(),
+                primary_location.inner(),
+                Json(api_response) as _
+            )
+            .execute(pool)
+            .await
+            .unwrap();
         }
     }
 
-    pub async fn authenticate(repo: &Repository) -> SubscriberId {
-        let external_id: SubscriberExternalId =
-            "ChIJGdueTt0VLxgRk19ir6oE8I0".to_owned().try_into().unwrap();
-        repo.create_or_update_subscriber(SubscriberDetails {
-            name: "Tev".to_owned().try_into().unwrap(),
-            email: "tevinthuku@gmail.com".to_owned().try_into().unwrap(),
-            external_id: external_id.clone(),
-        })
-        .await
-        .unwrap();
+    #[cfg(test)]
+    mod test {
+        use crate::affected_subscribers::test_fixtures::LocationInput;
+        use crate::fixtures::{nairobi_region, SUBSCRIBER_EXTERNAL_ID};
+        use crate::repository::Repository;
 
-        repo.find_by_external_id(external_id).await.unwrap()
-    }
+        use entities::subscriptions::AffectedSubscriber;
+        use serde_json::Value;
+        use use_cases::notifications::notify_subscribers::SubscriberRepo;
 
-    #[tokio::test]
-    async fn test_searching_directly_affected_subscriber_works() {
-        let repository = Repository::new_test_repo().await;
-        let subscriber_id = authenticate(&repository).await;
-        let contents = include_str!("mock_data/garden_city_details_response.json");
-        let api_response: Value = serde_json::from_str(contents).unwrap();
-        let location_id = repository
-            .insert_location(LocationInput {
-                name: "Garden City Mall".to_string(),
-                external_id: ExternalLocationId::from("ChIJGdueTt0VLxgRk19ir6oE8I0".to_string()),
-                address: "Thika Rd, Nairobi, Kenya".to_string(),
+        #[tokio::test]
+        async fn test_directly_affected_subscriber_works() {
+            let repo = Repository::new_test_repo().await;
+
+            let subscriber = repo
+                .find_by_external_id(SUBSCRIBER_EXTERNAL_ID.clone())
+                .await
+                .unwrap();
+            let contents = include_str!("mock_data/garden_city_mall.json");
+            let api_response: Value = serde_json::from_str(contents).unwrap();
+            let location = LocationInput {
+                name: "Garden city mall".to_string(),
+                address: "Thika Road, Nairobi, Kenya".to_string(),
+                external_id: "ChIJGdueTt0VLxgRk19ir6oE8I0".into(),
                 api_response,
-            })
-            .await
-            .unwrap();
+            };
+            let _ = repo
+                .insert_location_and_subscribe(location, subscriber)
+                .await;
 
-        repository
-            .subscribe_to_location(subscriber_id, location_id)
-            .await
-            .unwrap();
+            let result = repo
+                .get_affected_subscribers(&[nairobi_region()])
+                .await
+                .unwrap();
 
-        let results = repository
-            .get_affected_subscribers(&[generate_region()])
-            .await
-            .unwrap();
-        println!("{results:?}");
-        assert!(!results.is_empty());
-        let key = AffectedSubscriber::DirectlyAffected(subscriber_id);
-        assert!(results.contains_key(&key));
-        let value = results.get(&key).unwrap().first().unwrap();
-        assert_eq!(&value.line, "Garden City Mall")
-    }
+            assert!(result
+                .get(&AffectedSubscriber::DirectlyAffected(subscriber))
+                .is_some())
+        }
 
-    #[tokio::test]
-    async fn test_searching_adjuscent_location_results_in_potentially_affected_subscriber() {
-        let repository = Repository::new_test_repo().await;
-        let subscriber_id = authenticate(&repository).await;
-        let contents = include_str!("mock_data/mi_vida_homes.json");
-        let api_response: Value = serde_json::from_str(contents).unwrap();
+        #[tokio::test]
+        async fn test_potentially_affected_subscriber_works() {
+            let repo = Repository::new_test_repo().await;
 
-        let location_id = repository
-            .insert_location(LocationInput {
-                name: "Mi Vida Homes".to_string(),
-                external_id: ExternalLocationId::from("ChIJhVbiHlwVLxgRUzt5QN81vPA".to_string()),
-                address: "Off exit, 7 Thika Rd, Nairobi, Kenya".to_string(),
+            let subscriber = repo
+                .find_by_external_id(SUBSCRIBER_EXTERNAL_ID.clone())
+                .await
+                .unwrap();
+            let contents = include_str!("mock_data/mi_vida_homes.json");
+            let api_response: Value = serde_json::from_str(contents).unwrap();
+            let location = LocationInput {
+                name: "Mi vida Homes".to_string(),
+                address: "Thika Road, Nairobi, Kenya".to_string(),
+                external_id: "ChIJhVbiHlwVLxgRUzt5QN81vPA".into(),
                 api_response,
-            })
-            .await
-            .unwrap();
+            };
+            let location = repo
+                .insert_location_and_subscribe(location, subscriber)
+                .await;
 
-        let initial_location_id = repository
-            .subscribe_to_location(subscriber_id, location_id)
-            .await
-            .unwrap();
-        let contents = include_str!("mock_data/garden_city_details_response.json");
-        let api_response: Value = serde_json::from_str(contents).unwrap();
-        let adjuscent_location_id = repository
-            .insert_location(LocationInput {
-                name: "Garden city Mall".to_string(),
-                external_id: ExternalLocationId::from("ChIJGdueTt0VLxgRk19ir6oE8I0".to_string()),
-                address: "Thika Rd, Nairobi, Kenya".to_string(),
-                api_response,
-            })
-            .await
-            .unwrap();
+            let contents = include_str!("mock_data/nearby_mi_vida_homes.json");
+            let api_response: Value = serde_json::from_str(contents).unwrap();
+            repo.save_nearby_locations(location, api_response).await;
 
-        repository
-            .subscribe_to_adjuscent_location(initial_location_id, adjuscent_location_id)
-            .await
-            .unwrap();
+            let result = repo
+                .get_affected_subscribers(&[nairobi_region()])
+                .await
+                .unwrap();
 
-        let results = repository
-            .get_affected_subscribers(&[generate_region()])
-            .await
-            .unwrap();
-
-        println!("{results:?}");
-
-        assert!(!results.is_empty());
-        let key = AffectedSubscriber::PotentiallyAffected(subscriber_id);
-        assert!(results.contains_key(&key));
-        let value = results.get(&key).unwrap().first().unwrap();
-        assert_eq!(&value.line, "Garden City Mall")
-    }
-
-    #[tokio::test]
-    async fn test_locations_with_generic_names_are_first_matched_to_area() {
-        let repository = Repository::new_test_repo().await;
-        let subscriber_id = authenticate(&repository).await;
-        let contents = include_str!("mock_data/generic_name/citam_nairobi_pentecostal.json");
-        let api_response: Value = serde_json::from_str(contents).unwrap();
-
-        let location_id = repository
-            .insert_location(LocationInput {
-                name: "Nairobi Pentecostal Church".to_string(),
-                external_id: ExternalLocationId::from("ChIJhVbiHlwVLxgRUzt5QN81vPA".to_string()),
-                address: "CITAM BURU BURU PREMISES,NZIU, Starehe, Kenya".to_string(),
-                api_response,
-            })
-            .await
-            .unwrap();
-        repository
-            .subscribe_to_location(subscriber_id, location_id)
-            .await
-            .unwrap();
-
-        let contents = include_str!("mock_data/generic_name/fishermens_pentecostal.json");
-        let api_response: Value = serde_json::from_str(contents).unwrap();
-
-        let location_id = repository
-            .insert_location(LocationInput {
-                name: "Fisher's of men Pentecostal church".to_string(),
-                external_id: ExternalLocationId::from("ChIJwxGb7pVrLxgRdxwwMVASs-c".to_string()),
-                address: "PXV6+JVG, Kangundo Rd, Nairobi, Kenya".to_string(),
-                api_response,
-            })
-            .await
-            .unwrap();
-        repository
-            .subscribe_to_location(subscriber_id, location_id)
-            .await
-            .unwrap();
-
-        let contents = include_str!("mock_data/generic_name/victory_pentecostal_church.json");
-        let api_response: Value = serde_json::from_str(contents).unwrap();
-
-        let location_id = repository
-            .insert_location(LocationInput {
-                name: "Victory Pentecostal Church (Jabez Experience Centre)".to_string(),
-                external_id: ExternalLocationId::from("ChIJSx8C4LERLxgR-ml5tyOEkPw".to_string()),
-                address: "MQRQ+GVF, Nairobi, Kenya".to_string(),
-                api_response,
-            })
-            .await
-            .unwrap();
-        repository
-            .subscribe_to_location(subscriber_id, location_id)
-            .await
-            .unwrap();
-
-        let region = Region {
-            region: "Nairobi".to_string(),
-            counties: vec![County {
-                name: "Nairobi".to_string(),
-                areas: vec![Area {
-                    name: "Kibera".to_string().into(),
-                    time_frame: TimeFrame {
-                        from: NairobiTZDateTime::today().try_into().unwrap(),
-                        to: NairobiTZDateTime::today().try_into().unwrap(),
-                    },
-                    locations: vec!["Pentecostal church".to_string()],
-                }],
-            }],
-        };
-
-        let results = repository
-            .get_affected_subscribers(&[region])
-            .await
-            .unwrap();
-
-        let empty_vec = vec![];
-
-        let affected_lines = results
-            .get(&AffectedSubscriber::DirectlyAffected(subscriber_id))
-            .unwrap_or(&empty_vec);
-
-        assert_eq!(affected_lines.len(), 1)
+            assert!(result
+                .get(&AffectedSubscriber::PotentiallyAffected(subscriber))
+                .is_some())
+        }
     }
 }

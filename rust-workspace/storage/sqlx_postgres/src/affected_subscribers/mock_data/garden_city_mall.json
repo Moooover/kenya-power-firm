@@ -1,0 +1,421 @@
+{
+    "html_attributions": [],
+    "result": {
+        "address_components": [
+            {
+                "long_name": "Thika Road",
+                "short_name": "Thika Rd",
+                "types": [
+                    "route"
+                ]
+            },
+            {
+                "long_name": "Kasarani Constituency",
+                "short_name": "Kasarani Constituency",
+                "types": [
+                    "sublocality_level_1",
+                    "sublocality",
+                    "political"
+                ]
+            },
+            {
+                "long_name": "Nairobi",
+                "short_name": "Nairobi",
+                "types": [
+                    "locality",
+                    "political"
+                ]
+            },
+            {
+                "long_name": "Nairobi County",
+                "short_name": "Nairobi County",
+                "types": [
+                    "administrative_area_level_1",
+                    "political"
+                ]
+            },
+            {
+                "long_name": "Kenya",
+                "short_name": "KE",
+                "types": [
+                    "country",
+                    "political"
+                ]
+            }
+        ],
+        "adr_address": "<span class=\"street-address\">Thika Rd</span>, <span class=\"locality\">Nairobi</span>, <span class=\"country-name\">Kenya</span>",
+        "business_status": "OPERATIONAL",
+        "current_opening_hours": {
+            "open_now": true,
+            "periods": [
+                {
+                    "close": {
+                        "date": "2023-04-23",
+                        "day": 0,
+                        "time": "2200"
+                    },
+                    "open": {
+                        "date": "2023-04-23",
+                        "day": 0,
+                        "time": "0900"
+                    }
+                },
+                {
+                    "close": {
+                        "date": "2023-04-24",
+                        "day": 1,
+                        "time": "2200"
+                    },
+                    "open": {
+                        "date": "2023-04-24",
+                        "day": 1,
+                        "time": "0900"
+                    }
+                },
+                {
+                    "close": {
+                        "date": "2023-04-25",
+                        "day": 2,
+                        "time": "2200"
+                    },
+                    "open": {
+                        "date": "2023-04-25",
+                        "day": 2,
+                        "time": "0900"
+                    }
+                },
+                {
+                    "close": {
+                        "date": "2023-04-26",
+                        "day": 3,
+                        "time": "2200"
+                    },
+                    "open": {
+                        "date": "2023-04-26",
+                        "day": 3,
+                        "time": "0900"
+                    }
+                },
+                {
+                    "close": {
+                        "date": "2023-04-27",
+                        "day": 4,
+                        "time": "2200"
+                    },
+                    "open": {
+                        "date": "2023-04-27",
+                        "day": 4,
+                        "time": "0900"
+                    }
+                },
+                {
+                    "close": {
+                        "date": "2023-04-28",
+                        "day": 5,
+                        "time": "2200"
+                    },
+                    "open": {
+                        "date": "2023-04-28",
+                        "day": 5,
+                        "time": "0900"
+                    }
+                },
+                {
+                    "close": {
+                        "date": "2023-04-29",
+                        "day": 6,
+                        "time": "2200"
+                    },
+                    "open": {
+                        "date": "2023-04-29",
+                        "day": 6,
+                        "time": "0900"
+                    }
+                }
+            ],
+            "weekday_text": [
+                "Monday: 9:00 AM – 10:00 PM",
+                "Tuesday: 9:00 AM – 10:00 PM",
+                "Wednesday: 9:00 AM – 10:00 PM",
+                "Thursday: 9:00 AM – 10:00 PM",
+                "Friday: 9:00 AM – 10:00 PM",
+                "Saturday: 9:00 AM – 10:00 PM",
+                "Sunday: 9:00 AM – 10:00 PM"
+            ]
+        },
+        "editorial_summary": {
+            "language": "en",
+            "overview": "Large & vibrant mall featuring a variety of shops, services & eateries, plus a 3D cinema."
+        },
+        "formatted_address": "Thika Rd, Nairobi, Kenya",
+        "formatted_phone_number": "0724 248657",
+        "geometry": {
+            "location": {
+                "lat": -1.2324833,
+                "lng": 36.8787799
+            },
+            "viewport": {
+                "northeast": {
+                    "lat": -1.230795519708498,
+                    "lng": 36.8801699802915
+                },
+                "southwest": {
+                    "lat": -1.233493480291502,
+                    "lng": 36.8774720197085
+                }
+            }
+        },
+        "icon": "https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/shopping-71.png",
+        "icon_background_color": "#4B96F3",
+        "icon_mask_base_uri": "https://maps.gstatic.com/mapfiles/place_api/icons/v2/shopping_pinlet",
+        "international_phone_number": "+254 724 248657",
+        "name": "Garden City Mall",
+        "opening_hours": {
+            "open_now": true,
+            "periods": [
+                {
+                    "close": {
+                        "day": 0,
+                        "time": "2200"
+                    },
+                    "open": {
+                        "day": 0,
+                        "time": "0900"
+                    }
+                },
+                {
+                    "close": {
+                        "day": 1,
+                        "time": "2200"
+                    },
+                    "open": {
+                        "day": 1,
+                        "time": "0900"
+                    }
+                },
+                {
+                    "close": {
+                        "day": 2,
+                        "time": "2200"
+                    },
+                    "open": {
+                        "day": 2,
+                        "time": "0900"
+                    }
+                },
+                {
+                    "close": {
+                        "day": 3,
+                        "time": "2200"
+                    },
+                    "open": {
+                        "day": 3,
+                        "time": "0900"
+                    }
+                },
+                {
+                    "close": {
+                        "day": 4,
+                        "time": "2200"
+                    },
+                    "open": {
+                        "day": 4,
+                        "time": "0900"
+                    }
+                },
+                {
+                    "close": {
+                        "day": 5,
+                        "time": "2200"
+                    },
+                    "open": {
+                        "day": 5,
+                        "time": "0900"
+                    }
+                },
+                {
+                    "close": {
+                        "day": 6,
+                        "time": "2200"
+                    },
+                    "open": {
+                        "day": 6,
+                        "time": "0900"
+                    }
+                }
+            ],
+            "weekday_text": [
+                "Monday: 9:00 AM – 10:00 PM",
+                "Tuesday: 9:00 AM – 10:00 PM",
+                "Wednesday: 9:00 AM – 10:00 PM",
+                "Thursday: 9:00 AM – 10:00 PM",
+                "Friday: 9:00 AM – 10:00 PM",
+                "Saturday: 9:00 AM – 10:00 PM",
+                "Sunday: 9:00 AM – 10:00 PM"
+            ]
+        },
+        "photos": [
+            {
+                "height": 2944,
+                "html_attributions": [
+                    "<a href=\"https://maps.google.com/maps/contrib/117261224944151866011\">Solomon Mwangi</a>"
+                ],
+                "photo_reference": "AUjq9jln5hGjlYECDxdcjW-6UUbFi8LVNrLhS6hCvyaTu71vGbHmXLKL1Ds_jg7RZjjsGCvRnugUjphEUokmc94zmz-ylCKeQtWOu1bAF-0HOfIQq9TZFcrFuho0JiSRdbUCIdWVoEoM1o5wghFmBzT6xIgWwJogi99EnOXaj_gxOboTeJLe",
+                "width": 2944
+            },
+            {
+                "height": 3000,
+                "html_attributions": [
+                    "<a href=\"https://maps.google.com/maps/contrib/111266690383569374383\">Sam Ochieng&#39;</a>"
+                ],
+                "photo_reference": "AUjq9jnueqVK_Mf8JwGPmoR7iYr4rtZcWMy65rHRphq1rd_jLk_T2PpWjb3I0w3JdJmLMA-MXiFe5bW30xolg7aC1YDFfMqdK9Ey30y8F80xolyCBTiyvR3KREsWPhIKbvJloOb3Dm7BB3fHOOTGzEBnhe6q4lA_BidbyM4o8HVViNNwDF1p",
+                "width": 4000
+            },
+            {
+                "height": 3456,
+                "html_attributions": [
+                    "<a href=\"https://maps.google.com/maps/contrib/117049550090794037869\">Garden City Mall</a>"
+                ],
+                "photo_reference": "AUjq9jmhVAylf7GInmOABmZ4WNpqlnuTMJseB_7MXAYAIrJQXOhkL5AhNLqu76xPoHXJ-8OH9HbtQHoQUJTs6pVh1u6mB8TqAvqrXK8mpf3URbWU0mxTN_loPjC_XCFZVfQzkkdW--Oga8BP_kGOg6AM_S_G7WXV0-SWbZYWHfh2H8hvEYC6",
+                "width": 5184
+            },
+            {
+                "height": 4000,
+                "html_attributions": [
+                    "<a href=\"https://maps.google.com/maps/contrib/108299068693448184543\">Sandeep Jalan</a>"
+                ],
+                "photo_reference": "AUjq9jkuiFQDdMEzND11E1j0lzaz0Iy49_-ri6TNQmc1AcHWDMgW_8bxQl0KJUujmIyfvVO01B0voDVUkMONfJUv2vWbM-Ebpa2f2-K3Ym53N9dJndUVkYMFCL1vPWfgfniE47qGg7QBTNh6Q9SB9u7KG6MOfC7zKcNDSISuBItzeZPE8Nlf",
+                "width": 3000
+            },
+            {
+                "height": 2944,
+                "html_attributions": [
+                    "<a href=\"https://maps.google.com/maps/contrib/117261224944151866011\">Solomon Mwangi</a>"
+                ],
+                "photo_reference": "AUjq9jndGkP9d5da_gOAYMl4wpOgyBZFxTb9eYdO70gUD6Fy--9gBm_Dd0Gdvb5LhPD83NFvtDGYgrJqS5Fs5ijWnMrONUDZTvA60hPyE9VdrllMgM1EQtwfBOIdPrf5Y0cEEnvO8AScVO_-3sfL_FMQ1_BBOOKbyaUR4_mNg1x59BgqTQWU",
+                "width": 2944
+            },
+            {
+                "height": 4000,
+                "html_attributions": [
+                    "<a href=\"https://maps.google.com/maps/contrib/101323286910276284052\">Ahuba Oscar</a>"
+                ],
+                "photo_reference": "AUjq9jnaafee3NcQdK9Uzm0lF2JnOp6mNSLuXnd831DF05bTigZ3-iSAYSN2xHexkXEkA9xSnWESh4AqrW0row5wOSKtbfVDaOSYcAFEnL7cha4xYieP7Eyh-2UOQXaHRSnkSQEUnJ_bWS-En2RaI_CYJ-LRy-H6NKwlR2Dw8DkLAfzUS7A6",
+                "width": 3000
+            },
+            {
+                "height": 4000,
+                "html_attributions": [
+                    "<a href=\"https://maps.google.com/maps/contrib/104493552798033428219\">Eshiwani Michael</a>"
+                ],
+                "photo_reference": "AUjq9jlhi0bgY8fFBnR83EBKFYURoGFwNzahDetxnHHREIFKhNqT8c2XVDbd-NLYE3TDDnuk2_FFVegS65bBoivMfTyCNth6HZR99VLa8E80m893UYZm4c00O_njEYw9Bdfa570Xu9614k1357jV8ZXHKIYQhR2Sqs7Ny_1kDeymcmp6r-IB",
+                "width": 3000
+            },
+            {
+                "height": 4618,
+                "html_attributions": [
+                    "<a href=\"https://maps.google.com/maps/contrib/101370088567223007682\">Phil Kimani</a>"
+                ],
+                "photo_reference": "AUjq9jlaGIQN7jJq0CAeNeDJZLzqzW0Ri5RqSOHUKHPyQ7Z7hfzw_mZWvlgCFDQk4G4ckAU5Jdwn3dGUkss_2Y5hKprp08JyO913FyLD7SMYoQRVCWZkQKwVDTCGyMnj6LbypjkNmMkiu4cSzu1gwOc7QeIQOj1oTC9Gjwd90yVJYa3bn8Qr",
+                "width": 3464
+            },
+            {
+                "height": 4000,
+                "html_attributions": [
+                    "<a href=\"https://maps.google.com/maps/contrib/108299068693448184543\">Sandeep Jalan</a>"
+                ],
+                "photo_reference": "AUjq9jkL_HVv347-3tqWZxCQtGK-SGIVGKOb4AjE9qLqL04ZB8NFVyX8rdE9g0CQK2iqmCnB9M6KsYnqP0-wo6DAEyGE6jSRG5rfIL9iDXrqwACuNGf-b-yD0GZ1nmBT4jO63m5g_tf4QhtIl96jRTjkVqyXLbn9qeHj-xYoNgmeKvGY8noV",
+                "width": 3000
+            },
+            {
+                "height": 1066,
+                "html_attributions": [
+                    "<a href=\"https://maps.google.com/maps/contrib/108610082353168345334\">Puriey Nyatichi</a>"
+                ],
+                "photo_reference": "AUjq9jkovoN3Q3gnkecrQdN7fugA9Yajta_vKRqfhJgklMJ-2daIxY9noVEcz8X9SEosX-_FRJdvya-0qZwmCZ5Anlet4ZC6f1PkumU9t3suVRG-NzLt3bcbbimEy-lLGUJ5mPko8NM8AaJFpWndGNzeNd7F_tejNQeqri13k-HfrdWlPflQ",
+                "width": 1600
+            }
+        ],
+        "place_id": "ChIJGdueTt0VLxgRk19ir6oE8I0",
+        "plus_code": {
+            "compound_code": "QV9H+2G Nairobi, Kenya",
+            "global_code": "6GCRQV9H+2G"
+        },
+        "rating": 4.5,
+        "reference": "ChIJGdueTt0VLxgRk19ir6oE8I0",
+        "reviews": [
+            {
+                "author_name": "Winfresha A.",
+                "author_url": "https://www.google.com/maps/contrib/104029849712174990794/reviews",
+                "language": "en",
+                "original_language": "en",
+                "profile_photo_url": "https://lh3.googleusercontent.com/a-/ACB-R5Sszv_W2IEKImdMCq25PcFTiCHg5VM5rcCMd6UeUxQ=s128-c0x00000000-cc-rp-mo-ba4",
+                "rating": 5,
+                "relative_time_description": "4 months ago",
+                "text": "Wonderful,calm and lovely place to visit for shopping,games for kids,banking,movies and just taking a walk. A great place to eat out too,has several restaurants and cafes. Easily accessible along Thika Road and affordable.",
+                "time": 1671630166,
+                "translated": false
+            },
+            {
+                "author_name": "David Collins",
+                "author_url": "https://www.google.com/maps/contrib/115576988069562118407/reviews",
+                "language": "en",
+                "original_language": "en",
+                "profile_photo_url": "https://lh3.googleusercontent.com/a-/ACB-R5QwluJySCYs2dgQwweBGjK8wJEGW11VgKZD47KhKMA=s128-c0x00000000-cc-rp-mo-ba4",
+                "rating": 5,
+                "relative_time_description": "5 months ago",
+                "text": "The Mall everything you Need under one Roof.\nIt's good for Family outing on Sunday afternoon and Also good for Dates. They have Movie Theaters, Restaurants, Play Area and Good Parking space",
+                "time": 1667684697,
+                "translated": false
+            },
+            {
+                "author_name": "KUNCHO",
+                "author_url": "https://www.google.com/maps/contrib/106061623305317674664/reviews",
+                "language": "en",
+                "original_language": "en",
+                "profile_photo_url": "https://lh3.googleusercontent.com/a-/ACB-R5SeiO70ChdsVrrYeSZq8eZXOxX5VBqrVbO0JCaoaQ=s128-c0x00000000-cc-rp-mo",
+                "rating": 5,
+                "relative_time_description": "5 months ago",
+                "text": "Ample parking space, both for Cars, Motorbikes & Bicycles... Spacious enough...Good playground for the kids, Skating field, Nice & Lovely Restaurants inside, Safaricom Customer Care Shop & Carrefour Supermarket among others...i like it...come & you'll absolutely enjoy",
+                "time": 1668090462,
+                "translated": false
+            },
+            {
+                "author_name": "Wendycee Muthoni",
+                "author_url": "https://www.google.com/maps/contrib/106761370737630518886/reviews",
+                "language": "en",
+                "original_language": "en",
+                "profile_photo_url": "https://lh3.googleusercontent.com/a/AGNmyxbkUMy3xRvOZVXQpnZvMeCCOY70ZjKY8yYBn6gI=s128-c0x00000000-cc-rp-mo-ba4",
+                "rating": 4,
+                "relative_time_description": "3 months ago",
+                "text": "I loved the experience there... especially the garden area, so pretty.\nThe place is clean esp the powder rooms.\n\nNot forgetting Art café there so chic!",
+                "time": 1673238812,
+                "translated": false
+            },
+            {
+                "author_name": "SIMIYU DAN WAMALWA",
+                "author_url": "https://www.google.com/maps/contrib/115097025887898930739/reviews",
+                "language": "en",
+                "original_language": "en",
+                "profile_photo_url": "https://lh3.googleusercontent.com/a-/ACB-R5Sp06-jShKTu7njZ0A0aAWqD9_6vDEOKjCCRZ0Mbw=s128-c0x00000000-cc-rp-mo-ba4",
+                "rating": 5,
+                "relative_time_description": "4 months ago",
+                "text": "One of the largest and most stocked mall in Nairobi with a wonderful environment. A wonderful place to take the family for fun and shopping especially kids will have a great time. They provide the best quality products and services.",
+                "time": 1670917650,
+                "translated": false
+            }
+        ],
+        "types": [
+            "shopping_mall",
+            "point_of_interest",
+            "establishment"
+        ],
+        "url": "https://maps.google.com/?cid=10227679884891807635",
+        "user_ratings_total": 20892,
+        "utc_offset": 180,
+        "vicinity": "Thika Road, Nairobi",
+        "website": "https://www.shopgardencitymall.com/",
+        "wheelchair_accessible_entrance": true
+    },
+    "status": "OK"
+}

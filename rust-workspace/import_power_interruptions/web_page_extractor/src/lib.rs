@@ -8,9 +8,7 @@ use std::collections::HashMap;
 
 use std::sync::Arc;
 use use_cases::actor::Actor;
-use use_cases::import_affected_areas::{
-    ImportInput, ImportPlannedBlackoutsInteractor, Region,
-};
+use use_cases::import_affected_areas::{ImportInput, ImportPlannedBlackoutsInteractor, Region};
 
 use regex::Regex;
 use shared_kernel::http_client::HttpClient;
@@ -55,7 +53,6 @@ impl WebPageExtractor {
         let result = self.pdf_reader.extract(unprocessed_files.clone()).await?;
 
         self.importer.import(actor, ImportInput(result)).await
-
     }
 
     async fn get_page_contents(&self) -> anyhow::Result<String> {

@@ -1,6 +1,3 @@
-
-
-
 use entities::power_interruptions::location::NairobiTZDateTime;
 
 #[derive(Debug)]

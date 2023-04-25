@@ -8,3 +8,6 @@ members = [
     "shared_kernel",
     "background_workers/*"
 ]
+
+[profile.dev.package.sqlx-macros]
+opt-level = 3

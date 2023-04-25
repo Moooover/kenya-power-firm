@@ -1,10 +1,9 @@
 use crate::actor::Actor;
 use crate::authentication::subscriber_authentication::SubscriberResolverInteractor;
-use crate::subscriber_locations::data::LocationWithId;
 use async_trait::async_trait;
+use entities::locations::LocationId;
 use entities::subscriptions::SubscriberId;
 use std::sync::Arc;
-
 
 #[async_trait]
 pub trait ListSubscribedLocationsInteractor: Send + Sync {
@@ -40,4 +39,10 @@ impl ListSubscribedLocationsInteractor for ListSubscribedLocationsImpl {
 
         self.repo.list(id).await
     }
+}
+
+pub struct LocationWithId {
+    pub id: LocationId,
+    pub name: String,
+    pub address: String,
 }

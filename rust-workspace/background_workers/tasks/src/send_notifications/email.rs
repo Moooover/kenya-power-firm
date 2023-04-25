@@ -125,7 +125,7 @@ pub async fn send_email_notification(task: &Self, notification: Notification) ->
 
     let response = HttpClient::post_json::<Response>(url, headers, body)
         .await
-        .map_err(|err| TaskError::ExpectedError(err.to_string()))?;
+        .map_err(|err| TaskError::UnexpectedError(err.to_string()))?;
 
     repo.save_email_notification_sent(&notification, response.request_id)
         .await

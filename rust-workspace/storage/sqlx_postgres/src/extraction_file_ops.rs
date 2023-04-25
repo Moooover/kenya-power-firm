@@ -10,7 +10,6 @@ use anyhow::Context;
 
 #[async_trait]
 impl FileOperations for Repository {
-
     async fn return_unprocessed_files(&self, files: Vec<Url>) -> anyhow::Result<Vec<Url>> {
         let keys = files.into_iter().map(|file| file.to_string()).collect_vec();
 

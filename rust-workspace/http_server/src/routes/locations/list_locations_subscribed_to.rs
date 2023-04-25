@@ -1,7 +1,7 @@
 use actix_web::{web, HttpRequest};
 use itertools::Itertools;
 use serde::Serialize;
-use use_cases::subscriber_locations::data::{AdjuscentLocation, LocationWithId};
+use use_cases::subscriber_locations::list_subscribed_locations::LocationWithId;
 use uuid::Uuid;
 
 use crate::{
@@ -10,33 +10,15 @@ use crate::{
 };
 
 #[derive(Serialize)]
-struct AdjuscentLocationResponse {
-    id: Uuid,
-    name: String,
-    address: String,
-}
-
-#[derive(Serialize)]
 struct LocationWithIdResponse {
     id: Uuid,
     name: String,
     address: String,
-    adjuscent_locations: Vec<AdjuscentLocationResponse>,
 }
 
 #[derive(Serialize)]
 struct LocationsResponswWrapper {
     items: Vec<LocationWithIdResponse>,
-}
-
-impl From<AdjuscentLocation> for AdjuscentLocationResponse {
-    fn from(value: AdjuscentLocation) -> Self {
-        AdjuscentLocationResponse {
-            id: value.id.inner(),
-            name: value.name,
-            address: value.address,
-        }
-    }
 }
 
 impl From<LocationWithId> for LocationWithIdResponse {
@@ -45,11 +27,6 @@ impl From<LocationWithId> for LocationWithIdResponse {
             id: value.id.inner(),
             name: value.name,
             address: value.address,
-            adjuscent_locations: value
-                .adjuscent_locations
-                .into_iter()
-                .map_into()
-                .collect_vec(),
         }
     }
 }

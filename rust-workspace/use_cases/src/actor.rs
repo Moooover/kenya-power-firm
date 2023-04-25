@@ -6,7 +6,6 @@ use serde::Deserialize;
 
 use std::collections::HashSet;
 
-
 #[derive(Copy, Clone, Hash, Eq, PartialEq, Debug, Deserialize)]
 pub enum Permission {
     #[serde(rename = "import:affected_regions")]

@@ -3,12 +3,13 @@ use anyhow::Context;
 use async_trait::async_trait;
 use entities::locations::ExternalLocationId;
 use entities::subscriptions::SubscriberId;
+use std::str::FromStr;
 use tasks::{
-    subscribe_to_location::fetch_and_subscribe_to_locations,
+    subscribe_to_location::fetch_and_subscribe_to_location,
     utils::progress_tracking::{get_progress_status, TaskStatus},
 };
+use use_cases::search_for_locations::Status;
 use use_cases::subscriber_locations::subscribe_to_location::{LocationSubscriber, TaskId};
-use use_cases::{search_for_locations::Status, subscriber_locations::data::LocationInput};
 use uuid::Uuid;
 
 fn generate_task_id() -> TaskId {
@@ -20,14 +21,13 @@ fn generate_task_id() -> TaskId {
 impl LocationSubscriber for Producer {
     async fn subscribe_to_location(
         &self,
-        location: LocationInput<ExternalLocationId>,
+        location: ExternalLocationId,
         subscriber_id: SubscriberId,
     ) -> anyhow::Result<TaskId> {
         let task_id = generate_task_id();
         self.app
-            .send_task(fetch_and_subscribe_to_locations::new(
-                location.primary_id().to_owned(),
-                location.nearby_locations,
+            .send_task(fetch_and_subscribe_to_location::new(
+                location,
                 subscriber_id,
                 task_id.clone(),
             ))
@@ -38,12 +38,12 @@ impl LocationSubscriber for Producer {
     }
 
     async fn progress(&self, task_id: TaskId) -> anyhow::Result<Status> {
-        let progress = get_progress_status::<usize, _>(task_id.as_ref(), |val| {
-            println!("{val:?}");
-            Ok(val.map(|val| match val {
-                0 => TaskStatus::Success,
-                _ => TaskStatus::Pending,
-            }))
+        let progress = get_progress_status::<String, _>(task_id.as_ref(), |val| {
+            val.map(|value| {
+                TaskStatus::from_str(&value)
+                    .with_context(|| format!("Failed to convert to TaskStatus {value}"))
+            })
+            .transpose()
         })
         .await
         .map(|data| data.map(Into::into))?;

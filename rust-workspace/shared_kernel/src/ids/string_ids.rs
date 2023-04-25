@@ -43,6 +43,12 @@ macro_rules! string_key {
             }
         }
 
+        impl From<&str> for $TypeName {
+            fn from(id: &str) -> Self {
+                $TypeName(id.to_owned())
+            }
+        }
+
         impl From<$TypeName> for String {
             fn from(id: $TypeName) -> Self {
                 id.inner()
