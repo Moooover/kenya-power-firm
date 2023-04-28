@@ -204,10 +204,6 @@ impl DbLine {
         .await
         .context("Failed to return inserted lines")?;
 
-        if inserted_lines.len() != lines.len() {
-            bail!("The line rows inserted and the rows returned do not match")
-        }
-
         let mapping_of_line_id_to_name = inserted_lines
             .into_iter()
             .map(|line| (line.name, line.id))
