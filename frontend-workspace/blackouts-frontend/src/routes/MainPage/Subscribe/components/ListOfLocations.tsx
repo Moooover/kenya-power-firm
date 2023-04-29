@@ -8,6 +8,7 @@ import Typography from "@mui/material/Typography";
 import { LocationSearchData } from "./SearchForLocation";
 import { ListItemButton } from "@mui/material";
 import ListItemIcon from "@mui/material/ListItemIcon";
+import AddLocationAltTwoToneIcon from "@mui/icons-material/AddLocationAltTwoTone";
 
 type Props = {
   items: LocationSearchData[];
@@ -49,6 +50,9 @@ export default function ListOfLocations(props: Props) {
                   </React.Fragment>
                 }
               />
+              <ListItemIcon>
+                <AddLocationAltTwoToneIcon />
+              </ListItemIcon>
             </ListItemButton>
             <Divider variant="inset" component="li" key={item.id + idx} />
           </>

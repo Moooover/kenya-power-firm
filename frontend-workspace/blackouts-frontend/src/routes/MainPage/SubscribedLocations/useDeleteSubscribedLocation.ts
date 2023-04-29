@@ -1,7 +1,7 @@
 import axios from "axios";
 import useSWRMutation from "swr/mutation";
-import { useToken } from "../../providers/Auth";
-import { instance } from "../../axios";
+import { useToken } from "../../../providers/Auth";
+import { instance } from "../../../axios";
 
 type Props = {
   token: string;

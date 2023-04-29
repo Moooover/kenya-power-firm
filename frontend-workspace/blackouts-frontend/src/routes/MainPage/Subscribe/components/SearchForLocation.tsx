@@ -1,10 +1,11 @@
-import SearchBox from "../../../components/SearchBox";
+import SearchBox from "../../../../components/SearchBox";
 import useSWR from "swr";
 import React from "react";
-import { useDebounce } from "../../../hooks/useDebounce";
+import { useDebounce } from "../../../../hooks/useDebounce";
 import { AxiosError } from "axios";
 import ListOfLocations from "./ListOfLocations";
 import { Typography } from "@mui/material";
+import Loading from "../../LoadingLocations";
 
 export type LocationSearchData = {
   id: string;
@@ -67,9 +68,12 @@ export default function SearchForLocation(props: Props) {
       {data && data.status === "Success" && data.items.length > 0 && (
         <ListOfLocations items={data.items} onClick={onSelectLocation} />
       )}
+      {data && data.status === "Success" && data.items.length === 0 && (
+        <Typography>No results found</Typography>
+      )}
       {data && data.status === "Pending" && (
         <div>
-          <Typography>Loading..</Typography>
+          <Loading />
         </div>
       )}
       {data && data.status === "Failure" && (

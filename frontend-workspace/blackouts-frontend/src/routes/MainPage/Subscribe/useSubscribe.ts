@@ -1,9 +1,9 @@
 import useSWRMutation from "swr/mutation";
-import { useToken } from "../../providers/Auth";
+import { useToken } from "../../../providers/Auth";
 import { AxiosError } from "axios";
 import React from "react";
 import useSWR from "swr";
-import { instance } from "../../axios";
+import { instance } from "../../../axios";
 
 type SubscriptionStatus = "Pending" | "Success" | "Failure" | "NotFound";
 
