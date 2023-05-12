@@ -1,5 +1,5 @@
 mod counties;
-use anyhow::{bail, Context};
+use anyhow::Context;
 
 use sqlx::query;
 use std::{

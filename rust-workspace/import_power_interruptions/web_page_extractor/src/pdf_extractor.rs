@@ -36,7 +36,9 @@ impl PdfExtractorImpl {
     }
     async fn fetch_and_extract(&self, url: Url) -> anyhow::Result<(Url, Vec<Region>)> {
         let res = HttpClient::get_bytes(url.clone()).await?;
-        let text = resolve_text_from_file(&res).await?;
+        let text = resolve_text_from_file(&res)
+            .await
+            .with_context(|| format!("The file URL is {url}"))?;
         let regions = self.text_extractor.extract(text).await?;
 
         Ok((url, regions))
@@ -110,7 +112,7 @@ mod tests {
         };
         let links =
             vec![
-                Url::parse("https://www.kplc.co.ke/img/full/Interruptions%20-%2023.02.2023.pdf")
+                Url::parse("https://kplc.co.ke/img/full/Interruption%20-%2011.05.2023.pdf")
                     .unwrap(),
             ];
         let _res = extractor.extract(links).await.expect("Expected result");
