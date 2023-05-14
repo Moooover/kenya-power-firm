@@ -1,11 +1,10 @@
-pub mod affected_subscribers;
 mod authentication;
 pub mod cache;
 pub mod configuration;
 pub mod extraction_file_ops;
 pub mod fixtures;
-pub mod locations;
 pub mod notifications;
+pub mod pool_manager;
 pub mod repository;
 pub mod save_import_input;
 pub mod subscriber_details;

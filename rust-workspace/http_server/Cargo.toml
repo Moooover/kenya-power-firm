@@ -23,6 +23,7 @@ producer = { path = "../background_workers/producer" }
 use_cases = { path = "../use_cases" }
 sqlx_postgres = { path = "../storage/sqlx_postgres" }
 shared_kernel = { path = "../shared_kernel" }
+location_subscription = { path = "../location_subscription" }
 itertools = "0.10.5"
 
 

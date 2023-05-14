@@ -5,7 +5,6 @@ use crate::send_notifications::email::send_email_notification;
 use anyhow::Context;
 use celery::Celery;
 
-use crate::subscribe_to_location::nearby_locations::get_nearby_locations;
 use std::sync::Arc;
 use text_search::search_locations_by_text;
 
@@ -30,13 +29,11 @@ pub async fn app() -> anyhow::Result<Arc<Celery>> {
             fetch_and_subscribe_to_location,
             search_locations_by_text,
             send_email_notification,
-            get_nearby_locations
         ],
         task_routes = [
             "fetch_and_subscribe_to_location" => "locations_queue",
             "search_locations_by_text" => "locations_queue",
             "send_email_notification" => "email_notifications_queue",
-            "get_nearby_locations" => "get_nearby_locations_queue",
             "*" => QUEUE_NAME
         ],
         prefetch_count = pre_fetch_count,

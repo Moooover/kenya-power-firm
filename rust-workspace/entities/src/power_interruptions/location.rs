@@ -63,6 +63,12 @@ impl TryFrom<NaiveDateTime> for NairobiTZDateTime {
 #[derive(Debug, Clone)]
 pub struct FutureOrCurrentNairobiTZDateTime(NairobiTZDateTime);
 
+impl AsRef<NairobiTZDateTime> for FutureOrCurrentNairobiTZDateTime {
+    fn as_ref(&self) -> &NairobiTZDateTime {
+        &self.0
+    }
+}
+
 impl From<&FutureOrCurrentNairobiTZDateTime> for NairobiTZDateTime {
     fn from(value: &FutureOrCurrentNairobiTZDateTime) -> Self {
         value.0.clone()

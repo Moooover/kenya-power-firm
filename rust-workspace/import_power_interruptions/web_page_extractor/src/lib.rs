@@ -8,14 +8,13 @@ use std::collections::HashMap;
 
 use std::sync::Arc;
 use use_cases::actor::Actor;
-use use_cases::import_affected_areas::{ImportInput, ImportPlannedBlackoutsInteractor, Region};
+use use_cases::import_affected_areas::{ImportInput, Region};
 
 use regex::Regex;
 use shared_kernel::http_client::HttpClient;
 use url::Url;
 
 pub struct WebPageExtractor {
-    importer: Arc<dyn ImportPlannedBlackoutsInteractor>,
     file_operations: Arc<dyn FileOperations>,
     pdf_reader: Arc<dyn PdfExtractor>,
 }
@@ -32,17 +31,15 @@ pub trait PdfExtractor: Send + Sync {
 
 impl WebPageExtractor {
     pub fn new(
-        importer: Arc<dyn ImportPlannedBlackoutsInteractor>,
         file_operations: Arc<dyn FileOperations>,
         pdf_reader: Arc<dyn PdfExtractor>,
     ) -> Self {
         Self {
-            importer,
             file_operations,
             pdf_reader,
         }
     }
-    pub async fn run(&self, actor: &dyn Actor) -> anyhow::Result<()> {
+    pub async fn run(&self, _actor: &dyn Actor) -> anyhow::Result<ImportInput> {
         let pdf_links = self.get_pdf_links().await?;
 
         let unprocessed_files = self
@@ -52,7 +49,7 @@ impl WebPageExtractor {
 
         let result = self.pdf_reader.extract(unprocessed_files.clone()).await?;
 
-        self.importer.import(actor, ImportInput(result)).await
+        Ok(ImportInput(result))
     }
 
     async fn get_page_contents(&self) -> anyhow::Result<String> {
@@ -64,7 +61,7 @@ impl WebPageExtractor {
     async fn get_pdf_links(&self) -> anyhow::Result<Vec<Url>> {
         lazy_static! {
             static ref PDF_LINKS_REGEX: Regex =
-                Regex::new(r"https://.*kplc\.co\.ke/img/full/.*\.pdf")
+                Regex::new(r#""https://.*kplc\.co\.ke/img/full/.*\.pdf""#)
                     .expect("PDF_LINKS_REGEX to compile");
         }
 
@@ -74,7 +71,10 @@ impl WebPageExtractor {
         let urls = PDF_LINKS_REGEX
             .find_iter(&page_content)
             .into_iter()
-            .map(|a_match| Url::parse(a_match.as_str()))
+            .map(|a_match| {
+                let link = a_match.as_str().replace('\"', "");
+                Url::parse(link.as_str())
+            })
             .collect::<Result<Vec<_>, _>>()
             .context("Invalid URL")?;
 

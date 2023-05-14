@@ -4,6 +4,7 @@ use std::env;
 use crate::use_case_app_container::UseCaseAppContainer;
 use actix_web::{http, web, App, HttpServer};
 use anyhow::Context;
+use location_subscription::contracts::LocationSubscriptionSubSystem;
 use producer::producer::Producer;
 use sqlx_postgres::repository::Repository;
 use use_cases::AppImpl;
@@ -31,7 +32,8 @@ async fn main() -> anyhow::Result<()> {
                 http::header::ACCEPT,
                 http::header::CONTENT_TYPE,
             ]);
-        let app = AppImpl::new(repository.clone(), producer.clone());
+        let location_subscription = LocationSubscriptionSubSystem;
+        let app = AppImpl::new(repository.clone(), producer.clone(), location_subscription);
         let app_container = UseCaseAppContainer::new(app);
         App::new()
             .wrap(cors)

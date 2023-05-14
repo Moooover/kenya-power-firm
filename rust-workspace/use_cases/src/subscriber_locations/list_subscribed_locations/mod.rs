@@ -10,26 +10,26 @@ pub trait ListSubscribedLocationsInteractor: Send + Sync {
     async fn list(&self, actor: &dyn Actor) -> anyhow::Result<Vec<LocationWithId>>;
 }
 
+#[async_trait]
+pub trait ListSubscribedLocationsOp: Send + Sync {
+    async fn list(&self, id: SubscriberId) -> anyhow::Result<Vec<LocationWithId>>;
+}
+
 pub struct ListSubscribedLocationsImpl {
-    repo: Arc<dyn LocationsSubscribedRepo>,
+    list_op: Arc<dyn ListSubscribedLocationsOp>,
     subscriber_resolver: Arc<dyn SubscriberResolverInteractor>,
 }
 
 impl ListSubscribedLocationsImpl {
     pub fn new(
-        repo: Arc<dyn LocationsSubscribedRepo>,
+        list_op: Arc<dyn ListSubscribedLocationsOp>,
         subscriber_resolver: Arc<dyn SubscriberResolverInteractor>,
     ) -> Self {
         Self {
-            repo,
+            list_op,
             subscriber_resolver,
         }
     }
-}
-
-#[async_trait]
-pub trait LocationsSubscribedRepo: Send + Sync {
-    async fn list(&self, id: SubscriberId) -> anyhow::Result<Vec<LocationWithId>>;
 }
 
 #[async_trait]
@@ -37,7 +37,7 @@ impl ListSubscribedLocationsInteractor for ListSubscribedLocationsImpl {
     async fn list(&self, actor: &dyn Actor) -> anyhow::Result<Vec<LocationWithId>> {
         let id = self.subscriber_resolver.resolve_from_actor(actor).await?;
 
-        self.repo.list(id).await
+        self.list_op.list(id).await
     }
 }
 

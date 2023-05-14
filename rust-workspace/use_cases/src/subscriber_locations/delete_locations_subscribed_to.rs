@@ -15,31 +15,35 @@ pub trait DeleteLocationsSubscribedToInteractor {
     ) -> anyhow::Result<()>;
 }
 
+
+
+pub struct DeleteLocationsSubscribedToImpl {
+    subscriber_resolver: Arc<dyn SubscriberResolverInteractor>,
+    delete_op: Arc<dyn DeleteSubscribedLocationOp>
+}
+
+impl DeleteLocationsSubscribedToImpl {
+    pub fn new(
+        subscriber_resolver: Arc<dyn SubscriberResolverInteractor>,
+        delete_op: Arc<dyn DeleteSubscribedLocationOp>
+    ) -> Self {
+        Self {
+            subscriber_resolver,
+            delete_op
+        }
+    }
+}
+
+
 #[async_trait]
-pub trait DeleteSubscribedLocationsRepo: Send + Sync {
-    async fn delete_primary_location(
+pub trait DeleteSubscribedLocationOp: Send + Sync {
+    async fn delete_subscribed(
         &self,
         subscriber_id: SubscriberId,
         location_id: LocationId,
     ) -> anyhow::Result<()>;
 }
 
-pub struct DeleteLocationsSubscribedToImpl {
-    repo: Arc<dyn DeleteSubscribedLocationsRepo>,
-    subscriber_resolver: Arc<dyn SubscriberResolverInteractor>,
-}
-
-impl DeleteLocationsSubscribedToImpl {
-    pub fn new(
-        repo: Arc<dyn DeleteSubscribedLocationsRepo>,
-        subscriber_resolver: Arc<dyn SubscriberResolverInteractor>,
-    ) -> Self {
-        Self {
-            repo,
-            subscriber_resolver,
-        }
-    }
-}
 
 #[async_trait]
 impl DeleteLocationsSubscribedToInteractor for DeleteLocationsSubscribedToImpl {
@@ -49,8 +53,6 @@ impl DeleteLocationsSubscribedToInteractor for DeleteLocationsSubscribedToImpl {
         location_id: LocationId,
     ) -> anyhow::Result<()> {
         let subscriber_id = self.subscriber_resolver.resolve_from_actor(actor).await?;
-        self.repo
-            .delete_primary_location(subscriber_id, location_id)
-            .await
+        self.delete_op.delete_subscribed(subscriber_id, location_id).await
     }
 }

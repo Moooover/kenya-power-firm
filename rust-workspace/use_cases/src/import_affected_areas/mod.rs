@@ -10,7 +10,7 @@ use crate::actor::{Actor, Permission};
 use entities::power_interruptions::location::ImportInput as DomainImportInput;
 use entities::power_interruptions::location::NairobiTZDateTime;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Area {
     pub name: String,
     pub from: NairobiTZDateTime,
@@ -18,18 +18,18 @@ pub struct Area {
     pub locations: Vec<String>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct County {
     pub name: String,
     pub areas: Vec<Area>,
 }
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Region {
     pub name: String,
     pub counties: Vec<County>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ImportInput(pub HashMap<Url, Vec<Region>>);
 
 #[async_trait]
@@ -49,15 +49,11 @@ pub trait NotifySubscribersOfAffectedAreas: Send + Sync {
 
 pub struct ImportAffectedAreas {
     repo: Arc<dyn SaveBlackoutAffectedAreasRepo>,
-    notifier: Arc<dyn NotifySubscribersOfAffectedAreas>,
 }
 
 impl ImportAffectedAreas {
-    pub fn new(
-        repo: Arc<dyn SaveBlackoutAffectedAreasRepo>,
-        notifier: Arc<dyn NotifySubscribersOfAffectedAreas>,
-    ) -> Self {
-        Self { repo, notifier }
+    pub fn new(repo: Arc<dyn SaveBlackoutAffectedAreasRepo>) -> Self {
+        Self { repo }
     }
 }
 
@@ -76,7 +72,6 @@ impl ImportPlannedBlackoutsInteractor for ImportAffectedAreas {
             .collect();
 
         let data = DomainImportInput::new(data);
-        self.repo.save(&data).await?;
-        self.notifier.notify(data).await
+        self.repo.save(&data).await
     }
 }

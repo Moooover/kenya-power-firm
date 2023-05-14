@@ -6,7 +6,9 @@ members = [
     "http_server",
     "entities",
     "shared_kernel",
-    "background_workers/*"
+    "background_workers/*",
+    "location_subscription",
+    "notifications"
 ]
 
 [profile.dev.package.sqlx-macros]

@@ -75,7 +75,6 @@ async fn save_regions_data(
             area_id_to_blackout_schedule
                 .get(&AreaId(data.id))
                 .map(|blackout_schedule| {
-                    // TODO: Streamline the language here, we can go with line instead of location;
                     data.area.locations.iter().map(|line| DbLine {
                         area_id: data.id,
                         name: line.clone(),

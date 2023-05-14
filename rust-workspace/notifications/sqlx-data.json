@@ -1,0 +1,178 @@
+{
+  "db": "PostgreSQL",
+  "1633c34c3f83b52c72a5b664e8f1284b347dc1134b9c008f5d73647682aaa698": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "UuidArray",
+          "BoolArray",
+          "UuidArray",
+          "TextArray",
+          "UuidArray",
+          "UuidArray",
+          "TextArray"
+        ]
+      }
+    },
+    "query": "\n                INSERT INTO communication.notifications(source_id, directly_affected, subscriber_id, line, strategy_id, location_id_matched, external_id)\n                SELECT * FROM UNNEST($1::uuid[], $2::bool[], $3::uuid[], $4::text[], $5::uuid[], $6::uuid[], $7::text[]) ON CONFLICT DO NOTHING\n                "
+  },
+  "562dde0cdf802551f0756fdc3b921a70c4341a1f06648d892686ba3ee0cd2d06": {
+    "describe": {
+      "columns": [
+        {
+          "name": "source_id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "subscriber_id",
+          "ordinal": 1,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "line",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "strategy_id",
+          "ordinal": 3,
+          "type_info": "Uuid"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid",
+          "Uuid",
+          "TextArray",
+          "Uuid"
+        ]
+      }
+    },
+    "query": "SELECT source_id, subscriber_id, line, strategy_id FROM communication.notifications \n            WHERE source_id = $1 AND subscriber_id = $2 AND line = ANY($3) AND strategy_id = $4"
+  },
+  "76d653989592ac763cd84e17ee5b2f093a3e8b3350b7e5fd54838059bf1119db": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "email",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "external_id",
+          "ordinal": 3,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 4,
+          "type_info": "Timestamptz"
+        },
+        {
+          "name": "last_login",
+          "ordinal": 5,
+          "type_info": "Timestamptz"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      }
+    },
+    "query": "\n            SELECT * FROM public.subscriber WHERE id = $1\n            "
+  },
+  "80d5fe3abd56cd212bc5ced8310cba0762b633c75e904710a65d7653e02a908d": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "SELECT id FROM communication.strategies WHERE name = $1"
+  },
+  "c35d5c2f0aa0c53824203b87238441f5ea082bcfecf6cb30d9d1e11d670a1f09": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "SELECT id FROM public.source WHERE url = $1"
+  },
+  "cf434383b4f134f006bb5b9da0bf96938d17f33ca4fe572ef119a7df83265660": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "UuidArray"
+        ]
+      }
+    },
+    "query": "\n            SELECT id, name FROM location.locations WHERE id = ANY($1)\n            "
+  }
+}

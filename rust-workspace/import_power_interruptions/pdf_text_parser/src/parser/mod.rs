@@ -32,7 +32,11 @@ impl Time {
     }
 
     fn format_am_or_pm(&self, value: &str) -> String {
-        value.replace("P.M.", "PM").replace("A.M.", "AM")
+        value
+            .replace("P.M.", "PM")
+            .replace("P.M", "PM")
+            .replace("A.M.", "AM")
+            .replace("A.M", "AM")
     }
 
     fn parse_time(&self, value: &str) -> Result<NaiveTime, ParseError> {

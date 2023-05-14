@@ -1,9 +1,11 @@
+use crate::notifications::DeliveryStrategy;
 use anyhow::bail;
 use async_trait::async_trait;
 use celery::Celery;
-use entities::notifications::{DeliveryStrategy, Notification};
+
 use futures::stream::FuturesUnordered;
 use futures::StreamExt;
+use notifications::contracts::send_notification::AffectedSubscriberWithLocations;
 use std::sync::Arc;
 use tasks::send_notifications::email::send_email_notification;
 
@@ -14,20 +16,16 @@ pub struct EmailStrategy {
 impl EmailStrategy {
     pub(crate) fn new_strategy(app: Arc<Celery>) -> Arc<dyn DeliveryStrategy> {
         let strategy = EmailStrategy { app };
-
         Arc::new(strategy)
     }
 }
 
 #[async_trait]
 impl DeliveryStrategy for EmailStrategy {
-    async fn deliver(&self, notifications: Vec<Notification>) -> anyhow::Result<()> {
-        let mut futures: FuturesUnordered<_> = notifications
+    async fn deliver(&self, locations: Vec<AffectedSubscriberWithLocations>) -> anyhow::Result<()> {
+        let mut futures: FuturesUnordered<_> = locations
             .into_iter()
-            .map(|notification| {
-                self.app
-                    .send_task(send_email_notification::new(notification))
-            })
+            .map(|location| self.app.send_task(send_email_notification::new(location)))
             .collect();
 
         let mut errors = vec![];

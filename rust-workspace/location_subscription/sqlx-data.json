@@ -1,0 +1,249 @@
+{
+  "db": "PostgreSQL",
+  "0d9d866acbe9023633e6bb05833fe235f07662ea05a93918e694849c8113ce16": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Uuid",
+          "Jsonb"
+        ]
+      }
+    },
+    "query": "\n            INSERT INTO location.nearby_locations (source_url, location_id, response) \n            VALUES ($1, $2, $3) ON CONFLICT DO NOTHING\n            "
+  },
+  "11b4823b9e2d3c95df0746830c2a91e63505d45c70500e0311fa22704bb12d36": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Uuid",
+          "Uuid"
+        ]
+      }
+    },
+    "query": "DELETE FROM location.subscriber_locations \n            WHERE subscriber_id = $1 AND location_id = $2"
+  },
+  "467992ee53af97d80919707996a62af6fcaafb022b1caedc58781bc294e4010e": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\n            SELECT id FROM location.locations WHERE external_id = $1\n            "
+  },
+  "4f85bf587c72c807edca3ab0b20a98fcde34d9003b2700e5c5f52b83ab5171a6": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "location_id",
+          "ordinal": 1,
+          "type_info": "Uuid"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      }
+    },
+    "query": "\n            SELECT id, location_id FROM location.subscriber_locations WHERE subscriber_id = $1\n            "
+  },
+  "52d470972c259e46a634deda972a8fb80fc13f3c48b7de17a2a821f908c94d2d": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      }
+    },
+    "query": "\n               SELECT id FROM location.nearby_locations WHERE location_id = $1::uuid\n            "
+  },
+  "ae4acf069c24ba0ef9c342248487d04f899253c1e8593a927b17f67d0dac0dfe": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      }
+    },
+    "query": "\n            SELECT id\n            FROM location.nearby_locations WHERE location_id = $1\n            "
+  },
+  "b2eb8d013e30b9dbecf02f6e34f52e849519341d983d8b91e318563b277ed61c": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "value: Json<ResultWrapper>",
+          "ordinal": 1,
+          "type_info": "Jsonb"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\n            SELECT id, external_api_response as \"value: Json<ResultWrapper>\" FROM location.locations WHERE external_id = $1\n            "
+  },
+  "d7af0872915dd66e1b78020e4af139921b1a256bf74dda88ade18d9ec70cbd92": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\n            SELECT id FROM location.nearby_locations WHERE source_url = $1\n            "
+  },
+  "e13fced71b43c2f6abf8ab9652539fc2e4b3ae38da844d494e682cef9c6035af": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Uuid",
+          "Uuid"
+        ]
+      }
+    },
+    "query": "\n              INSERT INTO location.subscriber_locations (subscriber_id, location_id) \n              VALUES ($1, $2) ON CONFLICT DO NOTHING\n            "
+  },
+  "e2349855ce41569176081a9ec4011a4ee79bd866b9dd3d69077bc3644a4db1a6": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Text",
+          "Text",
+          "Text",
+          "Jsonb"
+        ]
+      }
+    },
+    "query": "\n            INSERT INTO location.locations (name, external_id, address, sanitized_address, external_api_response) \n            VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING\n            "
+  },
+  "e5db8d70d73ef7941f83ec7547160fc25512fd47b116d433b96eef42458fd5bf": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "address",
+          "ordinal": 2,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "UuidArray"
+        ]
+      }
+    },
+    "query": "\n            SELECT id, name, address FROM location.locations WHERE id = ANY($1)\n            "
+  },
+  "ef9bccd594750c7ce159972f97fb0d6f872acbd6cbc52606b2706014484e88c5": {
+    "describe": {
+      "columns": [
+        {
+          "name": "subscriber_id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "location_id",
+          "ordinal": 1,
+          "type_info": "Uuid"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "UuidArray"
+        ]
+      }
+    },
+    "query": "\n            SELECT subscriber_id, location_id FROM location.subscriber_locations\n            WHERE location_id = ANY($1)\n            "
+  }
+}
