@@ -47,6 +47,14 @@ pub async fn fetch_and_subscribe_to_location(
             SubscribeToLocationError::ExpectedError(err) => TaskError::ExpectedError(err),
         })?;
 
+    set_progress_status(
+        task_id.as_ref(),
+        TaskStatus::Success.to_string(),
+        |_| Ok(()),
+    )
+    .await
+    .map_err(|err| TaskError::UnexpectedError(err.to_string()))?;
+
     if let Some(affected_subscriber) = affected_subscriber {
         let data = AffectedSubscriberWithLocations {
             source_url: affected_subscriber
@@ -70,6 +78,7 @@ pub async fn fetch_and_subscribe_to_location(
                 location_id: affected_subscriber.location_matched.location_id,
             }],
         };
+
         let _ = task
             .request
             .app

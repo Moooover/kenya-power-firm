@@ -534,8 +534,6 @@ mod directly_affected_location {
             get_primary_location_search_result(location_id, area_name, db, searcheable_candidates)
                 .await?;
 
-        println!("{primary_location:?}");
-
         if let Some(location) = primary_location {
             let affected_location = AffectedLocationGenerator { affected_lines }.generate(
                 location.search_query,
