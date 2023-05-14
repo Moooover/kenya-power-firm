@@ -34,19 +34,15 @@ type Props = {
   drawerState: boolean;
   setDrawerState: (value: boolean) => void;
   location: LocationSearchData;
+  onSuccessfulSubscription: () => void;
 };
 
 export default function DrawerOnSelectLocation(props: Props) {
-  const { location, setDrawerState } = props;
+  const { location, setDrawerState, onSuccessfulSubscription } = props;
   const navigate = useNavigate();
 
-  const onSuccess = () => {
-    mutate("/locations/list/subscribed");
-    navigate("/subscribed");
-  };
-
   const { isLoading, trigger } = useSubscribeToLocation({
-    onSuccess,
+    onSuccess: onSuccessfulSubscription,
   });
   const handleClose = () => {
     if (isLoading) return;

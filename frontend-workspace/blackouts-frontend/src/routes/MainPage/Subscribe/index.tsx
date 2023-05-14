@@ -1,6 +1,6 @@
 import { Input } from "@mui/material";
 import SearchBox from "../../../components/SearchBox";
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import PhoneIcon from "@mui/icons-material/Phone";
@@ -48,7 +48,12 @@ function TabsNavigation({
   );
 }
 
-export default function SubscribeToLocation() {
+type SubscribeToLocationProps = {
+  navigateBackToSubscribedLocations: () => void;
+};
+export default function SubscribeToLocation({
+  navigateBackToSubscribedLocations,
+}: SubscribeToLocationProps) {
   const [openConfirmation, setOpenConfirmation] = React.useState(false);
   const [locationSelected, setLocationSelected] =
     React.useState<LocationSearchData | null>(null);
@@ -59,6 +64,11 @@ export default function SubscribeToLocation() {
   const setDrawerState = (value: boolean) => {
     setOpenConfirmation(value);
   };
+
+  const onSuccessfulSubscription = () => {
+    mutate("/locations/list/subscribed");
+    navigateBackToSubscribedLocations();
+  };
   return (
     <div>
       <SearchForLocation onSelectLocation={onSelectLocation} />
@@ -67,6 +77,7 @@ export default function SubscribeToLocation() {
           drawerState={openConfirmation}
           setDrawerState={setDrawerState}
           location={locationSelected}
+          onSuccessfulSubscription={onSuccessfulSubscription}
         />
       )}
     </div>

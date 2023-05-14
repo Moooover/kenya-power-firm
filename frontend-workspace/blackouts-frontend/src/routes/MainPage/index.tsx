@@ -47,6 +47,10 @@ export default function MainPage() {
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
+
+  const navigateBackToSubscribedLocations = () => {
+    setValue(0);
+  };
   return (
     <Box
       sx={{
@@ -61,7 +65,13 @@ export default function MainPage() {
         }}
       >
         {value === 0 && <SubscribedLocations />}
-        {value === 1 && <SubscribeToLocation />}
+        {value === 1 && (
+          <SubscribeToLocation
+            navigateBackToSubscribedLocations={
+              navigateBackToSubscribedLocations
+            }
+          />
+        )}
       </Box>
     </Box>
   );
