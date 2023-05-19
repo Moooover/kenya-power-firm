@@ -132,6 +132,12 @@ services:
         sync: false
       - key: APP_EMAIL__AUTH_TOKEN
         sync: false
+      - key: APP_AUTH__JWKS
+        sync: false
+      - key: APP_AUTH__AUTHORITIES
+        sync: false
+      - key: APP_AUTH__AUDIENCES
+        sync: false
       - key: APP_DATABASE__HOST
         fromDatabase:
           name: prod
