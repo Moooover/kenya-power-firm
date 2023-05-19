@@ -25,7 +25,7 @@ async fn main() -> anyhow::Result<()> {
         let cors = Cors::default()
             .allowed_origin("http://localhost:5173")
             .allowed_origin("http://localhost:4173")
-            .allowed_origin("https://blackouts-ui.onrender.com")
+            .allowed_origin("https://kplc-alerts.onrender.com")
             .allow_any_method()
             .allowed_headers(vec![
                 http::header::AUTHORIZATION,
