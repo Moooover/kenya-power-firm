@@ -115,7 +115,7 @@ services:
         value: true
 
   - type: web
-    name: blackouts_api
+    name: kplc-alerts-api
     region: frankfurt
     env: rust
     buildCommand: cargo build --release --bin http_server
@@ -162,7 +162,7 @@ services:
         value: true
 
   - type: web
-    name: blackouts_ui
+    name: kplc-alerts
     env: static
     buildCommand: npm run build
     staticPublishPath: ./dist
