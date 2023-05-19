@@ -1,9 +1,7 @@
 use anyhow::Context;
-use async_once::AsyncOnce;
 use lazy_static::lazy_static;
 use secrecy::Secret;
 use serde::Deserialize;
-use sqlx_postgres::repository::Repository;
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct LocationSearcherConfig {
@@ -54,9 +52,4 @@ impl Settings {
 
 lazy_static! {
     pub static ref SETTINGS_CONFIG: Settings = Settings::parse().unwrap();
-    pub static ref REPO: AsyncOnce<Repository> = AsyncOnce::new(async {
-        Repository::new()
-            .await
-            .expect("Repository to be initialzed")
-    });
 }

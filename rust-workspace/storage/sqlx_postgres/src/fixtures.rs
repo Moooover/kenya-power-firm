@@ -6,6 +6,7 @@ use chrono::{Days, Utc};
 use entities::subscriptions::details::{SubscriberDetails, SubscriberExternalId};
 use std::collections::HashMap;
 use url::Url;
+
 use use_cases::authentication::SubscriberAuthenticationRepo;
 
 use entities::power_interruptions::location::FutureOrCurrentNairobiTZDateTime;
@@ -30,11 +31,13 @@ lazy_static! {
 }
 
 impl Repository {
+    /// TODO: Remove this from here, will move the subscriber logic to its own sub-system.
+    #[allow(dead_code)]
     pub(crate) async fn fixtures(&self) {
         self.create_subscriber().await;
         self.save(&generate_import_input()).await.unwrap();
     }
-
+    #[allow(dead_code)]
     async fn create_subscriber(&self) {
         self.create_or_update_subscriber(SubscriberDetails {
             name: "Tev".to_owned().try_into().unwrap(),
@@ -80,6 +83,8 @@ pub fn nairobi_region() -> Region {
     }
 }
 
+/// TODO: Fix this in a separate PR
+#[allow(dead_code)]
 fn generate_import_input() -> ImportInput {
     let url = Url::parse("https://example.net").unwrap();
     ImportInput::new(HashMap::from([(url, vec![nairobi_region()])]))

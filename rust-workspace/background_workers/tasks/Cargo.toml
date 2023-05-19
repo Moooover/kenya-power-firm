@@ -33,16 +33,11 @@ num_cpus = "1.15.0"
 entities = { path = "../../entities" }
 shared_kernel = { path = "../../shared_kernel" }
 use_cases = { path = "../../use_cases" }
-sqlx_postgres = { path = "../../storage/sqlx_postgres" }
 redis_client = { path = "../../storage/redis_client" }
 location_subscription = { path = "../../location_subscription" }
 notifications = { path = "../../notifications" }
+location_search = { path = "../../location_search" }
 
 [dependencies.uuid]
 version = "1.3.0"
 features = ["v4"]
-
-
-
-[dev-dependencies]
-sqlx_postgres = { path = "../../storage/sqlx_postgres", version = "*", features = ["testing"] }

@@ -8,6 +8,7 @@ members = [
     "shared_kernel",
     "background_workers/*",
     "location_subscription",
+    "location_search",
     "notifications"
 ]
 

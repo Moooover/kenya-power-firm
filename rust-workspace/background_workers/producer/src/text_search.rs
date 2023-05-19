@@ -1,13 +1,11 @@
 use crate::producer::Producer;
 use anyhow::Context;
 use async_trait::async_trait;
+use location_search::contracts::text_search::TextSearcher;
 use std::str::FromStr;
 use std::string::ToString;
+use tasks::text_search::search_locations_by_text;
 use tasks::utils::progress_tracking::{get_progress_status, set_progress_status, TaskStatus};
-use tasks::{
-    configuration::REPO,
-    text_search::{generate_search_url, search_locations_by_text},
-};
 use use_cases::search_for_locations::{
     LocationApiResponse, LocationResponseWithStatus, LocationSearchApi, Status,
 };
@@ -15,18 +13,16 @@ use use_cases::search_for_locations::{
 #[async_trait]
 impl LocationSearchApi for Producer {
     async fn search(&self, text: String) -> anyhow::Result<LocationResponseWithStatus> {
-        let repository = REPO.get().await;
-        let url = generate_search_url(text.clone())?;
-        let cached_response = repository.get_cached_text_search_response(&url).await?;
+        let text_searcher = TextSearcher::new();
+        let cached_response = text_searcher.cache_search(text.clone()).await?;
 
         if let Some(response) = cached_response {
             let responses = response
-                .predictions
                 .into_iter()
                 .map(|prediction| LocationApiResponse {
-                    id: prediction.place_id.into(),
-                    name: prediction.structured_formatting.main_text,
-                    address: prediction.structured_formatting.secondary_text,
+                    id: prediction.id.inner().into(),
+                    name: prediction.name,
+                    address: prediction.address,
                 })
                 .collect();
             return Ok(LocationResponseWithStatus {

@@ -1,0 +1,36 @@
+{
+  "db": "PostgreSQL",
+  "56ef9728eb07a24dd60a5d054e44e05134dbd853ac11a00bcaca492082b78ed8": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Jsonb"
+        ]
+      }
+    },
+    "query": "\n            INSERT INTO location.location_search_cache ( key, value )\n            VALUES ( $1, $2 ) ON CONFLICT (key)\n            DO UPDATE SET value = EXCLUDED.value\n            "
+  },
+  "6ba4a55e12e4c33b26834d3d5c15347356ea21dc881e8e0fee79c304bc143dff": {
+    "describe": {
+      "columns": [
+        {
+          "name": "value: Json<LocationSearchApiResponse>",
+          "ordinal": 0,
+          "type_info": "Jsonb"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\n            SELECT value as \"value: Json<LocationSearchApiResponse>\" FROM location.location_search_cache WHERE key = $1\n            "
+  }
+}
