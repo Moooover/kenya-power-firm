@@ -11,6 +11,8 @@ import Avatar from "@mui/material/Avatar";
 import UnsubscribeDialog from "./UnsubscribeDialog";
 import Loading from "../LoadingLocations";
 import ListItem from "@mui/material/ListItem";
+import Typography from "@mui/material/Typography";
+import Button from "@mui/material/Button";
 
 type Location = {
   id: string;
@@ -46,6 +48,14 @@ export default function SubscribedLocations() {
             ))}
           </div>
         </List>
+      )}
+      {data && data.items.length === 0 && (
+        <div>
+          <Typography variant={"subtitle1"}>
+            You have not subscribed to any location. Click on the{" "}
+            <i>subscribe to location</i> tab above to subscribe.
+          </Typography>
+        </div>
       )}
     </div>
   );

@@ -9,6 +9,7 @@ import React from "react";
 
 import SubscribeToLocation from "./Subscribe";
 import SubscribedLocations from "./SubscribedLocations";
+import HowItWorksCallout from "./HowItWorks";
 
 function TabsNavigation({
   value,
@@ -58,6 +59,7 @@ export default function MainPage() {
         maxWidth: 700,
       }}
     >
+      <HowItWorksCallout />
       <TabsNavigation value={value} handleChange={handleChange} />
       <Box
         sx={{

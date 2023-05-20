@@ -1,4 +1,4 @@
-import { green, purple, yellow } from "@mui/material/colors";
+import { blue, yellow } from "@mui/material/colors";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { ReactNode } from "react";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -7,12 +7,11 @@ const theme = createTheme({
   palette: {
     mode: "light",
     primary: {
-      main: purple[500],
+      main: blue[600],
     },
     secondary: {
       main: yellow[500],
     },
-    
   },
 });
 

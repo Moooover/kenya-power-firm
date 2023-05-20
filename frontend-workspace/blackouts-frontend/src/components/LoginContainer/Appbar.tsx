@@ -10,7 +10,7 @@ export default function LoginAppBar() {
       <AppBar position="static">
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Blackout Alerts
+            KPLC Alerts
           </Typography>
         </Toolbar>
       </AppBar>

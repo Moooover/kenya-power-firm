@@ -7,7 +7,7 @@ import Button from "@mui/material/Button";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import { useAuth0 } from "@auth0/auth0-react";
-import LightIcon from "@mui/icons-material/Light";
+import EmojiObjectsTwoToneIcon from "@mui/icons-material/EmojiObjectsTwoTone";
 
 type Props = {};
 export default function Layout(props: React.PropsWithChildren<Props>) {
@@ -20,13 +20,22 @@ export default function Layout(props: React.PropsWithChildren<Props>) {
       <AppBar position="fixed">
         <Toolbar>
           <IconButton aria-label="bulb" color="secondary">
-            <LightIcon />
+            <EmojiObjectsTwoToneIcon />
           </IconButton>
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            Blackout Alerts
+            KPLC Alerts (Beta)
           </Typography>
 
-          <Button color="inherit" onClick={() => logout()}>
+          <Button
+            color="inherit"
+            onClick={() =>
+              logout({
+                logoutParams: {
+                  returnTo: window.location.origin,
+                },
+              })
+            }
+          >
             LogOut
           </Button>
         </Toolbar>
