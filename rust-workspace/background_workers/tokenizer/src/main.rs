@@ -2,6 +2,8 @@ use anyhow::Result;
 use redis::aio::ConnectionLike;
 use redis::RedisResult;
 
+use env_logger::Env;
+use log::debug;
 use serde::Deserialize;
 use shared_kernel::configuration::config;
 use std::time::Duration;
@@ -62,7 +64,7 @@ impl ExternalApi {
             // This ticks ever required interval - either one second, or less often if the rate is
             // slower
             ticker.tick().await;
-            println!(
+            debug!(
                 "Putting {} tokens into {} token bucket",
                 count,
                 self.token_bucket()
@@ -93,6 +95,8 @@ struct Settings {
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    env_logger::Builder::from_env(Env::default().default_filter_or("warn")).init();
+
     let settings = config::<Settings>()?;
     let redis_host = settings.redis.host;
 
