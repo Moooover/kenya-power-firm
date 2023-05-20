@@ -18,6 +18,8 @@ use std::sync::Arc;
 use use_cases::actor::{Actor, Permissions, SubscriberExternalId};
 use use_cases::import_affected_areas::ImportPlannedBlackoutsInteractor;
 use web_page_extractor::{pdf_extractor::PdfExtractorImpl, WebPageExtractor};
+
+#[derive(Debug)]
 struct ImportActor;
 
 #[async_trait]
@@ -36,6 +38,13 @@ impl Actor for ImportActor {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    shared_kernel::tracing::config_telemetry("importer");
+    start().await?;
+    shared_kernel::tracing::shutdown_global_tracer_provider();
+    Ok(())
+}
+
+async fn start() -> anyhow::Result<()> {
     let repo = Repository::new().await?;
 
     let content_extractor = PDFContentExtractor;

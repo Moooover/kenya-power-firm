@@ -26,3 +26,6 @@ producer = { path = "../../background_workers/producer" }
 location_subscription = { path = "../../location_subscription" }
 notifications = { path = "../../notifications" }
 entities = { path = "../../entities" }
+
+tracing.workspace = true
+tracing-log.workspace = true

@@ -6,6 +6,7 @@ use actix_web::{web, HttpRequest, HttpResponse};
 
 use uuid::Uuid;
 
+#[tracing::instrument(err, skip(app), level = "info")]
 async fn delete_primary_location(
     id: web::Path<Uuid>,
     app: web::Data<UseCaseAppContainer>,

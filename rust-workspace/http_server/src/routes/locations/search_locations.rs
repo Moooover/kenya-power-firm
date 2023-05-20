@@ -8,7 +8,7 @@ use crate::{
     use_case_app_container::UseCaseAppContainer,
 };
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 struct Request {
     term: String,
 }
@@ -55,6 +55,7 @@ impl From<LocationApiResponse> for Location {
     }
 }
 
+#[tracing::instrument(err, skip(app), level = "info")]
 async fn search_for_location(
     data: web::Query<Request>,
     app: web::Data<UseCaseAppContainer>,

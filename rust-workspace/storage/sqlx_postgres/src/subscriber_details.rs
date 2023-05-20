@@ -7,6 +7,7 @@ use use_cases::{actor::Actor, authentication::subscriber_authentication::Subscri
 
 #[async_trait]
 impl SubscriberResolverRepo for Repository {
+    #[tracing::instrument(err, skip(self), level = "info")]
     async fn find(&self, actor: &dyn Actor) -> anyhow::Result<SubscriberId> {
         let external_id = actor.external_id().into();
         self.find_by_external_id(external_id).await

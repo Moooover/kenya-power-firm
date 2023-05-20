@@ -12,6 +12,7 @@ impl UnsubscribeDbAccess {
         Self { db: DbAccess }
     }
 
+    #[tracing::instrument(err, skip(self), level = "info")]
     pub async fn unsubscribe(
         &self,
         subscriber_id: SubscriberId,

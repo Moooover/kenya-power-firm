@@ -4,6 +4,7 @@ non_empty_string!(SubscriberName);
 non_empty_string!(SubscriberEmailInner);
 non_empty_string!(SubscriberExternalId);
 
+#[derive(Debug)]
 pub struct SubscriberEmail(SubscriberEmailInner);
 
 impl ToString for SubscriberEmail {
@@ -18,6 +19,7 @@ impl AsRef<str> for SubscriberEmail {
     }
 }
 
+#[derive(Debug)]
 pub struct SubscriberDetails {
     pub name: SubscriberName,
     pub email: SubscriberEmail,

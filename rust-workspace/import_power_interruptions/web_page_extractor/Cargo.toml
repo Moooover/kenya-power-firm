@@ -21,3 +21,6 @@ tokio = { version = "1", features = ["full"] }
 url = "2.3.1"
 use_cases = { path = "../../use_cases" }
 shared_kernel = { path = "../../shared_kernel" }
+
+tracing.workspace = true
+tracing-log.workspace = true

@@ -1,4 +1,3 @@
-
 use crate::db_access::DbAccess;
 use crate::save_and_search_for_locations::{
     AffectedLocation, LocationInput, LocationWithCoordinates, NearbyLocationId,
@@ -8,9 +7,7 @@ use anyhow::Context;
 use entities::locations::{ExternalLocationId, LocationId};
 use entities::subscriptions::SubscriberId;
 
-
 use url::Url;
-
 
 pub(crate) struct SubscriptionDbAccess {
     db: DbAccess,
@@ -24,6 +21,8 @@ impl SubscriptionDbAccess {
             save_and_search_for_locations: SaveAndSearchLocations::new(),
         }
     }
+
+    #[tracing::instrument(err, skip(self), level = "info")]
     pub(crate) async fn subscribe(
         &self,
         subscriber: SubscriberId,
@@ -47,6 +46,7 @@ impl SubscriptionDbAccess {
         Ok(())
     }
 
+    #[tracing::instrument(err, skip(self), level = "info")]
     pub(crate) async fn find_location_by_external_id(
         &self,
         location: ExternalLocationId,
@@ -56,6 +56,7 @@ impl SubscriptionDbAccess {
             .await
     }
 
+    #[tracing::instrument(err, skip(self), level = "info")]
     pub(crate) async fn are_nearby_locations_already_saved(
         &self,
         location: LocationId,
@@ -65,6 +66,7 @@ impl SubscriptionDbAccess {
             .await
     }
 
+    #[tracing::instrument(err, skip(self), level = "info")]
     pub(crate) async fn is_location_affected(
         &self,
         location: LocationId,
@@ -74,12 +76,14 @@ impl SubscriptionDbAccess {
             .await
     }
 
+    #[tracing::instrument(err, skip(self), level = "info")]
     pub async fn save_main_location(&self, input: LocationInput) -> anyhow::Result<LocationId> {
         self.save_and_search_for_locations
             .save_main_location(input)
             .await
     }
 
+    #[tracing::instrument(err, skip(self), level = "info")]
     pub(super) async fn save_nearby_locations(
         &self,
         url: Url,

@@ -19,6 +19,7 @@ use uuid::Uuid;
 
 #[async_trait]
 impl SaveBlackoutAffectedAreasRepo for Repository {
+    #[tracing::instrument(err, skip(self), level = "info")]
     async fn save(
         &self,
         data: &entities::power_interruptions::location::ImportInput,

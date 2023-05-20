@@ -36,6 +36,8 @@ impl SubscribeInteractor {
             db: SubscriptionDbAccess::new(),
         }
     }
+
+    #[tracing::instrument(err, skip(self), level = "info")]
     pub async fn subscribe_to_location(
         &self,
         subscriber_id: SubscriberId,
@@ -88,16 +90,40 @@ impl SubscribeInteractor {
     }
 }
 
+mod search_utils {
+    use serde::Deserialize;
+    use serde::Serialize;
+    #[derive(Deserialize, Serialize, Debug, Clone)]
+    pub enum StatusCode {
+        OK,
+        #[serde(rename = "ZERO_RESULTS")]
+        ZERORESULTS,
+        #[serde(rename = "INVALID_REQUEST")]
+        INVALIDREQUEST,
+        #[serde(rename = "OVER_QUERY_LIMIT")]
+        OVERQUERYLIMIT,
+        #[serde(rename = "REQUEST_DENIED")]
+        REQUESTDENIED,
+        #[serde(rename = "UNKNOWN_ERROR")]
+        UNKNOWNERROR,
+    }
+
+    impl StatusCode {
+        pub fn is_cacheable(&self) -> bool {
+            matches!(self, StatusCode::OK | StatusCode::ZERORESULTS)
+        }
+    }
+}
 mod main_location_search_and_save {
     use crate::config::SETTINGS_CONFIG;
     use crate::contracts::subscribe::db_access::SubscriptionDbAccess;
+    use crate::contracts::subscribe::search_utils::StatusCode;
     use crate::save_and_search_for_locations::{LocationInput, LocationWithCoordinates};
     use anyhow::{anyhow, bail, Context};
     use entities::locations::ExternalLocationId;
     use secrecy::ExposeSecret;
     use serde::Deserialize;
     use shared_kernel::http_client::HttpClient;
-    use sqlx_postgres::cache::location_search::StatusCode;
     use url::Url;
 
     fn generate_url(id: ExternalLocationId) -> anyhow::Result<Url> {
@@ -171,10 +197,10 @@ mod nearby_locations_search_and_save {
     use crate::save_and_search_for_locations::{LocationWithCoordinates, NearbyLocationId};
     use anyhow::{bail, Context};
 
+    use crate::contracts::subscribe::search_utils::StatusCode;
     use secrecy::ExposeSecret;
     use serde::Deserialize;
     use shared_kernel::http_client::HttpClient;
-    use sqlx_postgres::cache::location_search::StatusCode;
     use url::Url;
 
     fn generate_url(primary_location: &LocationWithCoordinates) -> anyhow::Result<Url> {

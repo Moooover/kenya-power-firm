@@ -16,6 +16,7 @@ impl SubscribedLocationsAccess {
         }
     }
 
+    #[tracing::instrument(err, skip(self), level = "info")]
     pub async fn get_subscribed_locations(
         &self,
         subscriber_id: SubscriberId,

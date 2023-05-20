@@ -18,7 +18,7 @@ macro_rules! non_empty_string {
 
         impl std::fmt::Display for $TypeName {
             fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-                self.0.fmt(f)
+                std::fmt::Debug::fmt(&self.0, f)
             }
         }
 

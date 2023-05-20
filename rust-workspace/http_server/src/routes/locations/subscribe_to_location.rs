@@ -8,16 +8,17 @@ use crate::{
 
 use super::search_locations::StatusResponse;
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 struct LocationSubscriptionRequest {
     location: String,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 struct SubscribeToLocationResponse {
     task_id: String,
 }
 
+#[tracing::instrument(err, skip(app), level = "info")]
 async fn subscribe_to_location(
     data: web::Json<LocationSubscriptionRequest>,
     app: web::Data<UseCaseAppContainer>,
@@ -42,6 +43,7 @@ struct StatusWrapper {
     data: StatusResponse,
 }
 
+#[tracing::instrument(err, skip(app), level = "info")]
 async fn get_progress_status(
     app: web::Data<UseCaseAppContainer>,
     task_id: web::Path<String>,

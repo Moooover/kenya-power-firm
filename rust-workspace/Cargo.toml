@@ -14,3 +14,12 @@ members = [
 
 [profile.dev.package.sqlx-macros]
 opt-level = 3
+
+
+[workspace.dependencies]
+## Tracing and OTLP
+tracing = "0.1.36"
+tracing-attributes = "0.1.23"
+tracing-log = "0.1.3"
+tracing-actix-web = { version = "0.6.0", features = ["opentelemetry_0_17"] }
+actix-web-opentelemetry = { version = "0.12.0", features = ["sync-middleware"] }

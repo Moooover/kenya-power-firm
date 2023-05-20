@@ -105,6 +105,7 @@ pub struct Area<T> {
     pub locations: Vec<String>,
 }
 
+#[derive(Debug)]
 pub struct ImportInput(HashMap<Url, Vec<Region<FutureOrCurrentNairobiTZDateTime>>>);
 
 impl ImportInput {

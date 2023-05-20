@@ -7,7 +7,7 @@ use entities::subscriptions::SubscriberId;
 use serde::{Deserialize, Serialize};
 use url::Url;
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 pub enum AffectedSubscriber {
     DirectlyAffected(SubscriberId),
     PotentiallyAffected(SubscriberId),
@@ -22,20 +22,20 @@ impl AffectedSubscriber {
     }
 }
 
-#[derive(Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Hash, Serialize, Deserialize, Debug)]
 pub struct LineWithScheduledInterruptionTime {
     pub line_name: String,
     pub from: NairobiTZDateTime,
     pub to: NairobiTZDateTime,
 }
 
-#[derive(Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Hash, Serialize, Deserialize, Debug)]
 pub struct LocationMatchedAndLineSchedule {
     pub line_schedule: LineWithScheduledInterruptionTime,
     pub location_id: LocationId,
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct AffectedSubscriberWithLocations {
     pub source_url: Url,
     pub subscriber: AffectedSubscriber,

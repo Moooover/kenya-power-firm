@@ -56,6 +56,7 @@ pub trait LocationSubscriber: Send + Sync {
 
 #[async_trait]
 impl SubscribeToLocationInteractor for SubscribeToLocationImpl {
+    #[tracing::instrument(err, skip(self), level = "info")]
     async fn subscribe(&self, actor: &dyn Actor, location: String) -> anyhow::Result<TaskId> {
         let id = self.subscriber_resolver.resolve_from_actor(actor).await?;
 
@@ -64,6 +65,7 @@ impl SubscribeToLocationInteractor for SubscribeToLocationImpl {
             .await
     }
 
+    #[tracing::instrument(err, skip(self), level = "info")]
     async fn progress(&self, actor: &dyn Actor, task_id: TaskId) -> anyhow::Result<Status> {
         // we just want to ensure that the user is valid
         let _ = self.subscriber_resolver.resolve_from_actor(actor).await?;

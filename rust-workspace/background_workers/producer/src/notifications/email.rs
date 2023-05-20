@@ -8,6 +8,7 @@ use futures::StreamExt;
 use notifications::contracts::send_notification::AffectedSubscriberWithLocations;
 use std::sync::Arc;
 use tasks::send_notifications::email::send_email_notification;
+use tracing::error;
 
 pub struct EmailStrategy {
     pub(crate) app: Arc<Celery>,
@@ -22,6 +23,7 @@ impl EmailStrategy {
 
 #[async_trait]
 impl DeliveryStrategy for EmailStrategy {
+    #[tracing::instrument(err, skip(self), level = "info")]
     async fn deliver(&self, locations: Vec<AffectedSubscriberWithLocations>) -> anyhow::Result<()> {
         let mut futures: FuturesUnordered<_> = locations
             .into_iter()
@@ -31,8 +33,7 @@ impl DeliveryStrategy for EmailStrategy {
         let mut errors = vec![];
         while let Some(result) = futures.next().await {
             if let Err(e) = result {
-                // TODO: Setup logging
-                println!("Error sending notification: {e:?}");
+                error!("Error sending notification: {e:?}");
                 errors.push(e);
             }
         }

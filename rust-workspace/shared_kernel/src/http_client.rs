@@ -3,6 +3,7 @@ use bytes::Bytes;
 use lazy_static::lazy_static;
 use reqwest::header::{HeaderMap, HeaderValue};
 use reqwest::Response;
+use reqwest_tracing::TracingMiddleware;
 use std::collections::HashMap;
 use thiserror::Error as ThisError;
 
@@ -18,6 +19,7 @@ lazy_static! {
     ClientBuilder::new(reqwest::Client::new())
         // Retry failed requests.
         .with(RetryTransientMiddleware::new_with_policy(retry_policy))
+        .with(TracingMiddleware::default())
         .build()
     };
 }

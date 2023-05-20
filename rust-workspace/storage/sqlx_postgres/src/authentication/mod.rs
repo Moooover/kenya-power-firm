@@ -6,6 +6,7 @@ use use_cases::authentication::SubscriberAuthenticationRepo;
 
 #[async_trait]
 impl SubscriberAuthenticationRepo for Repository {
+    #[tracing::instrument(err, skip(self), level = "info")]
     async fn create_or_update_subscriber(
         &self,
         subscriber: SubscriberDetails,

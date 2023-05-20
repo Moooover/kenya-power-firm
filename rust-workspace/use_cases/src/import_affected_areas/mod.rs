@@ -59,6 +59,7 @@ impl ImportAffectedAreas {
 
 #[async_trait]
 impl ImportPlannedBlackoutsInteractor for ImportAffectedAreas {
+    #[tracing::instrument(err, skip(self), level = "info")]
     async fn import(&self, actor: &dyn Actor, data: ImportInput) -> anyhow::Result<()> {
         actor.check_for_permission(Permission::ImportAffectedRegions)?;
 

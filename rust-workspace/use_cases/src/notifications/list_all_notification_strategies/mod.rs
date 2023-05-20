@@ -55,6 +55,7 @@ impl ListAllNotificationsStrategiesImpl {
 
 #[async_trait]
 impl ListAllNotificationStrategiesInteractor for ListAllNotificationsStrategiesImpl {
+    #[tracing::instrument(err, skip(self), level = "info")]
     async fn list(&self, actor: &dyn Actor) -> anyhow::Result<Vec<StrategyWithIsActive>> {
         let all_strategies = self.repo.strategies().await?;
         let id = self.subscriber_resolver.resolve_from_actor(actor).await?;

@@ -16,6 +16,7 @@ pub struct LocationSubscriptionSubSystem;
 
 #[async_trait]
 impl DeleteSubscribedLocationOp for LocationSubscriptionSubSystem {
+    #[tracing::instrument(err, skip(self), level = "info")]
     async fn delete_subscribed(
         &self,
         subscriber_id: SubscriberId,
@@ -31,6 +32,7 @@ impl DeleteSubscribedLocationOp for LocationSubscriptionSubSystem {
 
 #[async_trait]
 impl ListSubscribedLocationsOp for LocationSubscriptionSubSystem {
+    #[tracing::instrument(err, skip(self), level = "info")]
     async fn list(&self, id: SubscriberId) -> anyhow::Result<Vec<LocationWithId>> {
         let list = list_subscribed_locations::ListSubscribedLocationsInteractor::list_subscribed_locations(id).await?;
 

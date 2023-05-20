@@ -34,6 +34,7 @@ impl ListSubscribedLocationsImpl {
 
 #[async_trait]
 impl ListSubscribedLocationsInteractor for ListSubscribedLocationsImpl {
+    #[tracing::instrument(err, skip(self), level = "info")]
     async fn list(&self, actor: &dyn Actor) -> anyhow::Result<Vec<LocationWithId>> {
         let id = self.subscriber_resolver.resolve_from_actor(actor).await?;
 

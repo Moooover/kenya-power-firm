@@ -36,6 +36,7 @@ impl TextSearchDbAccess {
         TextSearchDbAccess { db: DbAccess }
     }
 
+    #[tracing::instrument(err, skip(self), level = "info")]
     pub(crate) async fn get_cached_text_search_response(
         &self,
         key: &Url,
@@ -72,6 +73,7 @@ impl TextSearchDbAccess {
         Ok(None)
     }
 
+    #[tracing::instrument(err, skip(self), level = "info")]
     pub(crate) async fn set_cached_text_search_response(
         &self,
         key: &Url,

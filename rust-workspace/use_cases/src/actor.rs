@@ -5,6 +5,7 @@ use mockall::automock;
 use serde::Deserialize;
 
 use std::collections::HashSet;
+use std::fmt::Debug;
 
 #[derive(Copy, Clone, Hash, Eq, PartialEq, Debug, Deserialize)]
 pub enum Permission {
@@ -12,6 +13,7 @@ pub enum Permission {
     ImportAffectedRegions,
 }
 
+#[derive(Debug)]
 pub struct Permissions {
     permissions: HashSet<Permission>,
 }
@@ -77,7 +79,7 @@ impl TryFrom<String> for SubscriberExternalId {
 }
 
 #[cfg_attr(test, automock)]
-pub trait Actor: Send + Sync {
+pub trait Actor: Send + Sync + Debug {
     fn permissions(&self) -> Permissions;
 
     fn external_id(&self) -> SubscriberExternalId;

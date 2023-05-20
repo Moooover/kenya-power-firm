@@ -2,7 +2,7 @@ mod db_access;
 
 use crate::contracts::get_affected_subscribers_from_import::db_access::AffectedSubscribersDbAccess;
 use crate::data_transfer::{AffectedSubscriber, LocationMatchedAndLineSchedule};
-use entities::power_interruptions::location::{FutureOrCurrentNairobiTZDateTime};
+use entities::power_interruptions::location::FutureOrCurrentNairobiTZDateTime;
 use std::collections::HashMap;
 use url::Url;
 
@@ -36,6 +36,7 @@ pub struct Region {
 pub struct ImportInput(pub HashMap<Url, Vec<Region>>);
 
 impl AffectedSubscribersInteractor {
+    #[tracing::instrument(err, level = "info")]
     pub async fn get_affected_subscribers_from_import(
         input: ImportInput,
     ) -> anyhow::Result<HashMap<AffectedSubscriber, Vec<LocationMatchedAndLineSchedule>>> {

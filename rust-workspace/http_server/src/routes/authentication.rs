@@ -5,12 +5,13 @@ use actix_web::{web, HttpRequest, HttpResponse};
 use serde::{Deserialize, Serialize};
 use use_cases::authentication::SubscriberDetailsInput;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 struct UserRequest {
     name: String,
     email: String,
 }
 
+#[tracing::instrument(err, skip(app), level = "info")]
 async fn authentication(
     user_details: web::Json<UserRequest>,
     app: web::Data<UseCaseAppContainer>,

@@ -31,6 +31,7 @@ impl From<LocationWithId> for LocationWithIdResponse {
     }
 }
 
+#[tracing::instrument(err, skip(app), level = "info")]
 async fn list_locations_subscribed_to(
     app: web::Data<UseCaseAppContainer>,
     req: HttpRequest,

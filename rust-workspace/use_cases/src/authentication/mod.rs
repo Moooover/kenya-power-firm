@@ -38,6 +38,7 @@ pub struct AuthenticationInteractorImpl {
 
 #[async_trait]
 impl AuthenticationInteractor for AuthenticationInteractorImpl {
+    #[tracing::instrument(err, skip(self), level = "info")]
     async fn authenticate(
         &self,
         actor: &dyn Actor,

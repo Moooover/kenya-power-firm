@@ -9,6 +9,7 @@ use regex::Regex;
 use std::collections::HashMap;
 
 use std::sync::Arc;
+use tracing::log::error;
 
 use url::Url;
 
@@ -47,6 +48,7 @@ impl PdfExtractorImpl {
 
 #[async_trait]
 impl PdfExtractor for PdfExtractorImpl {
+    #[tracing::instrument(err, skip(self), level = "info")]
     async fn extract(&self, links: Vec<Url>) -> anyhow::Result<HashMap<Url, Vec<Region>>> {
         let number_of_links = links.len();
 
@@ -68,8 +70,7 @@ impl PdfExtractor for PdfExtractorImpl {
         }
 
         if !errors.is_empty() {
-            // TODO: Setup logging
-            println!("{errors:?}")
+            error!("{errors:?}")
         }
         if results.is_empty() && !errors.is_empty() {
             return Err(anyhow!("{errors:?}"));

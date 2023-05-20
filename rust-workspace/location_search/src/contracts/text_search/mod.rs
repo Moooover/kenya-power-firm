@@ -1,5 +1,5 @@
 use crate::contracts::text_search::db_access::TextSearchDbAccess;
-use shared_kernel::{string_key};
+use shared_kernel::string_key;
 
 mod db_access;
 
@@ -10,11 +10,13 @@ impl TextSearcher {
         TextSearcher
     }
 
+    #[tracing::instrument(skip(self), level = "debug")]
     pub async fn api_search(&self, text: String) -> anyhow::Result<Vec<LocationDetails>> {
         let db = TextSearchDbAccess::new();
         search::api_search(text, &db).await
     }
 
+    #[tracing::instrument(skip(self), level = "debug")]
     pub async fn cache_search(&self, text: String) -> anyhow::Result<Option<Vec<LocationDetails>>> {
         let db = TextSearchDbAccess::new();
         search::cache_search(text, &db).await
@@ -32,13 +34,14 @@ pub struct LocationDetails {
 pub(crate) mod search {
     use crate::config::SETTINGS_CONFIG;
     use crate::contracts::text_search::db_access::TextSearchDbAccess;
-    use crate::contracts::text_search::{LocationDetails};
+    use crate::contracts::text_search::LocationDetails;
     use anyhow::{anyhow, Context};
     use secrecy::ExposeSecret;
     use serde::Deserialize;
     use serde::Serialize;
     use shared_kernel::http_client::HttpClient;
     use shared_kernel::non_empty_string;
+    use std::fmt::Debug;
     use url::Url;
     non_empty_string!(LocationSearchText);
 
@@ -126,10 +129,14 @@ pub(crate) mod search {
         .context("Failed to parse url")
     }
 
-    pub(crate) async fn api_search(
-        text: impl TryInto<LocationSearchText, Error = String>,
+    #[tracing::instrument(skip(db), level = "info")]
+    pub(crate) async fn api_search<T>(
+        text: T,
         db: &TextSearchDbAccess,
-    ) -> anyhow::Result<Vec<LocationDetails>> {
+    ) -> anyhow::Result<Vec<LocationDetails>>
+    where
+        T: TryInto<LocationSearchText, Error = String> + Debug,
+    {
         let text = text
             .try_into()
             .map_err(|err| anyhow!("Cannot search for location with empty text. Error: {}", err))?;
@@ -150,10 +157,14 @@ pub(crate) mod search {
             .ok_or_else(|| anyhow!("Should have cached response for url: {}", url))
     }
 
-    pub(crate) async fn cache_search(
-        text: impl TryInto<LocationSearchText, Error = String>,
+    #[tracing::instrument(skip(db), level = "info")]
+    pub(crate) async fn cache_search<T>(
+        text: T,
         db: &TextSearchDbAccess,
-    ) -> anyhow::Result<Option<Vec<LocationDetails>>> {
+    ) -> anyhow::Result<Option<Vec<LocationDetails>>>
+    where
+        T: TryInto<LocationSearchText, Error = String> + Debug,
+    {
         let text = text
             .try_into()
             .map_err(|err| anyhow!("Cannot search for location with empty text. Error: {}", err))?;

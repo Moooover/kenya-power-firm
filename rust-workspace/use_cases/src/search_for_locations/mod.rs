@@ -59,6 +59,7 @@ impl LocationSearchInteractorImpl {
 
 #[async_trait]
 impl LocationSearchInteractor for LocationSearchInteractorImpl {
+    #[tracing::instrument(err, skip(self), level = "info")]
     async fn search(
         &self,
         actor: &dyn Actor,

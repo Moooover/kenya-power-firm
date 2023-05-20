@@ -15,6 +15,7 @@ use serde::Deserialize;
 use shared_kernel::uuid_key;
 use sqlx::types::chrono::{DateTime, Utc};
 use std::fmt::{Display, Formatter};
+use tracing::error;
 use url::Url;
 use uuid::Uuid;
 
@@ -150,6 +151,8 @@ impl SaveAndSearchLocations {
             db_access: DbAccess,
         }
     }
+
+    #[tracing::instrument(err, skip(self), level = "info")]
     pub async fn save_main_location(&self, location: LocationInput) -> anyhow::Result<LocationId> {
         let pool = self.db_access.pool().await;
         let external_id = location.external_id.as_ref();
@@ -184,6 +187,7 @@ impl SaveAndSearchLocations {
         Ok(record.id.into())
     }
 
+    #[tracing::instrument(err, skip(self), level = "info")]
     pub async fn affected_location(
         &self,
         location_id: LocationId,
@@ -251,6 +255,7 @@ impl SaveAndSearchLocations {
         Ok(result)
     }
 
+    #[tracing::instrument(err, skip(self), level = "info")]
     pub async fn get_affected_locations_from_regions(
         &self,
         url: Url,
@@ -279,14 +284,14 @@ impl SaveAndSearchLocations {
                     result.push(area_results);
                 }
                 Err(e) => {
-                    // TODO: Refactor to tracing block
-                    println!("Error searching locations {e:?}");
+                    error!("Error searching locations {e:?}", e = e)
                 }
             }
         }
         Ok(result.into_iter().flatten().collect_vec())
     }
 
+    #[tracing::instrument(err, skip(self), level = "info")]
     pub async fn was_nearby_location_already_saved(
         &self,
         location_id: LocationId,
@@ -307,6 +312,7 @@ impl SaveAndSearchLocations {
         Ok(db_results.map(|record| record.id.into()))
     }
 
+    #[tracing::instrument(err, skip(self), level = "info")]
     pub(super) async fn save_nearby_locations(
         &self,
         url: Url,

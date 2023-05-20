@@ -7,6 +7,7 @@ use entities::subscriptions::SubscriberId;
 pub struct ListSubscribedLocationsInteractor;
 
 impl ListSubscribedLocationsInteractor {
+    #[tracing::instrument(err, level = "info")]
     pub async fn list_subscribed_locations(
         subscriber_id: SubscriberId,
     ) -> anyhow::Result<Vec<LocationDetails>> {

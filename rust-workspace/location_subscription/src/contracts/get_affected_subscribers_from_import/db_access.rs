@@ -39,6 +39,7 @@ impl AffectedSubscribersDbAccess {
         }
     }
 
+    #[tracing::instrument(err, skip(self), level = "info")]
     pub async fn get_affected_subscribers(
         &self,
         url: Url,
