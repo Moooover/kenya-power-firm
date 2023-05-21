@@ -27,6 +27,7 @@ lazy_static! {
         ("rd".to_string(), "Road"),
         ("est".to_string(), "Estate"),
         ("sch".to_string(), "School"),
+        ("schs".to_string(), "Schools"),
         ("sec".to_string(), "Secondary"),
         ("stn".to_string(), "Station"),
         ("apts".to_string(), "Apartments"),
