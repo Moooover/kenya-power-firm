@@ -151,7 +151,8 @@ impl<'a> Scanner<'a> {
         let token = match self.current_lexeme.as_ref() {
             "DATE:" | "DATE;" => Token::Date(self.date()),
             "TIME" | "TIME:" | "TIME;" => Token::Time(self.time()),
-            "AREA:" | "AREA;" => Token::Area(self.area()),
+            // ARERA: is a typo that came from this source https://www.kplc.co.ke/img/full/Interruption%20Notices%20-%2018.05.2022.pdf
+            "AREA:" | "AREA;" | "ARERA:" => Token::Area(self.area()),
             END_OF_LOCATIONS => Token::Keyword(KeyWords::EndOfAreaLocations),
             _ => self
                 .peek_and_check_for_region_or_county()
@@ -309,7 +310,7 @@ impl<'a> Iterator for ScannerIter<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::scanner::{is_alphanumeric, is_whitespace, scan};
+    use crate::pdf_reader::content_extractor::scanner::{is_alphanumeric, is_whitespace, scan};
 
     #[test]
     fn test_alphanumeric() {

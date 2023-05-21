@@ -1,17 +1,24 @@
-use std::collections::HashSet;
-
-use crate::repository::Repository;
-use async_trait::async_trait;
-use itertools::Itertools;
-use url::Url;
-use web_page_extractor::FileOperations;
-
+use crate::db_access::DbAccess;
 use anyhow::Context;
+use itertools::Itertools;
+use std::collections::HashSet;
+use url::Url;
 
-#[async_trait]
-impl FileOperations for Repository {
+pub struct WebPageReaderDbAccess {
+    db: DbAccess,
+}
+
+impl WebPageReaderDbAccess {
+    pub(crate) fn new() -> Self {
+        Self { db: DbAccess }
+    }
+
     #[tracing::instrument(err, skip(self), level = "info")]
-    async fn return_unprocessed_files(&self, files: Vec<Url>) -> anyhow::Result<Vec<Url>> {
+    pub(crate) async fn return_unprocessed_files(
+        &self,
+        files: Vec<Url>,
+    ) -> anyhow::Result<Vec<Url>> {
+        let pool = self.db.pool().await;
         let keys = files.into_iter().map(|file| file.to_string()).collect_vec();
 
         let records = sqlx::query!(
@@ -20,7 +27,7 @@ impl FileOperations for Repository {
             ",
             &keys[..]
         )
-        .fetch_all(self.pool())
+        .fetch_all(pool.as_ref())
         .await
         .context("Failed to fetch urls from source table")?;
         let all_provided_keys = keys.into_iter().collect::<HashSet<_>>();
@@ -42,5 +49,25 @@ impl FileOperations for Repository {
         }
 
         Ok(difference)
+    }
+
+    pub(crate) async fn get_manually_added_source_files(&self) -> anyhow::Result<Vec<Url>> {
+        let pool = self.db.pool().await;
+        let records = sqlx::query!(
+            "
+                SELECT source_url FROM manually_added_sources
+            "
+        )
+        .fetch_all(pool.as_ref())
+        .await
+        .context("Failed to fetch manually added source files")?;
+
+        let urls = records
+            .into_iter()
+            .map(|record| Url::parse(&record.source_url))
+            .collect::<Result<Vec<_>, _>>()
+            .context("Failed to parse urls")?;
+
+        Ok(urls)
     }
 }

@@ -1,5 +1,5 @@
 [package]
-name = "job_runners"
+name = "import_and_notify_affected_subscribers"
 version = "0.1.0"
 edition = "2021"
 
@@ -17,15 +17,14 @@ config = "0.13.3"
 lazy_static = "1.4.0"
 itertools = "0.10.5"
 
-pdf_text_parser = { path = "../pdf_text_parser" }
-web_page_extractor = { path = "../web_page_extractor" }
-use_cases = { path = "../../use_cases" }
-shared_kernel = { path = "../../shared_kernel" }
-sqlx_postgres = { path = "../../storage/sqlx_postgres" }
-producer = { path = "../../background_workers/producer" }
-location_subscription = { path = "../../location_subscription" }
-notifications = { path = "../../notifications" }
-entities = { path = "../../entities" }
+use_cases = { path = "../use_cases" }
+shared_kernel = { path = "../shared_kernel" }
+sqlx_postgres = { path = "../storage/sqlx_postgres" }
+producer = { path = "../background_workers/producer" }
+location_subscription = { path = "../location_subscription" }
+notifications = { path = "../notifications" }
+import_scheduled_interruptions = { path = "../import_scheduled_interruptions" }
+entities = { path = "../entities" }
 
 tracing.workspace = true
 tracing-log.workspace = true

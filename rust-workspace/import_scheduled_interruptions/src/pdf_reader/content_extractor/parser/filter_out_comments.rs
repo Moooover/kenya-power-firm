@@ -1,4 +1,4 @@
-use crate::scanner::{scan, Token};
+use crate::pdf_reader::content_extractor::scanner::{scan, Token};
 use multipeek::{multipeek, MultiPeek};
 use std::vec::IntoIter;
 

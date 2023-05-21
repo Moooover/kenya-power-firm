@@ -28,7 +28,7 @@ mod email_notification {
     use crate::contracts::send_notification::{
         AffectedSubscriber, AffectedSubscriberWithLocations, LocationMatchedAndLineSchedule,
     };
-    use crate::db_access::{DbNotificationIdempotencyKey};
+    use crate::db_access::DbNotificationIdempotencyKey;
     use entities::locations::LocationId;
     use entities::subscriptions::SubscriberId;
     use itertools::Itertools;

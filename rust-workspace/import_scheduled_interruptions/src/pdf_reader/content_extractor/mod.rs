@@ -1,40 +1,54 @@
-use crate::import_affected_areas::{Area, County, Region};
+use anyhow::anyhow;
 use entities::power_interruptions::location::{
-    Area as DomainArea, County as DomainCounty, FutureOrCurrentNairobiTZDateTime,
-    Region as DomainRegion, TimeFrame,
+    Area as EntityArea, County as EntityCounty, FutureOrCurrentNairobiTZDateTime,
+    Region as EntityRegion, TimeFrame,
 };
+use itertools::Itertools;
 
-impl From<Region> for DomainRegion<FutureOrCurrentNairobiTZDateTime> {
+use crate::pdf_reader::content_extractor::token::{Area, County, Region};
+
+mod parser;
+mod scanner;
+mod token;
+
+pub fn extract(text: String) -> anyhow::Result<Vec<EntityRegion>> {
+    let tokens = scanner::scan(&text);
+    let mut parser = parser::Parser::new(tokens);
+    let result = parser.parse().map_err(|err| anyhow!("{err:?}"))?;
+    Ok(result.into_iter().map_into().collect_vec())
+}
+
+impl From<Region> for EntityRegion {
     fn from(value: Region) -> Self {
         let counties = value.counties.into_iter().map(Into::into).collect();
-        Self {
+        EntityRegion {
             region: value.name,
             counties,
         }
     }
 }
 
-impl From<County> for DomainCounty<FutureOrCurrentNairobiTZDateTime> {
+impl From<County> for EntityCounty<FutureOrCurrentNairobiTZDateTime> {
     fn from(value: County) -> Self {
         let areas = value
             .areas
             .into_iter()
             .flat_map(TryFrom::try_from)
             .collect();
-        DomainCounty {
+        EntityCounty {
             name: value.name,
             areas,
         }
     }
 }
 
-impl TryFrom<Area> for DomainArea<FutureOrCurrentNairobiTZDateTime> {
+impl TryFrom<Area> for EntityArea<FutureOrCurrentNairobiTZDateTime> {
     type Error = String;
 
     fn try_from(value: Area) -> Result<Self, Self::Error> {
         let from = FutureOrCurrentNairobiTZDateTime::try_from(value.from)?;
         let to = FutureOrCurrentNairobiTZDateTime::try_from(value.to)?;
-        Ok(DomainArea {
+        Ok(EntityArea {
             name: value.name.into(),
             time_frame: TimeFrame { from, to },
             locations: value.locations,

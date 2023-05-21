@@ -71,11 +71,11 @@ services:
       - configuration/**
 
   - type: cron
-    name: importer
+    name: import_and_notify
     region: frankfurt
     env: rust
-    buildCommand: cargo build --release --bin importer
-    startCommand: cargo run --release --bin importer
+    buildCommand: cargo build --release --bin import_and_notify
+    startCommand: cargo run --release --bin import_and_notify
     rootDir: ./rust-workspace
     schedule: "0 2 * * *"
     autoDeploy: true

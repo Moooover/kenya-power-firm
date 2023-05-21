@@ -21,7 +21,6 @@ use std::sync::Arc;
 
 pub mod actor;
 pub mod authentication;
-pub mod import_affected_areas;
 pub mod notifications;
 mod repositories;
 pub mod search_for_locations;

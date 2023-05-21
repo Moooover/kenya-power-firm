@@ -57,8 +57,6 @@ impl Repository {
             pg_pool: Arc::new(connection_pool),
         };
 
-        test_repo.fixtures().await;
-
         test_repo
     }
 }

@@ -1,12 +1,13 @@
-use crate::parser::filter_out_comments::CommentsRemover;
-use crate::scanner::{Date, KeyWords, Time, Token};
-use crate::token::{Area, County, Region};
+use crate::pdf_reader::content_extractor::scanner::Date;
 use multipeek::{multipeek, MultiPeek};
 
 use std::vec::IntoIter;
 
 use regex::{Regex, RegexBuilder};
 
+use crate::pdf_reader::content_extractor::parser::filter_out_comments::CommentsRemover;
+use crate::pdf_reader::content_extractor::scanner::{KeyWords, Time, Token};
+use crate::pdf_reader::content_extractor::token::{Area, County, Region};
 use anyhow::{anyhow, Context, Error};
 use chrono::{NaiveDate, NaiveTime};
 use lazy_static::lazy_static;
@@ -313,8 +314,8 @@ impl Parser {
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::Parser;
-    use crate::scanner::scan;
+    use crate::pdf_reader::content_extractor::parser::Parser;
+    use crate::pdf_reader::content_extractor::scanner::scan;
 
     #[test]
     fn test_parser() {

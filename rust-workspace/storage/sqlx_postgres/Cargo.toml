@@ -29,7 +29,6 @@ chrono-tz = "0.8.1"
 use_cases = { path = "../../use_cases" }
 entities = { path = "../../entities" }
 shared_kernel = { path = "../../shared_kernel" }
-web_page_extractor = { path = "../../import_power_interruptions/web_page_extractor" }
 
 tracing.workspace = true
 tracing-log.workspace = true

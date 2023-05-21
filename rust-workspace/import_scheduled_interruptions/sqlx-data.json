@@ -1,0 +1,243 @@
+{
+  "db": "PostgreSQL",
+  "05822a8d2940161e60142db59b2c0510d4a858d9bbd1dc85b623973132d6bc5c": {
+    "describe": {
+      "columns": [
+        {
+          "name": "url",
+          "ordinal": 0,
+          "type_info": "Varchar"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "TextArray"
+        ]
+      }
+    },
+    "query": "\n            SELECT url FROM source WHERE url = ANY($1)\n            "
+  },
+  "327dec1d5c7f4cfcf908a1244ffc5419398c83e9e1a55c223b5d08e3240d743e": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "area_id",
+          "ordinal": 1,
+          "type_info": "Uuid"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "UuidArray",
+          "Uuid"
+        ]
+      }
+    },
+    "query": "SELECT id, area_id FROM location.blackout_schedule WHERE area_id = ANY($1) AND source_id = $2"
+  },
+  "392b97c0a94047b48ab5ed90e77439865c8806260f35d38b1aa067860be5c2db": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": []
+      }
+    },
+    "query": "\n            SELECT id, name FROM location.county\n            "
+  },
+  "42c7e18d1c75c2eb878dd061c158122c093001d9fd276492fefd2629298405ca": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "TextArray",
+          "UuidArray"
+        ]
+      }
+    },
+    "query": "\n            INSERT INTO location.line(name, area_id)\n            SELECT * FROM UNNEST($1::text[], $2::uuid[]) ON CONFLICT DO NOTHING\n            "
+  },
+  "4c2cde8486e51548259c15f34da1f50291ffa0e1e885b32275b3598d124de3e1": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "TextArray",
+          "UuidArray"
+        ]
+      }
+    },
+    "query": "SELECT id, name FROM location.line WHERE name = ANY($1) AND area_id = ANY($2)"
+  },
+  "4ea496669636d2020d9047b7053c7496c81e8bc08030a31273ea2d5c919a910a": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "TextArray",
+          "UuidArray"
+        ]
+      }
+    },
+    "query": "\n            INSERT INTO location.area(name, county_id)\n            SELECT * FROM UNNEST($1::text[], $2::uuid[]) ON CONFLICT DO NOTHING\n            "
+  },
+  "62222bd92d828e65c07263943c62be78ddc016e04daa0fe7d8d55e88fb95650b": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Varchar"
+        ]
+      }
+    },
+    "query": "INSERT INTO public.source(url) VALUES ($1) ON CONFLICT DO NOTHING"
+  },
+  "819537a6d9c70c2f8a15feb49205340845e4d0bf747489d1fc26d2dcc0276e79": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "url",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "SELECT id, url FROM public.source WHERE url = $1"
+  },
+  "84d637c424bb83fbdd4d8c32504a25f4cb668f3e12ea0c748885c60c9ab5ef92": {
+    "describe": {
+      "columns": [
+        {
+          "name": "source_url",
+          "ordinal": 0,
+          "type_info": "Varchar"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": []
+      }
+    },
+    "query": "\n                SELECT source_url FROM manually_added_sources\n            "
+  },
+  "8ca5b21d263deca294d82dff8d6a200da5438fb9d6c149cf8c89f85b963c4698": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "county_id",
+          "ordinal": 2,
+          "type_info": "Uuid"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "TextArray"
+        ]
+      }
+    },
+    "query": "SELECT * FROM location.area WHERE name = ANY($1)"
+  },
+  "9e5679e85ce2ed8fdff76f874ac43b254f3393cc2f73f94d2628b38ba48c997c": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "UuidArray",
+          "UuidArray"
+        ]
+      }
+    },
+    "query": "\n            INSERT INTO location.line_schedule(line_id, schedule_id)\n            SELECT * FROM UNNEST($1::uuid[], $2::uuid[]) ON CONFLICT DO NOTHING\n            "
+  },
+  "f3ac55e2b438d6ca309cb1fe35a2ebc56ecd131c6985e2090391c4e9285519f3": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "UuidArray",
+          "TimestamptzArray",
+          "TimestamptzArray",
+          "UuidArray"
+        ]
+      }
+    },
+    "query": "\n            INSERT INTO location.blackout_schedule(area_id, start_time, end_time, source_id) \n            SELECT * FROM UNNEST($1::uuid[], $2::timestamptz[], $3::timestamptz[], $4::uuid[]) ON CONFLICT DO NOTHING\n            "
+  }
+}

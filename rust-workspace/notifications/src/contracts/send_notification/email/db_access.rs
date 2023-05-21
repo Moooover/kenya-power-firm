@@ -6,7 +6,6 @@ use crate::db_access::{DbAccess, SourceId};
 use anyhow::Context;
 use url::Url;
 
-
 pub struct EmailNotificationsDbAccess {
     db_access: SendNotificationsDbAccess,
 }

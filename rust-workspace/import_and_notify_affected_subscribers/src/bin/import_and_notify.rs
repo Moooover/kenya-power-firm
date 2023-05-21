@@ -1,5 +1,4 @@
-use async_trait::async_trait;
-use entities::power_interruptions::location::FutureOrCurrentNairobiTZDateTime;
+use import_scheduled_interruptions::contracts::import_interruptions::ImportInterruptions;
 use itertools::Itertools;
 use location_subscription::contracts::get_affected_subscribers_from_import::AffectedSubscribersInteractor;
 use location_subscription::contracts::get_affected_subscribers_from_import::{
@@ -11,30 +10,8 @@ use notifications::contracts::send_notification::LocationMatchedAndLineSchedule 
 use notifications::contracts::send_notification::{
     AffectedSubscriberWithLocations, LineWithScheduledInterruptionTime,
 };
-use pdf_text_parser::PDFContentExtractor;
+
 use producer::producer::Producer;
-use sqlx_postgres::repository::Repository;
-use std::sync::Arc;
-use use_cases::actor::{Actor, Permissions, SubscriberExternalId};
-use use_cases::import_affected_areas::ImportPlannedBlackoutsInteractor;
-use web_page_extractor::{pdf_extractor::PdfExtractorImpl, WebPageExtractor};
-
-#[derive(Debug)]
-struct ImportActor;
-
-#[async_trait]
-impl Actor for ImportActor {
-    fn permissions(&self) -> Permissions {
-        // TODO: Get the permissions from auth0;
-        let permissions: Vec<String> = vec!["import:affected_regions".to_string()];
-
-        permissions.as_slice().into()
-    }
-
-    fn external_id(&self) -> SubscriberExternalId {
-        "MAIN_IMPORTER".to_string().try_into().unwrap()
-    }
-}
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -45,34 +22,17 @@ async fn main() -> anyhow::Result<()> {
 }
 
 async fn start() -> anyhow::Result<()> {
-    let repo = Repository::new().await?;
-
-    let content_extractor = PDFContentExtractor;
-
-    let content_extractor = Arc::new(content_extractor);
-
-    let pdf_extractor = PdfExtractorImpl::new(content_extractor);
-
-    let repo = Arc::new(repo);
-
     let producer = Producer::new().await?;
 
-    let importer = use_cases::import_affected_areas::ImportAffectedAreas::new(repo.clone());
-
-    let extractor = WebPageExtractor::new(repo, Arc::new(pdf_extractor));
-    let import_input = extractor.run(&ImportActor {}).await?;
-    importer
-        .import(&ImportActor {}, import_input.clone())
-        .await?;
+    let import_input = ImportInterruptions::import().await?;
 
     let data = import_input
-        .0
         .iter()
         .map(|(url, imported_regions)| {
             let regions = imported_regions
                 .iter()
                 .map(|region| Region {
-                    name: region.name.clone(),
+                    name: region.region.clone(),
                     counties: region
                         .counties
                         .iter()
@@ -81,20 +41,13 @@ async fn start() -> anyhow::Result<()> {
                             areas: county
                                 .areas
                                 .iter()
-                                .filter_map(|area| {
-                                    let from = FutureOrCurrentNairobiTZDateTime::try_from(
-                                        area.from.clone(),
-                                    );
-                                    let to =
-                                        FutureOrCurrentNairobiTZDateTime::try_from(area.to.clone());
-                                    from.and_then(|from| {
-                                        to.map(|to| Area {
-                                            name: area.name.clone(),
-                                            time_frame: TimeFrame { from, to },
-                                            locations: area.locations.clone(),
-                                        })
-                                    })
-                                    .ok()
+                                .map(|area| Area {
+                                    name: area.name.to_string(),
+                                    time_frame: TimeFrame {
+                                        from: area.time_frame.from.clone(),
+                                        to: area.time_frame.to.clone(),
+                                    },
+                                    locations: area.locations.clone(),
                                 })
                                 .collect(),
                         })
