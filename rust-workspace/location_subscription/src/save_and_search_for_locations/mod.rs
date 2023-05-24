@@ -1,119 +1,26 @@
+mod searcheable_candidate;
+
 use crate::data_transfer::LineWithScheduledInterruptionTime;
 use crate::db_access::DbAccess;
 use anyhow::{anyhow, Context};
 use entities::locations::{ExternalLocationId, LocationId};
 use itertools::Itertools;
-use lazy_static::lazy_static;
-use regex::{Captures, Regex, RegexBuilder};
 use sqlx::types::Json;
 use std::collections::HashMap;
 
 use crate::contracts::get_affected_subscribers_from_import::Region;
+use crate::save_and_search_for_locations::searcheable_candidate::NonAcronymString;
 use entities::power_interruptions::location::{AreaName, NairobiTZDateTime, TimeFrame};
 use futures::{stream::FuturesUnordered, StreamExt};
+use searcheable_candidate::SearcheableCandidates;
 use serde::Deserialize;
 use shared_kernel::uuid_key;
 use sqlx::types::chrono::{DateTime, Utc};
-use std::fmt::{Display, Formatter};
 use tracing::error;
 use url::Url;
 use uuid::Uuid;
 
 uuid_key!(NearbyLocationId);
-
-lazy_static! {
-    static ref ACRONYM_MAP: HashMap<String, &'static str> = HashMap::from([
-        ("pri".to_string(), "Primary"),
-        ("rd".to_string(), "Road"),
-        ("est".to_string(), "Estate"),
-        ("sch".to_string(), "School"),
-        ("schs".to_string(), "Schools"),
-        ("sec".to_string(), "Secondary"),
-        ("stn".to_string(), "Station"),
-        ("apts".to_string(), "Apartments"),
-        ("hqtrs".to_string(), "Headquaters"),
-        ("mkt".to_string(), "Market"),
-        ("fact".to_string(), "Factory"),
-        ("t/fact".to_string(), "Tea Factory"),
-        ("c/fact".to_string(), "Coffee Factory")
-    ]);
-    static ref REGEX_STR: String = {
-        let keys = ACRONYM_MAP.keys().join("|");
-        format!(r"\b(?:{})\b", keys)
-    };
-    static ref ACRONYMS_MATCHER: Regex = RegexBuilder::new(&REGEX_STR)
-        .case_insensitive(true)
-        .build()
-        .expect("ACRONYMS_MATCHER to have been built successfully");
-}
-
-#[derive(Debug)]
-pub struct NonAcronymString(String);
-
-impl From<String> for NonAcronymString {
-    fn from(value: String) -> Self {
-        let result = ACRONYMS_MATCHER
-            .replace_all(&value, |cap: &Captures| {
-                let cap_as_lower_case = cap[0].to_lowercase();
-                ACRONYM_MAP
-                    .get(&cap_as_lower_case)
-                    .cloned()
-                    .unwrap_or_default()
-                    .to_string()
-            })
-            .trim()
-            .to_string();
-
-        NonAcronymString(result)
-    }
-}
-
-impl Display for NonAcronymString {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
-
-impl AsRef<str> for NonAcronymString {
-    fn as_ref(&self) -> &str {
-        &self.0
-    }
-}
-
-#[derive(Debug, Eq, PartialEq, Hash, Clone)]
-pub struct SearcheableCandidate(String);
-
-impl ToString for SearcheableCandidate {
-    fn to_string(&self) -> String {
-        self.0.clone()
-    }
-}
-
-impl AsRef<str> for SearcheableCandidate {
-    fn as_ref(&self) -> &str {
-        &self.0
-    }
-}
-
-impl SearcheableCandidate {
-    pub fn from_area_name(area: &AreaName) -> Vec<Self> {
-        area.as_ref()
-            .split(',')
-            .map(SearcheableCandidate::from)
-            .collect_vec()
-    }
-
-    // pub fn original_value(&self) -> String {
-    //     self.0.replace(" <-> ", " ")
-    // }
-}
-
-impl From<&str> for SearcheableCandidate {
-    fn from(value: &str) -> Self {
-        let value = value.trim().replace(' ', " <-> ");
-        SearcheableCandidate(value)
-    }
-}
 
 pub struct SaveAndSearchLocations {
     db_access: DbAccess,
@@ -417,23 +324,23 @@ struct BareAffectedLinesMapping<'a> {
 
 impl<'a> BareAffectedLinesMapping<'a> {
     fn generate(affected_lines: &'a [BareAffectedLine]) -> Self {
-        let (
-            mapping_of_line_to_time_frame,
-            mapping_of_line_to_url,
-            mapping_of_searcheble_candidate_to_original_line_candidate,
-        ): (HashMap<_, _>, HashMap<_, _>, HashMap<_, _>) = affected_lines
+        let (mapping_of_line_to_time_frame, mapping_of_line_to_url): (
+            HashMap<_, _>,
+            HashMap<_, _>,
+        ) = affected_lines
             .iter()
-            .map(|line| {
-                (
-                    (&line.line, &line.time_frame),
-                    (&line.line, &line.url),
-                    (
-                        SearcheableCandidate::from(line.line.as_ref()).to_string(),
-                        &line.line,
-                    ),
-                )
+            .map(|line| ((&line.line, &line.time_frame), (&line.line, &line.url)))
+            .unzip();
+        let mapping_of_searcheble_candidate_to_original_line_candidate = affected_lines
+            .iter()
+            .flat_map(|affected_line| {
+                let candidates = SearcheableCandidates::from(affected_line.line.as_ref());
+                candidates
+                    .into_inner()
+                    .into_iter()
+                    .map(|candidate| (candidate, &affected_line.line))
             })
-            .multiunzip();
+            .collect::<HashMap<_, _>>();
         Self {
             mapping_of_line_to_time_frame,
             mapping_of_searcheble_candidate_to_original_line_candidate,
@@ -501,7 +408,7 @@ mod directly_affected_location {
     use itertools::Itertools;
     use uuid::Uuid;
 
-    use super::SearcheableCandidate;
+    use crate::save_and_search_for_locations::searcheable_candidate::SearcheableCandidates;
 
     #[derive(sqlx::FromRow, Debug)]
     struct DbLocationSearchResults {
@@ -535,7 +442,7 @@ mod directly_affected_location {
     ) -> anyhow::Result<Option<AffectedLocation>> {
         let searcheable_candidates = affected_lines
             .iter()
-            .map(|line| SearcheableCandidate::from(line.line.as_ref()).to_string())
+            .flat_map(|line| SearcheableCandidates::from(line.line.as_ref()).into_inner())
             .collect_vec();
         let primary_location =
             get_primary_location_search_result(location_id, area_name, db, searcheable_candidates)
@@ -561,14 +468,19 @@ mod directly_affected_location {
         let mut primary_location: Option<DbLocationSearchResults> = None;
         let pool = db.pool().await;
         for (searcheable_candidates, location_id, searcheable_area) in
-            SearcheableCandidate::from_area_name(area_name)
+            SearcheableCandidates::from_area_name(area_name)
                 .into_iter()
-                .map(|area_candidate| {
-                    (
-                        searcheable_candidates.clone(),
-                        location_id.inner(),
-                        area_candidate,
-                    )
+                .flat_map(|area_candidate| {
+                    area_candidate
+                        .into_inner()
+                        .into_iter()
+                        .map(|area_candidate| {
+                            (
+                                searcheable_candidates.clone(),
+                                location_id.inner(),
+                                area_candidate,
+                            )
+                        })
                 })
         {
             let location = sqlx::query_as::<_, DbLocationSearchResults>(
@@ -592,10 +504,11 @@ mod directly_affected_location {
 }
 
 mod potentially_affected_location {
+    use crate::db_access::DbAccess;
+    use crate::save_and_search_for_locations::searcheable_candidate::SearcheableCandidates;
     use crate::save_and_search_for_locations::{
         AffectedLocation, AffectedLocationGenerator, BareAffectedLine, NearbyLocationId,
     };
-    use crate::{db_access::DbAccess, save_and_search_for_locations::SearcheableCandidate};
     use anyhow::Context;
     use entities::locations::LocationId;
     use itertools::Itertools;
@@ -625,8 +538,8 @@ mod potentially_affected_location {
 
         let searcheable_candidates = bare_affected_lines
             .iter()
-            .map(|line| SearcheableCandidate::from(line.line.as_ref()))
-            .map(|candidate| candidate.to_string())
+            .map(|line| SearcheableCandidates::from(line.line.as_ref()))
+            .flat_map(|candidates| candidates.into_inner())
             .collect_vec();
 
         #[derive(sqlx::FromRow, Debug)]
@@ -690,7 +603,7 @@ mod affected_locations_in_an_area {
     use url::Url;
     use uuid::Uuid;
 
-    use super::SearcheableCandidate;
+    use crate::save_and_search_for_locations::searcheable_candidate::SearcheableCandidates;
 
     #[derive(sqlx::FromRow)]
     struct DbLocationSearchResults {
@@ -729,7 +642,7 @@ mod affected_locations_in_an_area {
             .iter()
             .map(|candidate| {
                 (
-                    SearcheableCandidate::from(candidate.as_ref()),
+                    SearcheableCandidates::from(candidate.as_ref()),
                     candidate.as_str(),
                 )
             })
@@ -740,18 +653,28 @@ mod affected_locations_in_an_area {
 
         let searcheable_candidates = mapping_of_searcheable_location_candidate_to_candidate
             .keys()
-            .map(|candidate| candidate.as_ref())
+            .flat_map(|candidate| candidate.inner())
             .collect_vec();
 
         let searcheable_area_names =
-            SearcheableCandidate::from_area_name(&AreaName::new(area.name.clone()));
+            SearcheableCandidates::from_area_name(&AreaName::new(area.name.clone()));
+
+        let mapping_of_searcheable_candidate_to_original_candidate =
+            mapping_of_searcheable_location_candidate_to_candidate_copy
+                .into_iter()
+                .chain(
+                    searcheable_area_names
+                        .iter()
+                        .map(|searcheable_area| (searcheable_area.clone(), area.name.as_str())),
+                )
+                .collect::<HashMap<_, _>>();
 
         let directly_affected_locations = directly_affected_locations(
             db,
             &searcheable_area_names,
             &searcheable_candidates,
             time_frame.clone(),
-            &mapping_of_searcheable_location_candidate_to_candidate_copy,
+            &mapping_of_searcheable_candidate_to_original_candidate,
             source_url.clone(),
         )
         .await?;
@@ -761,7 +684,7 @@ mod affected_locations_in_an_area {
             &searcheable_area_names,
             &searcheable_candidates,
             time_frame.clone(),
-            &mapping_of_searcheable_location_candidate_to_candidate_copy,
+            &mapping_of_searcheable_candidate_to_original_candidate,
             source_url,
         )
         .await?;
@@ -774,16 +697,21 @@ mod affected_locations_in_an_area {
 
     async fn directly_affected_locations(
         db: &DbAccess,
-        searcheable_area_names: &[SearcheableCandidate],
-        searcheable_candidates: &[&str],
+        searcheable_area_names: &[SearcheableCandidates],
+        searcheable_candidates: &[String],
         time_frame: TimeFrame,
         mapping_of_searcheable_candidate_to_original_candidate: &HashMap<
-            SearcheableCandidate,
+            SearcheableCandidates,
             &str,
         >,
         source: Url,
     ) -> anyhow::Result<Vec<AffectedLocation>> {
         let pool = db.pool().await;
+
+        let searcheable_area_names = searcheable_area_names
+            .iter()
+            .flat_map(|area_name| area_name.inner().into_iter())
+            .collect_vec();
 
         let mut futures: FuturesUnordered<_> = searcheable_area_names
             .iter()
@@ -794,7 +722,7 @@ mod affected_locations_in_an_area {
                         ",
                 )
                 .bind(searcheable_candidates)
-                .bind(area_name.to_string())
+                .bind(area_name)
                 .fetch_all(pool.as_ref())
             })
             .collect();
@@ -806,11 +734,11 @@ mod affected_locations_in_an_area {
         let mapping_of_searcheable_candidate_to_candidate =
             mapping_of_searcheable_candidate_to_original_candidate
                 .iter()
-                .map(|(searcheable_candidate, original_candidate)| {
-                    (
-                        searcheable_candidate.to_string(),
-                        original_candidate.to_string(),
-                    )
+                .flat_map(|(searcheable_candidate, original_candidate)| {
+                    searcheable_candidate
+                        .inner()
+                        .into_iter()
+                        .map(|candidate| (candidate, original_candidate.to_string()))
                 })
                 .collect::<HashMap<_, _>>();
         let results = primary_locations
@@ -835,31 +763,20 @@ mod affected_locations_in_an_area {
 
     async fn potentially_affected_locations(
         db: &DbAccess,
-        searcheable_area_names: &[SearcheableCandidate],
-        searcheable_candidates: &[&str],
+        searcheable_area_names: &[SearcheableCandidates],
+        searcheable_candidates: &[String],
         time_frame: TimeFrame,
         mapping_of_searcheable_candidate_to_original_candidate: &HashMap<
-            SearcheableCandidate,
+            SearcheableCandidates,
             &str,
         >,
         source: Url,
     ) -> anyhow::Result<Vec<AffectedLocation>> {
         let searcheable_candidates = searcheable_area_names
             .iter()
-            .map(|name| name.to_string())
+            .flat_map(|name| name.inner().into_iter())
             .chain(searcheable_candidates.iter().map(ToString::to_string))
             .collect_vec();
-
-        let mapping_of_searcheable_location_candidate_to_candidate_copy =
-            mapping_of_searcheable_candidate_to_original_candidate
-                .iter()
-                .map(|(candidate, original_value)| (candidate, original_value.to_owned()))
-                .chain(
-                    searcheable_area_names
-                        .iter()
-                        .map(|area| (area, area.as_ref())),
-                )
-                .collect::<HashMap<_, _>>();
 
         #[derive(sqlx::FromRow, Debug)]
         pub struct NearbySearchResult {
@@ -883,10 +800,13 @@ mod affected_locations_in_an_area {
             .collect::<HashMap<_, _>>();
 
         let mapping_of_searcheable_candidate_to_candidate =
-            mapping_of_searcheable_location_candidate_to_candidate_copy
-                .into_iter()
-                .map(|(searcheable_candidate, original_candidate)| {
-                    (searcheable_candidate.to_string(), original_candidate)
+            mapping_of_searcheable_candidate_to_original_candidate
+                .iter()
+                .flat_map(|(searcheable_candidates, original_candidate)| {
+                    searcheable_candidates
+                        .inner()
+                        .into_iter()
+                        .map(|candidate| (candidate, original_candidate.to_string()))
                 })
                 .collect::<HashMap<_, _>>();
 
@@ -904,7 +824,7 @@ mod affected_locations_in_an_area {
                     .map(|(line, location)| AffectedLocation {
                         location_id: location.into(),
                         line_matched: LineWithScheduledInterruptionTime {
-                            line_name: line.to_string(),
+                            line_name: line,
                             from: time_frame.from.as_ref().clone(),
                             to: time_frame.to.as_ref().clone(),
                             source_url: source.clone(),
