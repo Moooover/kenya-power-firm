@@ -5,7 +5,7 @@ use actix_web::{
 };
 use serde_json::json;
 use thiserror::Error;
-use tracing::info;
+use tracing::{error, info};
 
 #[derive(Error, Debug)]
 pub enum ApiError {
@@ -24,7 +24,7 @@ impl error::ResponseError for ApiError {
     }
 
     fn error_response(&self) -> HttpResponse {
-        info!("{self:?}");
+        error!("{self:?}");
         let err_json = json!({ "error": self.to_string() });
         HttpResponse::build(self.status_code())
             .insert_header(ContentType::json())
