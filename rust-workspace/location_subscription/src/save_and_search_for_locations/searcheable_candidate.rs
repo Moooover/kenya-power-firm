@@ -89,14 +89,23 @@ impl SearcheableCandidateInner {
             result.extend(Self::split_5(before, after));
             result
                 .into_iter()
-                .map(|data| NonAcronymString::from(data.trim().split(' ').unique().join(" ")))
+                .map(|data| {
+                    let unique_string = data.trim().split(' ').unique().join(" ");
+                    Self::replace_space_with_pg_search_symbol(unique_string)
+                })
                 .unique()
                 .collect_vec()
         } else {
-            vec![NonAcronymString::from(candidate)]
+            vec![Self::replace_space_with_pg_search_symbol(candidate)]
         };
 
         SearcheableCandidateInner(candidates)
+    }
+
+    fn replace_space_with_pg_search_symbol(value: String) -> NonAcronymString {
+        let non_acronym_string = NonAcronymString::from(value).to_string();
+        let searcheable_str = non_acronym_string.trim().replace(' ', " <-> ");
+        NonAcronymString::from(searcheable_str)
     }
 
     // Split Shell & Total Petro Stns Kiambu Road to vec![Shell Petro Stns Kiambu Road, Total Petro Stns Kiambu Road]
@@ -220,17 +229,26 @@ impl SearcheableCandidates {
 
 impl SearcheableCandidates {
     pub fn from_area_name(area: &AreaName) -> Vec<Self> {
-        area.as_ref()
-            .replace("AREA", "")
-            .split(',')
+        let area_name = area.as_ref().replace("AREA", "");
+        // an areaName can have this format `MUTHAIGA & BALOZI ESTATE`  with amperstand
+        // or this format `SEWAGE, GITHUNGURI, EASTERN BYPASS` with comma;
+        if area_name.contains(',') {
+            return area_name
+                .split(',')
+                .map(SearcheableCandidates::from)
+                .collect_vec();
+        }
+
+        return area_name
+            .split('&')
             .map(SearcheableCandidates::from)
-            .collect_vec()
+            .collect_vec();
     }
 }
 
 impl From<&str> for SearcheableCandidates {
     fn from(value: &str) -> Self {
-        let value = value.trim().replace(' ', " <-> ");
+        let value = value.to_owned();
         let value = SearcheableCandidateInner::new(value);
         SearcheableCandidates(value)
     }
@@ -243,14 +261,15 @@ mod tests {
     use std::collections::HashSet;
 
     #[rstest]
-    #[case("2nd & 3rd Parklands", vec!["2nd Parklands", "3rd Parklands"])]
+    #[case("2nd & 3rd Parklands", vec!["2nd <-> Parklands", "3rd <-> Parklands"])]
     #[case("GSU & AP", vec!["GSU", "AP"])]
-    #[case("Makueni Boys & Girls", vec!["Makueni Boys", "Makueni Girls"])]
-    #[case("Kabare Market & Girls High School", vec!["Kabare Market", "Kabare Girls High School"])]
-    #[case("Kimunye T /Fact & Market", vec!["Kimunye Tea Factory", "Kimunye Market"])]
-    #[case("St Lwanga Catholic Church & School", vec!["St Lwanga Catholic Church", "St Lwanga Catholic School"])]
-    #[case("Shell & Total Petro Stns Kiambu Road", vec!["Shell Petrol Station Kiambu Road", "Total Petrol Station Kiambu Road"])]
-    #[case("Kawangware DC & DO Offices", vec!["Kawangware DC Offices", "Kawangware DO Offices"])]
+    #[case("Makueni Boys & Girls", vec!["Makueni <-> Boys", "Makueni <-> Girls"])]
+    #[case("Kabare Market & Girls High School", vec!["Kabare <-> Market", "Kabare <-> Girls <-> High <-> School"])]
+    #[case("Kimunye T /Fact & Market", vec!["Kimunye <-> Tea <-> Factory", "Kimunye <-> Market"])]
+    #[case("St Lwanga Catholic Church & School", vec!["St <-> Lwanga <-> Catholic <-> Church", "St <-> Lwanga <-> Catholic <-> School"])]
+    #[case("Shell & Total Petro Stns Kiambu Road", vec!["Shell <-> Petrol <-> Station <-> Kiambu <-> Road", "Total <-> Petrol <-> Station <-> Kiambu <-> Road"])]
+    #[case("Kawangware DC & DO Offices", vec!["Kawangware <-> DC <-> Offices", "Kawangware <-> DO <-> Offices"])]
+    #[case("MUTHAIGA & BALOZI ESTATE", vec!["MUTHAIGA <-> ESTATE", "BALOZI <-> ESTATE"])]
     fn test_searcheable_candidate_inner(#[case] input: &str, #[case] expected: Vec<&str>) {
         let candidate = SearcheableCandidateInner::new(input.to_string());
         let result = candidate.into_inner().into_iter().collect::<HashSet<_>>();
