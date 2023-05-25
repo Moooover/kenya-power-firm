@@ -20,9 +20,9 @@ email:
 redis:
   host: "redis://127.0.0.1:6379/"
 auth:
-  jwks: "blackouts-development.eu.auth0.com"
-  authorities: "blackouts-development.eu.auth0.com"
-  audiences: "https://blackouts.co.ke, https://blackouts-development.eu.auth0.com/userinfo"
+  jwks: "kplc-alerts-staging.eu.auth0.com"
+  authorities: "kplc-alerts-staging.eu.auth0.com"
+  audiences: "https://kplc-alerts.staging.co.ke, https://kplc-alerts-staging.eu.auth0.com/userinfo"
 external_api_rate_limits:
   email: 100
   location: 100

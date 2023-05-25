@@ -5,7 +5,7 @@ use actix_web::{
 };
 use serde_json::json;
 use thiserror::Error;
-use tracing::{error, info};
+use tracing::error;
 
 #[derive(Error, Debug)]
 pub enum ApiError {

@@ -35,7 +35,7 @@ mod email_notification {
     use std::collections::{HashMap, HashSet};
     use url::Url;
 
-    #[derive(Clone)]
+    #[derive(Clone, Debug)]
     pub struct EmailNotification(AffectedSubscriberWithLocations);
 
     impl Notification for EmailNotification {
@@ -241,7 +241,7 @@ mod email_notification_sender {
             .as_json()
             .with_context(|| "Failed to convert the body to a valid json")?;
 
-        #[derive(Deserialize)]
+        #[derive(Deserialize, Debug)]
         struct Response {
             #[serde(rename = "requestId")]
             request_id: String,
