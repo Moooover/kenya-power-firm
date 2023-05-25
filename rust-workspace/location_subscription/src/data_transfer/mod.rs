@@ -13,13 +13,13 @@ pub enum AffectedSubscriber {
     PotentiallyAffected(SubscriberId),
 }
 
-#[derive(Deserialize, Serialize, Clone)]
+#[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct LocationMatchedAndLineSchedule {
     pub line_schedule: LineWithScheduledInterruptionTime,
     pub location_id: LocationId,
 }
 
-#[derive(Deserialize, Serialize, Clone)]
+#[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct AffectedSubscriberWithLocationMatchedAndLineSchedule {
     pub affected_subscriber: AffectedSubscriber,
     pub location_matched: LocationMatchedAndLineSchedule,
