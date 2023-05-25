@@ -86,7 +86,9 @@ impl Parser {
         loop {
             let result = self.parse_region();
             match result {
-                Ok(region) => regions.push(region),
+                Ok(region) => {
+                    regions.push(region);
+                }
                 Err(ParseError::UnexpectedEndOfFile) => {
                     break;
                 }
@@ -160,10 +162,11 @@ impl Parser {
         let mut counties = vec![];
         // loop up until we get to another region, returning the list of counties
         fn does_region_match(token: Option<&Token>) -> bool {
-            matches!(token, Some(&Token::Region(_)))
+            matches!(token, Some(&Token::Region(_)) | None)
         }
         while !does_region_match(self.tokens.peek()) {
-            counties.push(self.parse_county()?);
+            let county = self.parse_county()?;
+            counties.push(county);
         }
         Ok(counties)
     }
@@ -177,7 +180,6 @@ impl Parser {
         )?;
 
         let areas = self.parse_areas()?;
-
         Ok(County {
             name: county,
             areas,
@@ -187,11 +189,15 @@ impl Parser {
     fn parse_areas(&mut self) -> Result<Vec<Area>, ParseError> {
         let mut areas = vec![];
         fn matches_county_or_region(token: Option<&Token>) -> bool {
-            matches!(token, Some(&Token::County(_)) | Some(&Token::Region(_)))
+            matches!(
+                token,
+                Some(&Token::County(_)) | Some(&Token::Region(_)) | None
+            )
         }
 
         while !matches_county_or_region(self.tokens.peek()) {
-            areas.push(self.area()?);
+            let area = self.area()?;
+            areas.push(area);
         }
 
         Ok(areas)
@@ -274,41 +280,12 @@ impl Parser {
         // consume the end of pins keyword
         self.tokens.next();
 
-        Ok(results
-            .into_iter()
-            .flat_map(|pin| self.extract_and_construct_location_phases(pin))
-            .collect())
+        Ok(results)
     }
 
     fn digit_after_comma(&mut self) -> bool {
         let peeked = self.tokens.peek();
         matches!(peeked, Some(Token::Identifier(ident)) if ident.clone().trim().parse::<usize>().is_ok())
-    }
-
-    /// Eg: "Dandora Phase 1 & 2" becomes -> ["Dandora Phase 1", "Dandora Phase 2"]
-    fn extract_and_construct_location_phases(&self, location: String) -> Vec<String> {
-        lazy_static! {
-            static ref PHASE: Regex =
-                Regex::new(r"\d{1,}[\n\r\s]+[,&]+[\n\r\s]+\d{1,}").expect("PHASE regex to compile");
-            static ref PHASE_NAME: Regex =
-                Regex::new(r"([a-zA-Z]+[\n\r\s]+)").expect("PHASE_NAME regex to compile");
-            static ref PHASE_NUMBERS: Regex =
-                Regex::new(r"\d{1,}").expect("PHASE_NUMBERS regex to compile");
-        }
-        if PHASE.is_match(&location) {
-            let phase_name = PHASE_NAME
-                .captures_iter(&location)
-                .into_iter()
-                .map(|capture| (capture[0]).to_string())
-                .collect::<String>();
-
-            return PHASE_NUMBERS
-                .captures_iter(&location)
-                .into_iter()
-                .map(|capture| format!("{} {}", &phase_name.trim(), &capture[0].trim()))
-                .collect::<Vec<_>>();
-        }
-        vec![location]
     }
 }
 
