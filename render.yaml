@@ -91,6 +91,8 @@ services:
         sync: false
       - key: APP_EMAIL__ADMIN_EMAIL
         sync: false
+      - key: HONEY_COMB_TEAM_KEY
+        sync: false
       - key: APP_DATABASE__HOST
         fromDatabase:
           name: prod
@@ -128,6 +130,8 @@ services:
           name: redis-service
           type: redis
           property: connectionString
+      - key: HONEY_COMB_TEAM_KEY
+        sync: false
       - key: APP_LOCATION__API_KEY
         sync: false
       - key: APP_EMAIL__AUTH_TOKEN
