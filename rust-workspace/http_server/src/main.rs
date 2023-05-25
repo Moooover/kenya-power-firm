@@ -17,7 +17,7 @@ mod use_case_app_container;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    shared_kernel::tracing::config_telemetry("http_server");
+    shared_kernel::tracing::config_telemetry();
     start().await?;
     shared_kernel::tracing::shutdown_global_tracer_provider();
     Ok(())
