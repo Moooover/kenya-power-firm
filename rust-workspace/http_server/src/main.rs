@@ -2,7 +2,9 @@ use actix_cors::Cors;
 use std::env;
 
 use crate::use_case_app_container::UseCaseAppContainer;
+use actix_governor::{Governor, GovernorConfigBuilder};
 use actix_web::{http, web, App, HttpServer};
+
 use anyhow::{Context, Error};
 use location_subscription::contracts::LocationSubscriptionSubSystem;
 use producer::producer::Producer;
@@ -30,6 +32,11 @@ async fn start() -> Result<(), Error> {
     let port = env::var("PORT").unwrap_or_else(|_| 8080.to_string());
     let binding_address = format!("{host}:{port}");
     info!("Starting server on {}", binding_address);
+    let governor_conf = GovernorConfigBuilder::default()
+        .per_second(2)
+        .burst_size(5)
+        .finish()
+        .context("Failed to build governor config")?;
     HttpServer::new(move || {
         let cors = Cors::default()
             .allowed_origin("http://localhost:5173")
@@ -49,6 +56,7 @@ async fn start() -> Result<(), Error> {
             .wrap(cors)
             .wrap(actix_web_opentelemetry::RequestTracing::new())
             .wrap(tracing_actix_web::TracingLogger::default())
+            .wrap(Governor::new(&governor_conf))
             .configure(routes::config)
             .app_data(web::Data::new(app_container))
     })
