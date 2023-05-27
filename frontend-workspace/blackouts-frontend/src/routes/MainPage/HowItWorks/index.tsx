@@ -79,7 +79,7 @@ function ExplanationDialog() {
         onClose={handleClose}
         TransitionComponent={Transition}
       >
-        <AppBar sx={{ position: "relative" }}>
+        <AppBar position={"sticky"}>
           <Toolbar>
             <IconButton
               edge="start"
@@ -132,8 +132,8 @@ function ExplanationDialog() {
                   Monitoring of the KPLC website
                 </Typography>
                 <Typography>
-                  We automatically monitor the KPLC website for any newly
-                  scheduled power outages.
+                  We continuously monitor the KPLC website to detect any newly
+                  scheduled power outages automatically.
                 </Typography>
               </TimelineContent>
             </TimelineItem>
