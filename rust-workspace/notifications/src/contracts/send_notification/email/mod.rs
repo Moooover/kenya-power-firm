@@ -282,7 +282,7 @@ mod email_notification_sender {
                 to: To {
                     email: subscriber.email.to_string(),
                 },
-                template: TEMPLATE.to_string(),
+                template: SETTINGS_CONFIG.email.template_id.clone(),
                 data: MessageData {
                     recipient_name: subscriber.name.to_string(),
                     affected_state: email.subscriber().into(),

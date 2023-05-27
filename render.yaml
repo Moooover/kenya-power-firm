@@ -89,7 +89,7 @@ services:
         sync: false
       - key: APP_EMAIL__AUTH_TOKEN
         sync: false
-      - key: APP_EMAIL__ADMIN_EMAIL
+      - key: APP_EMAIL__TEMPLATE_ID
         sync: false
       - key: HONEY_COMB_TEAM_KEY
         sync: false
@@ -135,6 +135,8 @@ services:
       - key: APP_LOCATION__API_KEY
         sync: false
       - key: APP_EMAIL__AUTH_TOKEN
+        sync: false
+      - key: APP_EMAIL__TEMPLATE_ID
         sync: false
       - key: APP_AUTH__JWKS
         sync: false
