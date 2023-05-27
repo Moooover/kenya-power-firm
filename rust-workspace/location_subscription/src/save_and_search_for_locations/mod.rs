@@ -397,27 +397,27 @@ impl<'a> AffectedLocationGenerator<'a> {
     }
 }
 
+#[derive(sqlx::FromRow, Debug)]
+struct DbLocationSearchResults {
+    pub search_query: String,
+    #[allow(dead_code)]
+    pub location: String,
+    #[allow(dead_code)]
+    pub id: Uuid,
+}
+
 mod directly_affected_location {
     use crate::db_access::DbAccess;
     use crate::save_and_search_for_locations::{
-        AffectedLocation, AffectedLocationGenerator, BareAffectedLine,
+        AffectedLocation, AffectedLocationGenerator, BareAffectedLine, DbLocationSearchResults,
     };
     use anyhow::Context;
     use entities::locations::LocationId;
     use entities::power_interruptions::location::AreaName;
     use itertools::Itertools;
-    use uuid::Uuid;
 
     use crate::save_and_search_for_locations::searcheable_candidate::SearcheableCandidates;
 
-    #[derive(sqlx::FromRow, Debug)]
-    struct DbLocationSearchResults {
-        pub search_query: String,
-        #[allow(dead_code)]
-        pub location: String,
-        #[allow(dead_code)]
-        pub id: Uuid,
-    }
     pub(super) async fn execute(
         db: &DbAccess,
         location_id: LocationId,
@@ -507,13 +507,12 @@ mod potentially_affected_location {
     use crate::db_access::DbAccess;
     use crate::save_and_search_for_locations::searcheable_candidate::SearcheableCandidates;
     use crate::save_and_search_for_locations::{
-        AffectedLocation, AffectedLocationGenerator, BareAffectedLine, NearbyLocationId,
+        AffectedLocation, AffectedLocationGenerator, BareAffectedLine, DbLocationSearchResults,
     };
     use anyhow::Context;
     use entities::locations::LocationId;
+    use entities::power_interruptions::location::AreaName;
     use itertools::Itertools;
-    use std::iter;
-    use uuid::Uuid;
 
     pub async fn execute(
         db: &DbAccess,
@@ -521,71 +520,88 @@ mod potentially_affected_location {
     ) -> anyhow::Result<Option<AffectedLocation>> {
         let results = BareAffectedLine::lines_affected_in_the_future(db).await?;
 
-        let bare_affected_lines = results
-            .into_iter()
-            .filter_map(|(area, affected_lines)| {
-                affected_lines.first().cloned().map(|line| {
-                    iter::once(BareAffectedLine {
-                        line: area.to_string(),
-                        url: line.url.clone(),
-                        time_frame: line.time_frame,
-                    })
-                    .chain(affected_lines.into_iter())
-                })
-            })
-            .flatten()
-            .collect_vec();
-
-        let searcheable_candidates = bare_affected_lines
-            .iter()
-            .map(|line| SearcheableCandidates::from(line.line.as_ref()))
-            .flat_map(|candidates| candidates.into_inner())
-            .collect_vec();
-
-        #[derive(sqlx::FromRow, Debug)]
-        struct NearbySearchResult {
-            candidate: String,
-            location_id: Uuid,
+        for (area_name, affected_lines) in results.iter() {
+            let affected_location =
+                potentially_affected_location(db, location_id, area_name, affected_lines).await?;
+            if let Some(affected_location) = affected_location {
+                return Ok(Some(affected_location));
+            }
         }
 
-        let pool = db.pool().await;
+        Ok(None)
+    }
 
-        let location_id = location_id.inner();
-
-        let nearby_location_id = sqlx::query!(
-            "
-               SELECT id FROM location.nearby_locations WHERE location_id = $1::uuid
-            ",
-            location_id
+    async fn potentially_affected_location(
+        db: &DbAccess,
+        location_id: LocationId,
+        area_name: &AreaName,
+        affected_lines: &[BareAffectedLine],
+    ) -> anyhow::Result<Option<AffectedLocation>> {
+        let searcheable_candidates = affected_lines
+            .iter()
+            .flat_map(|line| SearcheableCandidates::from(line.line.as_ref()).into_inner())
+            .collect_vec();
+        let potentially_affected_location = get_potentially_affected_location_search_result(
+            location_id,
+            area_name,
+            db,
+            searcheable_candidates,
         )
-        .fetch_one(pool.as_ref())
-        .await
-        .context("Failed to fetch nearby_location_id")?;
+        .await?;
 
-        let nearby_location_id = NearbyLocationId::from(nearby_location_id.id);
-
-        let nearby_location = sqlx::query_as::<_, NearbySearchResult>(
-            "
-            SELECT * FROM location.search_nearby_locations_with_nearby_location_id($1::text[], $2::uuid)
-            ",
-        )
-        .bind(searcheable_candidates.clone())
-        .bind(nearby_location_id.inner())
-        .fetch_optional(pool.as_ref())
-        .await.context("Failed to get results from search_nearby_locations_with_nearby_location_id")?;
-
-        if let Some(nearby_location) = nearby_location {
-            let affected_location = AffectedLocationGenerator {
-                affected_lines: &bare_affected_lines,
-            }
-            .generate(
-                nearby_location.candidate,
-                nearby_location.location_id.into(),
-                false,
+        if let Some(location) = potentially_affected_location {
+            let affected_location = AffectedLocationGenerator { affected_lines }.generate(
+                location.search_query,
+                location_id,
+                true,
             )?;
             return Ok(Some(affected_location));
         }
+
         Ok(None)
+    }
+
+    async fn get_potentially_affected_location_search_result(
+        location_id: LocationId,
+        area_name: &AreaName,
+        db: &DbAccess,
+        searcheable_candidates: Vec<String>,
+    ) -> anyhow::Result<Option<DbLocationSearchResults>> {
+        let mut result: Option<DbLocationSearchResults> = None;
+        let pool = db.pool().await;
+        for (searcheable_candidates, location_id, searcheable_area) in
+            SearcheableCandidates::from_area_name(area_name)
+                .into_iter()
+                .flat_map(|area_candidate| {
+                    area_candidate
+                        .into_inner()
+                        .into_iter()
+                        .map(|area_candidate| {
+                            (
+                                searcheable_candidates.clone(),
+                                location_id.inner(),
+                                area_candidate,
+                            )
+                        })
+                })
+        {
+            let location = sqlx::query_as::<_, DbLocationSearchResults>(
+                "
+                    SELECT * FROM location.search_nearby_locations_with_nearby_location_id_and_area_name($1::text[], $2::uuid, $3::text)
+                    ",
+            )
+                .bind(searcheable_candidates)
+                .bind(location_id)
+                .bind(searcheable_area.to_string())
+                .fetch_optional(pool.as_ref())
+                .await
+                .context("Failed to fetch results from search_nearby_locations_with_nearby_location_id_and_area_name")?;
+            if let Some(location) = location {
+                result = Some(location);
+                break;
+            }
+        }
+        Ok(result)
     }
 }
 
@@ -772,27 +788,37 @@ mod affected_locations_in_an_area {
         >,
         source: Url,
     ) -> anyhow::Result<Vec<AffectedLocation>> {
-        let searcheable_candidates = searcheable_area_names
+        let searcheable_area_names = searcheable_area_names
             .iter()
-            .flat_map(|name| name.inner().into_iter())
-            .chain(searcheable_candidates.iter().map(ToString::to_string))
+            .flat_map(|area_name| area_name.inner().into_iter())
             .collect_vec();
-
         #[derive(sqlx::FromRow, Debug)]
         pub struct NearbySearchResult {
             candidate: String,
             location_id: Uuid,
         }
         let pool = db.pool().await;
-        let nearby_locations = sqlx::query_as::<_, NearbySearchResult>(
-            "
-                SELECT * FROM location.search_nearby_locations($1::text[])
-                ",
-        )
-        .bind(&searcheable_candidates)
-        .fetch_all(pool.as_ref())
-        .await
-        .context("Failed to get nearby location search results from db")?;
+
+        let mut futures: FuturesUnordered<_> = searcheable_area_names
+            .iter()
+            .map(|area_name| {
+                sqlx::query_as::<_, NearbySearchResult>(
+                    "
+                        SELECT * FROM location.search_nearby_locations_with_area_name($1::text[], $2::text)
+                        ",
+                )
+                .bind(searcheable_candidates)
+                .bind(area_name)
+                .fetch_all(pool.as_ref())
+            })
+            .collect();
+        let mut nearby_locations = vec![];
+        while let Some(result) = futures.next().await {
+            nearby_locations
+                .push(result.context("Failed to get nearby_locations results  from db")?);
+        }
+
+        let nearby_locations = nearby_locations.into_iter().flatten().collect_vec();
 
         let location_ids_to_search_query = nearby_locations
             .iter()
