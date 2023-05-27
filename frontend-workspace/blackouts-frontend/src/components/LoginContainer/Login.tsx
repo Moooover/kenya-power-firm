@@ -17,7 +17,13 @@ const Login = () => {
   return (
     <div>
       <LoginAppBar />
-      <Box padding={"10px"} display={"flex"} justifyContent={"center"}>
+      <Box
+        padding={"10px"}
+        display={"flex"}
+        justifyContent={"center"}
+        maxWidth={"700px"}
+        margin={"auto"}
+      >
         <Typography variant={"subtitle1"}>
           Receive advance notifications days before scheduled power
           interruptions affect your area or nearby areas. Stay informed and be
