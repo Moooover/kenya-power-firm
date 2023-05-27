@@ -148,7 +148,7 @@ mod email_notification_sender {
     use std::collections::HashMap;
     use url::Url;
 
-    const TEMPLATE: &str = "565V4THQRHM19SMJNC6WFKZRVWGR";
+    const TEMPLATE: &str = "JD5A3J28KZMDQ9KZ41X1SN0P9JMF";
 
     #[derive(Serialize, Deserialize)]
     enum AffectedState {
