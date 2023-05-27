@@ -280,7 +280,10 @@ impl Parser {
         // consume the end of pins keyword
         self.tokens.next();
 
-        Ok(results)
+        Ok(results
+            .into_iter()
+            .filter(|s| !s.trim().is_empty())
+            .collect())
     }
 
     fn digit_after_comma(&mut self) -> bool {
