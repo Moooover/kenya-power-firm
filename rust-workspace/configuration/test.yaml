@@ -14,8 +14,7 @@ location:
 email:
   host: "https://api.courier.com/send"
   auth_token: ""
-  dry_run_template_id: "GGAB2KK5K340DPQX46EX01DQAG4H"
-  admin_email: "tevinthuku@gmail.com"
+  template_id: ""
 redis:
   host: "redis://127.0.0.1:6379/"
 auth:

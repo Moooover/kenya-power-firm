@@ -148,8 +148,6 @@ mod email_notification_sender {
     use std::collections::HashMap;
     use url::Url;
 
-    const TEMPLATE: &str = "JD5A3J28KZMDQ9KZ41X1SN0P9JMF";
-
     #[derive(Serialize, Deserialize)]
     enum AffectedState {
         #[serde(rename = "directly affected")]
@@ -282,7 +280,7 @@ mod email_notification_sender {
                 to: To {
                     email: subscriber.email.to_string(),
                 },
-                template: TEMPLATE.to_string(),
+                template: SETTINGS_CONFIG.email.template_id.clone(),
                 data: MessageData {
                     recipient_name: subscriber.name.to_string(),
                     affected_state: email.subscriber().into(),

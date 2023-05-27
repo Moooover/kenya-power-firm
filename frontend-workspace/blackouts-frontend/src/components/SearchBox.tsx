@@ -18,8 +18,14 @@ export default function SearchBox({ value, handleChangeSearchTerm }: Props) {
   ) => {
     handleChangeSearchTerm(event.target.value);
   };
+
+  const handleSubmit = (evt: React.FormEvent<HTMLFormElement>) => {
+    evt.preventDefault();
+  };
+
   return (
     <Paper
+      onSubmit={handleSubmit}
       component="form"
       sx={{
         p: "2px 4px",
