@@ -8,12 +8,26 @@ import { styled } from "@mui/material/styles";
 import Container from "@mui/material/Container";
 import LoginAppBar from "./Appbar";
 import Fab from "@mui/material/Fab";
+import HowItWorksCallout from "../../routes/MainPage/HowItWorks";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 
 const Login = () => {
   const { loginWithRedirect } = useAuth0();
   return (
     <div>
       <LoginAppBar />
+      <Box padding={"10px"} display={"flex"} justifyContent={"center"}>
+        <Typography variant={"subtitle1"}>
+          Receive advance notifications days before scheduled power
+          interruptions affect your area or nearby areas. Stay informed and be
+          prepared.
+        </Typography>
+      </Box>
+      <Box sx={{ marginTop: "10px", padding: "10px" }}>
+        <HowItWorksCallout />
+      </Box>
+
       <StyledContainer maxWidth={"sm"}>
         <Grid
           container
