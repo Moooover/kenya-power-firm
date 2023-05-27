@@ -12,6 +12,7 @@ pub struct PoolSettings {
 pub struct EmailConfig {
     pub host: String,
     pub auth_token: Secret<String>,
+    pub template_id: String,
 }
 
 #[derive(Deserialize)]
