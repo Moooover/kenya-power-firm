@@ -278,7 +278,7 @@ impl BareAffectedLine {
         let results = sqlx::query_as::<_, DbAreaLine>(
             "
                 WITH upcoming_scheduled_blackouts AS (
-                  SELECT schedule.id, url, start_time, end_time FROM location.blackout_schedule schedule INNER JOIN  source ON  schedule.source_id = source.id WHERE start_time > now()
+                  SELECT schedule.id, url, start_time, end_time FROM location.blackout_schedule schedule INNER JOIN  source ON  schedule.source_id = source.id WHERE end_time > now()
                 ), blackout_schedule_with_lines_and_areas AS (
                   SELECT line_id, url, start_time, end_time, name, area_id FROM location.line_schedule INNER JOIN location.line ON line_schedule.line_id = location.line.id INNER JOIN upcoming_scheduled_blackouts ON line_schedule.schedule_id = upcoming_scheduled_blackouts.id
                 ),line_area_source_url AS (
