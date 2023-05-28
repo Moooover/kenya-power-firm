@@ -73,26 +73,6 @@
     },
     "query": "\n            SELECT id, location_id FROM location.subscriber_locations WHERE subscriber_id = $1\n            "
   },
-  "52d470972c259e46a634deda972a8fb80fc13f3c48b7de17a2a821f908c94d2d": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Uuid"
-        }
-      ],
-      "nullable": [
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "Uuid"
-        ]
-      }
-    },
-    "query": "\n               SELECT id FROM location.nearby_locations WHERE location_id = $1::uuid\n            "
-  },
   "ae4acf069c24ba0ef9c342248487d04f899253c1e8593a927b17f67d0dac0dfe": {
     "describe": {
       "columns": [
