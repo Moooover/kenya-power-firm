@@ -19,6 +19,7 @@ use use_cases::subscriber_locations::subscribe_to_location::TaskId;
 
 use crate::utils::callbacks::failure_callback;
 use crate::utils::progress_tracking::{set_progress_status, TaskStatus};
+use crate::utils::rate_limiting::GoogleAPIRateLimiter;
 
 #[celery::task(max_retries = 200, bind = true, retry_for_unexpected = false, on_failure = failure_callback)]
 pub async fn fetch_and_subscribe_to_location(
@@ -34,6 +35,14 @@ pub async fn fetch_and_subscribe_to_location(
     )
     .await
     .map_err(|err| TaskError::UnexpectedError(err.to_string()))?;
+
+    let rate_limiter = GoogleAPIRateLimiter::new().await;
+    // we are taking 2 tokens because, we need to make 2 requests to the google api (One for the details & the other for the nearby search)
+    let data = rate_limiter.throttle(2).await?;
+
+    if !data.action_is_allowed() {
+        return Task::retry_with_countdown(task, data.retry_after() as u32);
+    }
 
     let subscription_interactor =
         location_subscription::contracts::subscribe::SubscribeInteractor::new();
