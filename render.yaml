@@ -25,9 +25,9 @@ services:
     envVars:
       - key: APP_REDIS__HOST
         fromService:
-          name: redis-service
-          type: redis
-          property: connectionString
+          name: dragonfly_service
+          type: pserv
+          property: hostport
       - key: APP_LOCATION__API_KEY
         sync: false
       - key: APP_EMAIL__AUTH_TOKEN
@@ -65,9 +65,9 @@ services:
     envVars:
       - key: APP_REDIS__HOST
         fromService:
-          name: redis-service
-          type: redis
-          property: connectionString
+          name: dragonfly_service
+          type: pserv
+          property: hostport
       - key: APP_EXTERNAL_API_RATE_LIMITS_EMAIL
         sync: false
       - key: APP_EXTERNAL_API_RATE_LIMITS_LOCATION
@@ -90,9 +90,9 @@ services:
     envVars:
       - key: APP_REDIS__HOST
         fromService:
-          name: redis-service
-          type: redis
-          property: connectionString
+          name: dragonfly_service
+          type: pserv
+          property: hostport
       - key: APP_LOCATION__API_KEY
         sync: false
       - key: APP_EMAIL__AUTH_TOKEN
@@ -135,9 +135,9 @@ services:
     envVars:
       - key: APP_REDIS__HOST
         fromService:
-          name: redis-service
-          type: redis
-          property: connectionString
+          name: dragonfly_service
+          type: pserv
+          property: hostport
       - key: HONEY_COMB_TEAM_KEY
         sync: false
       - key: APP_LOCATION__API_KEY
