@@ -26,6 +26,13 @@ lazy_static! {
     });
 }
 
+#[derive(Clone)]
 pub struct Client {
     pub(crate) conn: MultiplexedConnection,
+}
+
+impl Client {
+    pub fn connection(&self) -> MultiplexedConnection {
+        self.conn.clone()
+    }
 }

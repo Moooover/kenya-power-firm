@@ -4,8 +4,16 @@ services:
     region: frankfurt
     plan: starter
     ipAllowList: # required - allow external connections from only these CIDR blocks
-      - source: 41.212.60.246
-        description: mtwapa
+      - source: 197.237.246.150
+        description: garden city home office
+  - type: pserv
+    name: dragonfly_service
+    region: frankfurt
+    env: docker
+    dockerfilePath: ./docker/dragon_fly.Dockerfile
+    rootDir: ./rust-workspace
+    autoDeploy: false
+
   - type: worker
     name: consumer
     region: frankfurt
@@ -223,9 +231,7 @@ databases:
     databaseName: prod_app
     user: app_user
     ipAllowList:
-      - source: 41.212.60.246
-        description: mtwapa
-      - source: 102.222.223.152
+      - source: 197.237.246.150
         description: garden city home office
     postgresMajorVersion: 15
 

@@ -20,11 +20,18 @@ pub struct RedisSettings {
     pub host: String,
 }
 
+#[derive(Deserialize, Debug)]
+pub struct ExternalApiRateLimits {
+    pub email: usize,
+    pub location: usize,
+}
+
 #[derive(Debug, Deserialize)]
 pub struct Settings {
     pub location: LocationSearcherConfig,
     pub email: EmailConfig,
     pub redis: RedisSettings,
+    pub external_api_rate_limits: ExternalApiRateLimits,
 }
 
 impl Settings {
