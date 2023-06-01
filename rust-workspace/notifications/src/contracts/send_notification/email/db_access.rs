@@ -23,6 +23,7 @@ impl EmailNotificationsDbAccess {
         }
     }
 
+    #[tracing::instrument(skip(self), level = "debug")]
     pub async fn get_email_strategy_id(&self) -> anyhow::Result<NotificationStrategyId> {
         let pool = self.db_access.as_ref().pool().await;
         let strategy_name = "EMAIL";
@@ -37,10 +38,12 @@ impl EmailNotificationsDbAccess {
         Ok(record.id.into())
     }
 
+    #[tracing::instrument(skip(self), level = "debug")]
     pub async fn get_source_by_url(&self, url: &Url) -> anyhow::Result<SourceId> {
         self.db_access.get_source_by_url(url).await
     }
 
+    #[tracing::instrument(skip(self), level = "debug")]
     pub async fn save_email_notification_sent(
         &self,
         notification: impl Notification,

@@ -4,12 +4,11 @@ use location_subscription::contracts::get_affected_subscribers_from_import::Affe
 use location_subscription::contracts::get_affected_subscribers_from_import::{
     Area, County, ImportInput, Region, TimeFrame,
 };
-use location_subscription::data_transfer::AffectedSubscriber;
-use notifications::contracts::send_notification::AffectedSubscriber as NotificationAffectedSubscriber;
-use notifications::contracts::send_notification::LocationMatchedAndLineSchedule as NotificationLocationMatchedAndLineSchedule;
-use notifications::contracts::send_notification::{
-    AffectedSubscriberWithLocations, LineWithScheduledInterruptionTime,
-};
+
+
+
+
+
 
 use producer::producer::Producer;
 
@@ -62,40 +61,8 @@ async fn start() -> anyhow::Result<()> {
         AffectedSubscribersInteractor::get_affected_subscribers_from_import(ImportInput(data))
             .await?;
 
-    let affected_locations_with_subscribers = data
-        .into_iter()
-        .flat_map(|(affected_subscriber, locations)| {
-            let subscriber = match affected_subscriber {
-                AffectedSubscriber::DirectlyAffected(subscriber) => {
-                    NotificationAffectedSubscriber::DirectlyAffected(subscriber)
-                }
-                AffectedSubscriber::PotentiallyAffected(subscriber) => {
-                    NotificationAffectedSubscriber::PotentiallyAffected(subscriber)
-                }
-            };
-            let split_locations = locations
-                .into_iter()
-                .into_group_map_by(|data| data.line_schedule.source_url.clone());
-
-            split_locations.into_iter().map(move |(url, locations)| {
-                AffectedSubscriberWithLocations {
-                    source_url: url,
-                    subscriber: subscriber.clone(),
-                    locations: locations
-                        .into_iter()
-                        .map(|location| NotificationLocationMatchedAndLineSchedule {
-                            line_schedule: LineWithScheduledInterruptionTime {
-                                line_name: location.line_schedule.line_name,
-                                from: location.line_schedule.from,
-                                to: location.line_schedule.to,
-                            },
-                            location_id: location.location_id,
-                        })
-                        .collect_vec(),
-                }
-            })
-        })
-        .collect_vec();
+    let affected_locations_with_subscribers =
+        import_and_notify_affected_subscribers::convert_data_to_producer_input(data);
     producer
         .send_notifications(affected_locations_with_subscribers)
         .await

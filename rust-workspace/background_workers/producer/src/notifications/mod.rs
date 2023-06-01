@@ -14,6 +14,7 @@ pub trait DeliveryStrategy: Send + Sync {
 }
 
 impl Producer {
+    #[tracing::instrument(skip(self), level = "debug")]
     pub async fn send_notifications(
         &self,
         locations: Vec<AffectedSubscriberWithLocations>,
