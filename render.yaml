@@ -54,29 +54,6 @@ services:
           property: database
       - key: APP_DATABASE__REQUIRE_SSL
         value: true
-  - type: worker
-    name: tokenizer
-    region: frankfurt
-    env: rust
-    buildCommand: cargo build --release --bin tokenizer
-    startCommand: cargo run --release --bin tokenizer
-    rootDir: ./rust-workspace
-    autoDeploy: true
-    envVars:
-      - key: APP_REDIS__HOST
-        fromService:
-          name: dragonfly_service
-          type: pserv
-          property: hostport
-      - key: APP_EXTERNAL_API_RATE_LIMITS_EMAIL
-        sync: false
-      - key: APP_EXTERNAL_API_RATE_LIMITS_LOCATION
-        sync: false
-    buildFilter:
-      paths:
-      - shared-kernel/**
-      - background_workers/tokenizer/**
-      - configuration/**
 
   - type: cron
     name: import_and_notify
