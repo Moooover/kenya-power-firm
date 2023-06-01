@@ -95,6 +95,49 @@ services:
       - key: APP_DATABASE__REQUIRE_SSL
         value: true
 
+  - type: cron
+    name: notification_retry
+    region: frankfurt
+    env: rust
+    buildCommand: cargo build --release --bin notification_retry
+    startCommand: cargo run --release --bin notification_retry
+    rootDir: ./rust-workspace
+    schedule: "0 0 0 1 1 ? 1970"
+    autoDeploy: false
+    envVars:
+      - key: APP_REDIS__HOST
+        sync: false
+      - key: APP_LOCATION__API_KEY
+        sync: false
+      - key: APP_EMAIL__AUTH_TOKEN
+        sync: false
+      - key: APP_EMAIL__TEMPLATE_ID
+        sync: false
+      - key: HONEY_COMB_TEAM_KEY
+        sync: false
+      - key: APP_DATABASE__HOST
+        fromDatabase:
+          name: prod
+          property: host
+      - key: APP_DATABASE__PORT
+        fromDatabase:
+          name: prod
+          property: port
+      - key: APP_DATABASE__USERNAME
+        fromDatabase:
+          name: prod
+          property: user
+      - key: APP_DATABASE__PASSWORD
+        fromDatabase:
+          name: prod
+          property: password
+      - key: APP_DATABASE__DATABASE_NAME
+        fromDatabase:
+          name: prod
+          property: database
+      - key: APP_DATABASE__REQUIRE_SSL
+        value: true
+
   - type: web
     name: kplc-alerts-api
     region: frankfurt

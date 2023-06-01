@@ -50,6 +50,14 @@ impl AffectedSubscribersDbAccess {
             .get_affected_locations_from_regions(url, regions)
             .await?;
 
+        self.affected_subscribers_from_affected_locations(locations_matched)
+            .await
+    }
+
+    pub async fn affected_subscribers_from_affected_locations(
+        &self,
+        locations_matched: Vec<AffectedLocation>,
+    ) -> anyhow::Result<HashMap<AffectedSubscriber, Vec<LocationMatchedAndLineSchedule>>> {
         let location_ids = locations_matched
             .iter()
             .map(|data| data.location_id)

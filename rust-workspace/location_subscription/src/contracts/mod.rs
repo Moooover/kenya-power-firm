@@ -7,6 +7,7 @@ use use_cases::subscriber_locations::list_subscribed_locations::{
 };
 
 pub mod get_affected_subscribers_from_import;
+pub mod get_currently_affected_subscribers;
 pub mod list_subscribed_locations;
 pub mod subscribe;
 pub mod unsubscribe;

@@ -2,6 +2,7 @@ mod db_access;
 
 use crate::contracts::get_affected_subscribers_from_import::db_access::AffectedSubscribersDbAccess;
 use crate::data_transfer::{AffectedSubscriber, LocationMatchedAndLineSchedule};
+use crate::save_and_search_for_locations::AffectedLocation;
 use entities::power_interruptions::location::FutureOrCurrentNairobiTZDateTime;
 use std::collections::HashMap;
 use url::Url;
@@ -51,5 +52,14 @@ impl AffectedSubscribersInteractor {
         }
 
         Ok(result)
+    }
+
+    #[tracing::instrument(err, level = "info")]
+    pub(crate) async fn affected_subscribers_from_locations(
+        affected_locations: Vec<AffectedLocation>,
+    ) -> anyhow::Result<HashMap<AffectedSubscriber, Vec<LocationMatchedAndLineSchedule>>> {
+        let db = AffectedSubscribersDbAccess::new();
+        db.affected_subscribers_from_affected_locations(affected_locations)
+            .await
     }
 }
