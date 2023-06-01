@@ -103,7 +103,7 @@ services:
     startCommand: cargo run --release --bin notification_retry
     rootDir: ./rust-workspace
     schedule: "0 5 31 2 *" # Feb 31st, We actually dont want this to be triggered automatically;
-    autoDeploy: false
+    autoDeploy: true
     envVars:
       - key: APP_REDIS__HOST
         sync: false
