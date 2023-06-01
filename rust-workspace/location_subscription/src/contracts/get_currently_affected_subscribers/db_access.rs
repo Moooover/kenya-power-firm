@@ -1,6 +1,6 @@
-use crate::data_transfer::{AffectedSubscriber, LocationMatchedAndLineSchedule};
+
 use crate::save_and_search_for_locations::{AffectedLocation, SaveAndSearchLocations};
-use std::collections::HashMap;
+
 
 pub struct GetCurrentlyAffectedLocations {
     db: SaveAndSearchLocations,

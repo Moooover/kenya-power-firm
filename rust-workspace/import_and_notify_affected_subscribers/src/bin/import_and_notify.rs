@@ -4,13 +4,11 @@ use location_subscription::contracts::get_affected_subscribers_from_import::Affe
 use location_subscription::contracts::get_affected_subscribers_from_import::{
     Area, County, ImportInput, Region, TimeFrame,
 };
-use location_subscription::data_transfer::{AffectedSubscriber, LocationMatchedAndLineSchedule};
-use notifications::contracts::send_notification::AffectedSubscriber as NotificationAffectedSubscriber;
-use notifications::contracts::send_notification::LocationMatchedAndLineSchedule as NotificationLocationMatchedAndLineSchedule;
-use notifications::contracts::send_notification::{
-    AffectedSubscriberWithLocations, LineWithScheduledInterruptionTime,
-};
-use std::collections::HashMap;
+
+
+
+
+
 
 use producer::producer::Producer;
 
