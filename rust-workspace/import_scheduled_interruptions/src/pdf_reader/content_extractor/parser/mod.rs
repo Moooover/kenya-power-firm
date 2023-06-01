@@ -38,6 +38,10 @@ impl Time {
             .replace("P.M", "PM")
             .replace("A.M.", "AM")
             .replace("A.M", "AM")
+            .replace(". PM", " PM")
+            .replace(". AM", " AM")
+            .replace(".PM", " PM")
+            .replace(".AM", " AM")
     }
 
     fn parse_time(&self, value: &str) -> Result<NaiveTime, ParseError> {
@@ -295,7 +299,7 @@ impl Parser {
 #[cfg(test)]
 mod tests {
     use crate::pdf_reader::content_extractor::parser::Parser;
-    use crate::pdf_reader::content_extractor::scanner::scan;
+    use crate::pdf_reader::content_extractor::scanner::{scan, Time};
 
     #[test]
     fn test_parser() {
@@ -683,5 +687,17 @@ www.kplc.co.ke
 
         println!("{:?}", parsed_results);
         assert!(parsed_results.is_ok())
+    }
+
+    #[test]
+    fn test_time_parsing() {
+        let time = Time {
+            start: "8.00. AM".to_string(),
+            end: "5.00. PM".to_string(),
+        };
+
+        let parsed_result = time.parse();
+        println!("{parsed_result:?}");
+        assert!(parsed_result.is_ok());
     }
 }
