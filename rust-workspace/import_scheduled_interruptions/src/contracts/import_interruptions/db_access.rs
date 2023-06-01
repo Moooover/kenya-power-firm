@@ -12,6 +12,7 @@ impl ImportPowerInterruptionsDbAccess {
         Self { db }
     }
 
+    #[tracing::instrument(skip(self), level = "debug")]
     pub(crate) async fn import(&self, data: &ImportInput) -> anyhow::Result<()> {
         let counties = counties::get_counties(&self).await?;
         let mut transaction = self
@@ -62,6 +63,7 @@ mod save_data {
     pub struct BlackoutScheduleId(Uuid);
 
     impl BlackoutSchedule {
+        #[tracing::instrument(skip(transaction), level = "debug")]
         async fn save_many(
             transaction: &mut sqlx::Transaction<'_, sqlx::Postgres>,
             source_id: Uuid,
@@ -108,6 +110,7 @@ mod save_data {
         }
     }
 
+    #[tracing::instrument(skip(transaction), level = "debug")]
     pub(crate) async fn execute(
         regions: &[Region],
         counties: &[DbCounty],
@@ -146,6 +149,7 @@ mod save_data {
         }
     }
 
+    #[tracing::instrument(skip(transaction), level = "debug")]
     async fn save_regions_data(
         regions: &[Region],
         counties: &[DbCounty],
@@ -196,6 +200,7 @@ mod save_data {
         Ok(())
     }
 
+    #[derive(Debug)]
     struct AreaWithId {
         id: Uuid,
         area: Area<FutureOrCurrentNairobiTZDateTime>,
@@ -250,6 +255,7 @@ mod save_data {
     }
 
     impl DbLine {
+        #[tracing::instrument(skip(transaction), level = "debug")]
         async fn save_many(
             transaction: &mut sqlx::Transaction<'_, sqlx::Postgres>,
             lines: HashSet<DbLine>,
@@ -316,6 +322,7 @@ mod counties {
     use anyhow::{anyhow, Context};
     use shared_kernel::uuid_key;
 
+    #[derive(Debug)]
     pub struct DbCountyName(String);
 
     impl From<String> for DbCountyName {
@@ -348,6 +355,7 @@ mod counties {
 
     uuid_key!(DbCountyId);
 
+    #[derive(Debug)]
     pub struct DbCounty {
         pub id: DbCountyId,
         pub name: DbCountyName,
@@ -374,6 +382,7 @@ mod counties {
         }
     }
 
+    #[tracing::instrument(skip(db_access), level = "debug")]
     pub(super) async fn get_counties(
         db_access: &ImportPowerInterruptionsDbAccess,
     ) -> anyhow::Result<Vec<DbCounty>> {

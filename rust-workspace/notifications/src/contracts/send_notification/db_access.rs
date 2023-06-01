@@ -18,7 +18,7 @@ impl AsRef<DbAccess> for SendNotificationsDbAccess {
 
 uuid_key!(NotificationStrategyId);
 
-pub trait Notification {
+pub trait Notification: std::fmt::Debug {
     fn subscriber(&self) -> AffectedSubscriber;
 
     fn locations_matched(&self) -> Vec<LocationMatchedAndLineSchedule>;

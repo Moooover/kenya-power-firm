@@ -38,6 +38,9 @@ location_subscription = { path = "../../location_subscription" }
 notifications = { path = "../../notifications" }
 location_search = { path = "../../location_search" }
 
+tracing.workspace = true
+tracing-log.workspace = true
+
 [dependencies.uuid]
 version = "1.3.0"
 features = ["v4"]

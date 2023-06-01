@@ -32,6 +32,7 @@ impl DbAccess {
         POOL_MANAGER.get().await.pool()
     }
 
+    #[tracing::instrument(skip(self), level = "debug")]
     pub(crate) async fn get_source_by_url(&self, url: &Url) -> anyhow::Result<SourceId> {
         let pool = self.pool().await;
         let source = sqlx::query!(
@@ -45,6 +46,7 @@ impl DbAccess {
         Ok(source.id.into())
     }
 
+    #[tracing::instrument(skip(self), level = "debug")]
     pub async fn find_subscriber_by_id(
         &self,
         id: SubscriberId,
@@ -72,6 +74,7 @@ impl DbAccess {
         Ok(subscriber)
     }
 
+    #[tracing::instrument(skip(self), level = "debug")]
     pub async fn get_locations_by_ids(
         &self,
         ids: HashSet<LocationId>,
@@ -113,6 +116,7 @@ pub struct DbNotificationIdempotencyKey {
 }
 
 impl DbNotificationIdempotencyKey {
+    #[tracing::instrument(skip(db), level = "debug")]
     pub async fn get_already_send_notifications(
         db: impl AsRef<DbAccess>,
         strategy_id: Uuid,
