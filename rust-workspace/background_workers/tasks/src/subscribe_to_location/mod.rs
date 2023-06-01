@@ -21,6 +21,7 @@ use crate::utils::callbacks::failure_callback;
 use crate::utils::progress_tracking::{set_progress_status, TaskStatus};
 use crate::utils::rate_limiting::GoogleAPIRateLimiter;
 
+#[tracing::instrument(skip(task), level = "debug")]
 #[celery::task(max_retries = 200, bind = true, retry_for_unexpected = false, on_failure = failure_callback)]
 pub async fn fetch_and_subscribe_to_location(
     task: &Self,

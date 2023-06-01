@@ -1,21 +1,24 @@
 mod searcheable_candidate;
 
+use crate::contracts::get_affected_subscribers_from_import::{
+    Area, Region, TimeFrame as ContractTimeFrame,
+};
 use crate::data_transfer::LineWithScheduledInterruptionTime;
 use crate::db_access::DbAccess;
+use crate::save_and_search_for_locations::searcheable_candidate::NonAcronymString;
 use anyhow::{anyhow, Context};
 use entities::locations::{ExternalLocationId, LocationId};
-use itertools::Itertools;
-use sqlx::types::Json;
-use std::collections::HashMap;
-
-use crate::contracts::get_affected_subscribers_from_import::Region;
-use crate::save_and_search_for_locations::searcheable_candidate::NonAcronymString;
-use entities::power_interruptions::location::{AreaName, NairobiTZDateTime, TimeFrame};
+use entities::power_interruptions::location::{
+    AreaName, FutureOrCurrentNairobiTZDateTime, NairobiTZDateTime, TimeFrame,
+};
 use futures::{stream::FuturesUnordered, StreamExt};
+use itertools::Itertools;
 use searcheable_candidate::SearcheableCandidates;
 use serde::Deserialize;
 use shared_kernel::uuid_key;
 use sqlx::types::chrono::{DateTime, Utc};
+use sqlx::types::Json;
+use std::collections::HashMap;
 use tracing::error;
 use url::Url;
 use uuid::Uuid;
@@ -252,6 +255,34 @@ impl SaveAndSearchLocations {
         .context("Failed to fetch the nearby_location by id")?;
 
         Ok(record.id.into())
+    }
+
+    #[tracing::instrument(err, skip(self), level = "info")]
+    pub async fn currently_affected_locations(&self) -> anyhow::Result<Vec<AffectedLocation>> {
+        let bare_results = BareAffectedLine::lines_affected_in_the_future(&self.db_access).await?;
+        let mut results = vec![];
+        for (area_name, lines) in bare_results.iter() {
+            let first_line = lines.first();
+            if let Some(first_line) = first_line {
+                let url = first_line.url.clone();
+                let area = Area {
+                    name: area_name.to_string(),
+                    time_frame: ContractTimeFrame {
+                        from: FutureOrCurrentNairobiTZDateTime::try_from(first_line.time_frame.from.clone())
+                            .map_err(|err| anyhow!(err))
+                            .with_context(|| format!("Received Date time that passed: {:?} yet the time should have been in the future", first_line.time_frame.from))?,
+                        to: FutureOrCurrentNairobiTZDateTime::try_from(first_line.time_frame.to.clone())
+                            .map_err(|err| anyhow!(err))
+                            .with_context(|| format!("Received Date time that passed: {:?} yet the time should have been in the future", first_line.time_frame.from))?,
+                    },
+                    locations: lines.iter().map(|line| line.line.clone()).collect_vec(),
+                };
+                results.extend(
+                    affected_locations_in_an_area::execute(&area, url, &self.db_access).await?,
+                );
+            }
+        }
+        Ok(results)
     }
 }
 
@@ -646,6 +677,7 @@ mod affected_locations_in_an_area {
         }
     }
 
+    #[tracing::instrument(err, skip(db), level = "info")]
     pub async fn execute(
         area: &Area,
         source_url: Url,
@@ -711,6 +743,7 @@ mod affected_locations_in_an_area {
         ))
     }
 
+    #[tracing::instrument(err, skip(db), level = "info")]
     async fn directly_affected_locations(
         db: &DbAccess,
         searcheable_area_names: &[SearcheableCandidates],
@@ -777,6 +810,7 @@ mod affected_locations_in_an_area {
         Ok(results)
     }
 
+    #[tracing::instrument(err, skip(db), level = "info")]
     async fn potentially_affected_locations(
         db: &DbAccess,
         searcheable_area_names: &[SearcheableCandidates],

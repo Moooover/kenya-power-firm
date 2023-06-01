@@ -6,6 +6,7 @@ use crate::contracts::send_notification::AffectedSubscriberWithLocations;
 pub struct EmailNotificationInteractor;
 
 impl EmailNotificationInteractor {
+    #[tracing::instrument(skip(self), level = "debug")]
     pub async fn send(
         &self,
         subscriber_with_locations: AffectedSubscriberWithLocations,
@@ -16,7 +17,6 @@ impl EmailNotificationInteractor {
         if let Some(notification) = email {
             return notification.send(&db).await;
         }
-
         Ok(())
     }
 }
@@ -64,6 +64,7 @@ mod email_notification {
                 .collect()
         }
 
+        #[tracing::instrument(skip(db_access), level = "debug")]
         pub(super) async fn generate(
             db_access: &EmailNotificationsDbAccess,
             data: AffectedSubscriberWithLocations,
@@ -125,6 +126,7 @@ mod email_notification {
                 ..data
             })))
         }
+        #[tracing::instrument(skip(self, db_access), level = "debug")]
         pub(super) async fn send(
             &self,
             db_access: &EmailNotificationsDbAccess,
@@ -220,6 +222,7 @@ mod email_notification_sender {
         }
     }
 
+    #[tracing::instrument(skip(db), level = "debug")]
     pub async fn send(
         email: EmailNotification,
         db: &EmailNotificationsDbAccess,
@@ -250,6 +253,7 @@ mod email_notification_sender {
             .await
     }
 
+    #[tracing::instrument(skip(db), level = "debug")]
     async fn generate_email_body(
         email: &EmailNotification,
         db: &EmailNotificationsDbAccess,
