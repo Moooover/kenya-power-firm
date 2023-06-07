@@ -34,16 +34,13 @@ pub enum HttpClientError {
     HTTPBuilderError(String),
 }
 
-
 struct HeadersMapGenerator(HeaderMap);
-
 
 impl HeadersMapGenerator {
     fn into_inner(self) -> HeaderMap {
         self.0
     }
 }
-
 
 impl TryFrom<HashMap<&'static str, String>> for HeadersMapGenerator {
     type Error = HttpClientError;
@@ -89,36 +86,20 @@ impl HttpClient {
         response.json::<DTO>().await.context(err_msg)
     }
 
-    pub async fn get_with_headers<DTO: DeserializeOwned>(
-        url: Url,
-        headers: HashMap<&'static str, String>,
-    ) -> Result<DTO, HttpClientError> {
-        let generator = HeadersMapGenerator::try_from(headers)?;
-        let header_map = generator.into_inner();
-        CLIENT
-            .get(url)
-            .headers(header_map)
-            .send()
-            .await
-            .context("Failed to get json response")
-            .map_err(HttpClientError::ResponseError)?
-            .json::<DTO>()
-            .await
-            .context("Failed to deserialize response")
-            .map_err(HttpClientError::ResponseError)
-    }
-
     pub async fn post_json<DTO: DeserializeOwned>(
         url: Url,
         headers: HashMap<&'static str, String>,
-        body: Value,
+        body: Option<Value>,
     ) -> Result<DTO, HttpClientError> {
         let generator = HeadersMapGenerator::try_from(headers)?;
         let header_map = generator.into_inner();
-        CLIENT
-            .post(url)
-            .headers(header_map)
-            .json(&body)
+        let reqwest_builder = CLIENT.post(url).headers(header_map);
+        let reqwest_builder = if let Some(body) = body {
+            reqwest_builder.json(&body)
+        } else {
+            reqwest_builder
+        };
+        reqwest_builder
             .send()
             .await
             .context("Failed to get json response")
