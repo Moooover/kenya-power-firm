@@ -1,11 +1,4 @@
 services:
-  - type: redis
-    name: redis-service
-    region: frankfurt
-    plan: starter
-    ipAllowList: # required - allow external connections from only these CIDR blocks
-      - source: 197.237.246.150
-        description: garden city home office
   - type: pserv
     name: dragonfly_service
     region: frankfurt

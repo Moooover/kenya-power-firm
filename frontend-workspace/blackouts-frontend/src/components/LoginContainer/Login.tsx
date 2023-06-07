@@ -3,6 +3,7 @@
 import React from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import LoginTwoToneIcon from "@mui/icons-material/LoginTwoTone";
+import PersonAddAltOutlinedIcon from "@mui/icons-material/PersonAddAltOutlined";
 import { Grid } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import Container from "@mui/material/Container";
@@ -40,6 +41,7 @@ const Login = () => {
           direction="row"
           justifyContent="center"
           alignItems="center"
+          spacing={1}
         >
           <StyledGridItem item xs={6}>
             <Fab
@@ -47,10 +49,34 @@ const Login = () => {
               color="primary"
               aria-label="login"
               size={"large"}
-              onClick={() => loginWithRedirect()}
+              onClick={() =>
+                loginWithRedirect({
+                  authorizationParams: {
+                    screen_hint: "login",
+                  },
+                })
+              }
             >
               Login
               <LoginTwoToneIcon sx={{ ml: 1 }} />
+            </Fab>
+          </StyledGridItem>
+          <StyledGridItem item xs={6}>
+            <Fab
+              variant="extended"
+              color="primary"
+              aria-label="login"
+              size={"large"}
+              onClick={() =>
+                loginWithRedirect({
+                  authorizationParams: {
+                    screen_hint: "signup",
+                  },
+                })
+              }
+            >
+              Sign up
+              <PersonAddAltOutlinedIcon sx={{ ml: 1 }} />
             </Fab>
           </StyledGridItem>
         </Grid>
