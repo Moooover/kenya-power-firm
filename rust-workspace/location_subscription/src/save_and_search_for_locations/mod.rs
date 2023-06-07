@@ -1,4 +1,5 @@
 mod searcheable_candidate;
+mod search_engine;
 
 use crate::contracts::get_affected_subscribers_from_import::{
     Area, Region, TimeFrame as ContractTimeFrame,

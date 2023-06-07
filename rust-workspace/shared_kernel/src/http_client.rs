@@ -34,6 +34,32 @@ pub enum HttpClientError {
     HTTPBuilderError(String),
 }
 
+
+struct HeadersMapGenerator(HeaderMap);
+
+
+impl HeadersMapGenerator {
+    fn into_inner(self) -> HeaderMap {
+        self.0
+    }
+}
+
+
+impl TryFrom<HashMap<&'static str, String>> for HeadersMapGenerator {
+    type Error = HttpClientError;
+
+    fn try_from(value: HashMap<&'static str, String>) -> Result<Self, Self::Error> {
+        let mut header_map = HeaderMap::new();
+
+        for (key, value) in value.into_iter() {
+            let value = HeaderValue::from_str(&value)
+                .map_err(|err| HttpClientError::HTTPBuilderError(format!("{err} {value}")))?;
+            header_map.insert(key, value);
+        }
+        Ok(Self(header_map))
+    }
+}
+
 impl HttpClient {
     async fn get(url: Url) -> anyhow::Result<Response> {
         CLIENT
@@ -63,18 +89,32 @@ impl HttpClient {
         response.json::<DTO>().await.context(err_msg)
     }
 
+    pub async fn get_with_headers<DTO: DeserializeOwned>(
+        url: Url,
+        headers: HashMap<&'static str, String>,
+    ) -> Result<DTO, HttpClientError> {
+        let generator = HeadersMapGenerator::try_from(headers)?;
+        let header_map = generator.into_inner();
+        CLIENT
+            .get(url)
+            .headers(header_map)
+            .send()
+            .await
+            .context("Failed to get json response")
+            .map_err(HttpClientError::ResponseError)?
+            .json::<DTO>()
+            .await
+            .context("Failed to deserialize response")
+            .map_err(HttpClientError::ResponseError)
+    }
+
     pub async fn post_json<DTO: DeserializeOwned>(
         url: Url,
         headers: HashMap<&'static str, String>,
         body: Value,
     ) -> Result<DTO, HttpClientError> {
-        let mut header_map = HeaderMap::new();
-
-        for (key, value) in headers.into_iter() {
-            let value = HeaderValue::from_str(&value)
-                .map_err(|err| HttpClientError::HTTPBuilderError(format!("{err} {value}")))?;
-            header_map.insert(key, value);
-        }
+        let generator = HeadersMapGenerator::try_from(headers)?;
+        let header_map = generator.into_inner();
         CLIENT
             .post(url)
             .headers(header_map)
