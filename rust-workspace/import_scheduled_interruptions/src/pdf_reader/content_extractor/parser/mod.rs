@@ -287,7 +287,34 @@ impl Parser {
         Ok(results
             .into_iter()
             .filter(|s| !s.trim().is_empty())
+            .flat_map(|location| self.extract_and_construct_location_phases(location))
             .collect())
+    }
+
+    /// Eg: "Dandora Phase 1 & 2" becomes -> ["Dandora Phase 1", "Dandora Phase 2"]
+    fn extract_and_construct_location_phases(&self, location: String) -> Vec<String> {
+        lazy_static! {
+            static ref PHASE: Regex =
+                Regex::new(r"\d{1,}[\n\r\s]+[,&]+[\n\r\s]+\d{1,}").expect("PHASE regex to compile");
+            static ref PHASE_NAME: Regex =
+                Regex::new(r"([a-zA-Z]+[\n\r\s]+)").expect("PHASE_NAME regex to compile");
+            static ref PHASE_NUMBERS: Regex =
+                Regex::new(r"\d{1,}").expect("PHASE_NUMBERS regex to compile");
+        }
+        if PHASE.is_match(&location) {
+            let phase_name = PHASE_NAME
+                .captures_iter(&location)
+                .into_iter()
+                .map(|capture| (capture[0]).to_string())
+                .collect::<String>();
+
+            return PHASE_NUMBERS
+                .captures_iter(&location)
+                .into_iter()
+                .map(|capture| format!("{} {}", &phase_name.trim(), &capture[0].trim()))
+                .collect::<Vec<_>>();
+        }
+        vec![location]
     }
 
     fn digit_after_comma(&mut self) -> bool {
