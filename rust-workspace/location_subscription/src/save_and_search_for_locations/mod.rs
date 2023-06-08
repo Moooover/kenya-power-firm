@@ -1,5 +1,5 @@
-mod searcheable_candidate;
 mod search_engine;
+mod searcheable_candidate;
 
 use crate::contracts::get_affected_subscribers_from_import::{
     Area, Region, TimeFrame as ContractTimeFrame,
@@ -718,12 +718,23 @@ mod affected_locations_in_an_area {
                 )
                 .collect::<HashMap<_, _>>();
 
+        let mapping_of_searcheable_candidate_to_candidate =
+            mapping_of_searcheable_candidate_to_original_candidate
+                .iter()
+                .flat_map(|(searcheable_candidates, original_candidate)| {
+                    searcheable_candidates
+                        .inner()
+                        .into_iter()
+                        .map(|candidate| (candidate, original_candidate.to_string()))
+                })
+                .collect::<HashMap<_, _>>();
+
         let directly_affected_locations = directly_affected_locations(
             db,
             &searcheable_area_names,
             &searcheable_candidates,
             time_frame.clone(),
-            &mapping_of_searcheable_candidate_to_original_candidate,
+            &mapping_of_searcheable_candidate_to_candidate,
             source_url.clone(),
         )
         .await?;
@@ -733,7 +744,7 @@ mod affected_locations_in_an_area {
             &searcheable_area_names,
             &searcheable_candidates,
             time_frame.clone(),
-            &mapping_of_searcheable_candidate_to_original_candidate,
+            &mapping_of_searcheable_candidate_to_candidate,
             source_url,
         )
         .await?;
@@ -750,10 +761,7 @@ mod affected_locations_in_an_area {
         searcheable_area_names: &[SearcheableCandidates],
         searcheable_candidates: &[String],
         time_frame: TimeFrame,
-        mapping_of_searcheable_candidate_to_original_candidate: &HashMap<
-            SearcheableCandidates,
-            &str,
-        >,
+        mapping_of_searcheable_candidate_to_candidate: &HashMap<String, String>,
         source: Url,
     ) -> anyhow::Result<Vec<AffectedLocation>> {
         let pool = db.pool().await;
@@ -781,16 +789,7 @@ mod affected_locations_in_an_area {
             primary_locations.push(result.context("Failed to get primary search results from db")?);
         }
         let primary_locations = primary_locations.into_iter().flatten().collect_vec();
-        let mapping_of_searcheable_candidate_to_candidate =
-            mapping_of_searcheable_candidate_to_original_candidate
-                .iter()
-                .flat_map(|(searcheable_candidate, original_candidate)| {
-                    searcheable_candidate
-                        .inner()
-                        .into_iter()
-                        .map(|candidate| (candidate, original_candidate.to_string()))
-                })
-                .collect::<HashMap<_, _>>();
+
         let results = primary_locations
             .into_iter()
             .filter_map(|location| {
@@ -817,10 +816,7 @@ mod affected_locations_in_an_area {
         searcheable_area_names: &[SearcheableCandidates],
         searcheable_candidates: &[String],
         time_frame: TimeFrame,
-        mapping_of_searcheable_candidate_to_original_candidate: &HashMap<
-            SearcheableCandidates,
-            &str,
-        >,
+        mapping_of_searcheable_candidate_to_candidate: &HashMap<String, String>,
         source: Url,
     ) -> anyhow::Result<Vec<AffectedLocation>> {
         let searcheable_area_names = searcheable_area_names
@@ -859,17 +855,6 @@ mod affected_locations_in_an_area {
             .iter()
             .map(|data| (data.location_id, data.candidate.clone()))
             .collect::<HashMap<_, _>>();
-
-        let mapping_of_searcheable_candidate_to_candidate =
-            mapping_of_searcheable_candidate_to_original_candidate
-                .iter()
-                .flat_map(|(searcheable_candidates, original_candidate)| {
-                    searcheable_candidates
-                        .inner()
-                        .into_iter()
-                        .map(|candidate| (candidate, original_candidate.to_string()))
-                })
-                .collect::<HashMap<_, _>>();
 
         let results = nearby_locations
             .iter()

@@ -1,5 +1,6 @@
 use anyhow::{Context, Ok};
 use entities::locations::LocationId;
+use itertools::Itertools;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::Value;
 
@@ -34,10 +35,15 @@ impl SearchEngine {
 
     pub(super) async fn search<DTO: DeserializeOwned>(
         &self,
-        index: impl ToString,
+        index: Vec<impl ToString>,
         query: impl ToString,
     ) -> anyhow::Result<DTO> {
-        self.client.get(index.to_string(), query.to_string()).await
+        let indexes = index.into_iter().map(|data| data.to_string()).collect_vec();
+        self.client.get(indexes, query.to_string()).await
+    }
+
+    pub async fn import(&self, index: impl ToString, data: Vec<Value>) -> anyhow::Result<()> {
+        self.client.import(index.to_string(), data).await
     }
 }
 
@@ -45,7 +51,7 @@ mod algolia_search_engine {
     use anyhow::{anyhow, bail, Context};
 
     use itertools::Itertools;
-    use serde::de::DeserializeOwned;
+    use serde::{de::DeserializeOwned, Deserialize, Serialize};
     use serde_json::Value;
     use shared_kernel::non_empty_string;
     use shared_kernel::{http_client::HttpClient, string_key};
@@ -142,8 +148,7 @@ mod algolia_search_engine {
             let mut errors = vec![];
             for url in urls {
                 let result =
-                    HttpClient::post_json::<DTO>(url, self.headers.inner(), Some(body.clone()))
-                        .await;
+                    HttpClient::post_json::<DTO>(url, self.headers.inner(), body.clone()).await;
                 match result {
                     Ok(res) => return Ok(res),
                     Err(err) => {
@@ -161,10 +166,13 @@ mod algolia_search_engine {
 
         pub async fn get<DTO: DeserializeOwned>(
             &self,
-            index: impl TryInto<IndexName, Error = String>,
+            indexes: Vec<String>,
             query: impl TryInto<Query, Error = String>,
         ) -> Result<DTO, anyhow::Error> {
-            let index = index.try_into().map_err(|err| anyhow!(err))?;
+            let indexes = indexes
+                .into_iter()
+                .map(|data| IndexName::try_from(data).map_err(|err| anyhow!(err)))
+                .collect::<Result<Vec<_>, _>>()?;
             let query = query.try_into().map_err(|err| anyhow!(err))?;
 
             let urls = self
@@ -173,15 +181,39 @@ mod algolia_search_engine {
                 .iter()
                 .map(|host| {
                     Url::parse_with_params(
-                        &format!("https://{}/1/indexes/{}/query", host, index),
+                        &format!("https://{}/1/indexes/*/queries", host),
                         &[("query", query.clone())],
                     )
                     .context("Failed to parse url")
                 })
                 .collect::<Result<Vec<_>, anyhow::Error>>()?;
+
+            #[derive(Serialize, Deserialize, Debug)]
+
+            struct RequestIndexWithParam {
+                #[serde(rename = "indexName")]
+                index_name: String,
+                params: String,
+            }
+            #[derive(Serialize, Deserialize, Debug)]
+            struct RequestData {
+                requests: Vec<RequestIndexWithParam>,
+            }
+
+            let body = RequestData {
+                requests: indexes
+                    .iter()
+                    .map(|index_name| RequestIndexWithParam {
+                        index_name: index_name.to_string(),
+                        params: format!("query={}", query),
+                    })
+                    .collect_vec(),
+            };
+            let body = serde_json::to_value(body).context("Failed to turn to valid json")?;
             let mut errors = vec![];
             for url in urls {
-                let result = HttpClient::post_json::<DTO>(url, self.headers.inner(), None).await;
+                let result =
+                    HttpClient::post_json::<DTO>(url, self.headers.inner(), body.clone()).await;
                 match result {
                     Ok(res) => return Ok(res),
                     Err(err) => {
@@ -191,10 +223,83 @@ mod algolia_search_engine {
                 }
             }
             error!(
-                "Errors from index {} & query {} are {:?}",
-                &index, &query, errors
+                "Errors from indexes {:?} & query {} are {:?}",
+                &indexes, &query, errors
             );
             bail!("Failed to return response from algolia")
+        }
+
+        // https://www.algolia.com/doc/rest-api/search/#batch-write-operations
+        pub async fn import(
+            &self,
+            index: impl TryInto<IndexName, Error = String>,
+            data: Vec<Value>,
+        ) -> anyhow::Result<()> {
+            let index = index.try_into().map_err(|err| anyhow!(err))?;
+            let urls = self
+                .hosts
+                .write_hosts
+                .iter()
+                .map(|host| {
+                    Url::parse(&format!("https://{}/1/indexes/{}/batch", host, index))
+                        .context("Failed to parse url")
+                })
+                .collect::<Result<Vec<_>, anyhow::Error>>()?;
+
+            #[derive(Serialize, Debug)]
+            enum RequestAction {
+                #[serde(rename = "addObject")]
+                AddObject,
+            }
+
+            #[derive(Serialize, Debug)]
+            struct Request {
+                action: RequestAction,
+                body: Value,
+            }
+
+            #[derive(Serialize, Debug)]
+            struct RequestBody {
+                requests: Vec<Request>,
+            }
+
+            let mut errors = vec![];
+
+            for chunk in data.chunks(100) {
+                let request = RequestBody {
+                    requests: chunk
+                        .iter()
+                        .map(|val| Request {
+                            action: RequestAction::AddObject,
+                            body: val.clone(),
+                        })
+                        .collect_vec(),
+                };
+                let request = serde_json::to_value(request).context("Failed to convert to json")?;
+                for url in urls.iter() {
+                    let result = HttpClient::post_json::<Value>(
+                        url.clone(),
+                        self.headers.inner(),
+                        request.clone(),
+                    )
+                    .await;
+                    if let Err(err) = result {
+                        warn!("failed to get response {err:?}");
+                        errors.push(err);
+                    }
+                }
+            }
+
+            if !errors.is_empty() {
+                error!(
+                    "Errors from index {:?} during import are {:?}",
+                    &index, errors
+                );
+
+                bail!("Failed to import")
+            }
+
+            Ok(())
         }
     }
 }
