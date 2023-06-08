@@ -240,7 +240,7 @@ mod email_notification_sender {
             request_id: String,
         }
 
-        let response = HttpClient::post_json::<Response>(url, headers, Some(body)).await?;
+        let response = HttpClient::post_json::<Response>(url, headers, body).await?;
         db.save_email_notification_sent(email, response.request_id)
             .await
     }

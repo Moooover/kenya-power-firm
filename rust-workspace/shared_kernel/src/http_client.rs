@@ -89,17 +89,14 @@ impl HttpClient {
     pub async fn post_json<DTO: DeserializeOwned>(
         url: Url,
         headers: HashMap<&'static str, String>,
-        body: Option<Value>,
+        body: Value,
     ) -> Result<DTO, HttpClientError> {
         let generator = HeadersMapGenerator::try_from(headers)?;
         let header_map = generator.into_inner();
-        let reqwest_builder = CLIENT.post(url).headers(header_map);
-        let reqwest_builder = if let Some(body) = body {
-            reqwest_builder.json(&body)
-        } else {
-            reqwest_builder
-        };
-        reqwest_builder
+        CLIENT
+            .post(url)
+            .headers(header_map)
+            .json(&body)
             .send()
             .await
             .context("Failed to get json response")

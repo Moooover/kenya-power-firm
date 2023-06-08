@@ -1,21 +1,31 @@
-use anyhow::{Context, Ok};
 use entities::locations::LocationId;
 use itertools::Itertools;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::Value;
+use std::collections::HashMap;
+use std::fmt::Debug;
 
 use self::algolia_search_engine::AlgoliaClient;
 
-pub struct SearchEngine {
-    client: AlgoliaClient,
+pub struct DirectlyAffectedLocationsSearchEngine {
+    search_engine: SearchEngine,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct SearchEngineLocationInput {
-    pub id: LocationId,
-    pub name: String,
-    pub address: String,
-    pub api_response: Value,
+impl DirectlyAffectedLocationsSearchEngine {
+    pub fn new() -> Self {
+        Self {
+            search_engine: SearchEngine::new(),
+        }
+    }
+
+    #[tracing::instrument(err, skip(self), level = "info")]
+    pub async fn search(&self, items: Vec<String>) -> anyhow::Result<HashMap<String, LocationId>> {
+        todo!()
+    }
+}
+
+pub struct SearchEngine {
+    client: AlgoliaClient,
 }
 
 impl SearchEngine {
@@ -25,24 +35,31 @@ impl SearchEngine {
         }
     }
 
-    pub(super) async fn save_object<DTO: DeserializeOwned>(
+    #[tracing::instrument(err, skip(self), level = "info")]
+    pub async fn save_object<DTO: DeserializeOwned>(
         &self,
-        index: impl ToString,
+        index: impl ToString + Debug,
         body: Value,
     ) -> anyhow::Result<DTO> {
         self.client.post::<DTO>(index.to_string(), body).await
     }
 
-    pub(super) async fn search<DTO: DeserializeOwned>(
+    #[tracing::instrument(err, skip(self), level = "info")]
+    pub async fn search<DTO: DeserializeOwned>(
         &self,
-        index: Vec<impl ToString>,
-        query: impl ToString,
+        index: Vec<impl ToString + Debug>,
+        query: impl ToString + Debug,
     ) -> anyhow::Result<DTO> {
         let indexes = index.into_iter().map(|data| data.to_string()).collect_vec();
         self.client.get(indexes, query.to_string()).await
     }
 
-    pub async fn import(&self, index: impl ToString, data: Vec<Value>) -> anyhow::Result<()> {
+    #[tracing::instrument(err, skip(self), level = "info")]
+    pub async fn import(
+        &self,
+        index: impl ToString + Debug,
+        data: Vec<Value>,
+    ) -> anyhow::Result<()> {
         self.client.import(index.to_string(), data).await
     }
 }
@@ -55,7 +72,7 @@ mod algolia_search_engine {
     use serde_json::Value;
     use shared_kernel::non_empty_string;
     use shared_kernel::{http_client::HttpClient, string_key};
-    use std::{collections::HashMap, iter};
+    use std::{collections::HashMap, fmt::Debug, iter};
     use tracing::{error, warn};
     use url::Url;
 
@@ -130,9 +147,10 @@ mod algolia_search_engine {
             }
         }
 
+        #[tracing::instrument(err, skip(self), level = "info")]
         pub async fn post<DTO: DeserializeOwned>(
             &self,
-            index: impl TryInto<IndexName, Error = String>,
+            index: impl TryInto<IndexName, Error = String> + Debug,
             body: Value,
         ) -> Result<DTO, anyhow::Error> {
             let index = index.try_into().map_err(|err| anyhow!(err))?;
@@ -164,10 +182,11 @@ mod algolia_search_engine {
             bail!("Failed to return response from algolia")
         }
 
+        #[tracing::instrument(err, skip(self), level = "info")]
         pub async fn get<DTO: DeserializeOwned>(
             &self,
             indexes: Vec<String>,
-            query: impl TryInto<Query, Error = String>,
+            query: impl TryInto<Query, Error = String> + Debug,
         ) -> Result<DTO, anyhow::Error> {
             let indexes = indexes
                 .into_iter()
@@ -230,9 +249,10 @@ mod algolia_search_engine {
         }
 
         // https://www.algolia.com/doc/rest-api/search/#batch-write-operations
+        #[tracing::instrument(err, skip(self), level = "info")]
         pub async fn import(
             &self,
-            index: impl TryInto<IndexName, Error = String>,
+            index: impl TryInto<IndexName, Error = String> + Debug,
             data: Vec<Value>,
         ) -> anyhow::Result<()> {
             let index = index.try_into().map_err(|err| anyhow!(err))?;

@@ -33,7 +33,7 @@ macro_rules! string_key {
 
         impl std::fmt::Display for $TypeName {
             fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-                self.0.fmt(f)
+                std::fmt::Display::fmt(&self.0, f)
             }
         }
 
