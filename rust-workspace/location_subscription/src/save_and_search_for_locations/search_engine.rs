@@ -19,13 +19,35 @@ struct LocationDTO {
     pub api_response: serde_json::Value,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
-struct NearbyLocationDTO {
-    pub id: NearbyLocationId,
-    #[serde(rename = "objectID")]
-    pub object_id: NearbyLocationId,
-    pub location_id: LocationId,
-    pub api_response: serde_json::Value,
+pub mod save_primary_location {
+    use anyhow::Context;
+    use entities::locations::{ExternalLocationId, LocationId};
+
+    use crate::save_and_search_for_locations::search_engine::{LocationDTO, SearchEngine};
+    pub const PRIMARY_LOCATIONS_INDEX: &str = "primary_locations";
+
+    #[tracing::instrument(err, level = "info")]
+    pub async fn execute(
+        id: LocationId,
+        name: String,
+        external_id: ExternalLocationId,
+        address: String,
+        api_response: serde_json::Value,
+    ) -> anyhow::Result<()> {
+        let location = LocationDTO {
+            id,
+            object_id: id,
+            name,
+            external_id,
+            address,
+            api_response,
+        };
+        let body = serde_json::to_value(location).context("Failed to convert to json")?;
+        let search_engine = SearchEngine::new();
+        search_engine
+            .save_object(PRIMARY_LOCATIONS_INDEX, body)
+            .await
+    }
 }
 
 pub mod directly_affected_area_locations {
@@ -37,8 +59,10 @@ pub mod directly_affected_area_locations {
 
     use crate::save_and_search_for_locations::searcheable_candidate::SearcheableAreaName;
 
-    use super::{LocationDTO, SearchEngine as SearchEngineInner};
-    const PRIMARY_LOCATIONS_INDEX: &str = "primary_locations";
+    use super::{
+        save_primary_location::PRIMARY_LOCATIONS_INDEX, LocationDTO,
+        SearchEngine as SearchEngineInner,
+    };
 
     pub struct DirectlyAffectedLocationsSearchEngine {
         search_engine: SearchEngineInner,
@@ -98,6 +122,44 @@ pub mod directly_affected_area_locations {
     }
 }
 
+pub mod save_nearby_location {
+    use anyhow::Context;
+    use entities::locations::LocationId;
+
+    use crate::save_and_search_for_locations::NearbyLocationId;
+
+    pub const NEARBY_LOCATIONS_INDEX: &str = "nearby_locations";
+
+    use super::{NearbyLocationDTO, SearchEngine};
+
+    #[tracing::instrument(err, level = "info")]
+    pub async fn execute(
+        primary_location: LocationId,
+        api_response: serde_json::Value,
+        nearby_location_id: NearbyLocationId,
+    ) -> anyhow::Result<()> {
+        let data = NearbyLocationDTO {
+            id: nearby_location_id,
+            object_id: nearby_location_id,
+            location_id: primary_location,
+            api_response,
+        };
+        let body = serde_json::to_value(data).context("Failed to convert to json")?;
+        let search_engine = SearchEngine::new();
+        search_engine
+            .save_object(NEARBY_LOCATIONS_INDEX, body)
+            .await
+    }
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct NearbyLocationDTO {
+    pub id: NearbyLocationId,
+    #[serde(rename = "objectID")]
+    pub object_id: NearbyLocationId,
+    pub location_id: LocationId,
+    pub api_response: serde_json::Value,
+}
 pub mod potentially_affected_area_locations {
     use std::collections::HashMap;
 
@@ -107,9 +169,10 @@ pub mod potentially_affected_area_locations {
 
     use crate::save_and_search_for_locations::searcheable_candidate::SearcheableAreaName;
 
-    use super::{NearbyLocationDTO, SearchEngine as SearchEngineInner};
-
-    const NEARBY_LOCATIONS_INDEX: &str = "primary_locations";
+    use super::{
+        save_nearby_location::NEARBY_LOCATIONS_INDEX, NearbyLocationDTO,
+        SearchEngine as SearchEngineInner,
+    };
 
     pub struct NearbyLocationsSearchEngine {
         search_engine: SearchEngineInner,
@@ -181,12 +244,12 @@ impl SearchEngine {
     }
 
     #[tracing::instrument(err, skip(self), level = "info")]
-    pub async fn save_object<DTO: DeserializeOwned>(
+    pub async fn save_object(
         &self,
         index: impl ToString + Debug,
         body: Value,
-    ) -> anyhow::Result<DTO> {
-        self.client.post::<DTO>(index.to_string(), body).await
+    ) -> anyhow::Result<()> {
+        self.client.post(index.to_string(), body).await
     }
 
     #[tracing::instrument(err, skip(self), level = "info")]
@@ -261,6 +324,16 @@ mod algolia_search_engine {
         }
     }
 
+    #[derive(Deserialize)]
+    struct PostResponse {
+        #[serde(rename = "updatedAt")]
+        updated_at: String,
+        #[serde(rename = "taskID")]
+        task_id: u32,
+        #[serde(rename = "objectID")]
+        object_id: String,
+    }
+
     struct AlgoliaHeaders(HashMap<&'static str, String>);
 
     impl AlgoliaHeaders {
@@ -297,11 +370,11 @@ mod algolia_search_engine {
         }
 
         #[tracing::instrument(err, skip(self), level = "info")]
-        pub async fn post<DTO: DeserializeOwned>(
+        pub async fn post(
             &self,
             index: impl TryInto<IndexName, Error = String> + Debug,
             body: Value,
-        ) -> Result<DTO, anyhow::Error> {
+        ) -> anyhow::Result<()> {
             let index = index.try_into().map_err(|err| anyhow!(err))?;
             let urls = self
                 .hosts
@@ -313,11 +386,13 @@ mod algolia_search_engine {
                 })
                 .collect::<Result<Vec<_>, anyhow::Error>>()?;
             let mut errors = vec![];
+
             for url in urls {
                 let result =
-                    HttpClient::post_json::<DTO>(url, self.headers.inner(), body.clone()).await;
+                    HttpClient::post_json::<PostResponse>(url, self.headers.inner(), body.clone())
+                        .await;
                 match result {
-                    Ok(res) => return Ok(res),
+                    Ok(progress) => return self.post_progress(index, progress).await,
                     Err(err) => {
                         warn!("failed to get response from POST request {:?}", err);
                         errors.push(err)
@@ -329,6 +404,64 @@ mod algolia_search_engine {
                 &index, errors
             );
             bail!("Failed to return response from algolia")
+        }
+
+        async fn post_progress(
+            &self,
+            index: IndexName,
+            progress: PostResponse,
+        ) -> anyhow::Result<()> {
+            let urls = self
+                .hosts
+                .read_hosts
+                .iter()
+                .map(|read_host| {
+                    Url::parse(&format!(
+                        "https://{}/1/indexes/{}/task/{}",
+                        read_host, &index, progress.task_id
+                    ))
+                    .context("Failed to parse url")
+                })
+                .collect::<Result<Vec<_>, anyhow::Error>>()?;
+
+            #[derive(Deserialize)]
+            enum Status {
+                #[serde(rename = "published")]
+                Published,
+                #[serde(rename = "notPublished")]
+                NotPublished,
+            }
+            #[derive(Deserialize)]
+            struct TaskResponse {
+                status: Status,
+            }
+            let mut errors = vec![];
+            for url in urls {
+                loop {
+                    let response = HttpClient::get_json::<TaskResponse>(url.clone()).await;
+                    match response {
+                        Ok(data) if matches!(data.status, Status::Published) => return Ok(()),
+                        Ok(_) => {
+                            continue;
+                        }
+                        Err(err) => {
+                            error!("Error when checking status of task {}", &err);
+                            errors.push(err);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            error!(
+                "All errors {:?} from checking status of task = {:?}",
+                &errors, &index
+            );
+            bail!(
+                "Failed to get status of task {}. Errors {:?}",
+                &index,
+                &errors
+            )
         }
 
         #[tracing::instrument(err, skip(self), level = "info")]
@@ -379,6 +512,7 @@ mod algolia_search_engine {
             };
             let body = serde_json::to_value(body).context("Failed to turn to valid json")?;
             let mut errors = vec![];
+
             for url in urls {
                 let result =
                     HttpClient::post_json::<DTO>(url, self.headers.inner(), body.clone()).await;

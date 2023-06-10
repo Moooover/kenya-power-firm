@@ -76,11 +76,11 @@ impl SaveAndSearchLocations {
             INSERT INTO location.locations (name, external_id, address, sanitized_address, external_api_response) 
             VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING
             ",
-            location.name,
+            &location.name,
             external_id,
             address,
             sanitized_address.as_ref(),
-            Json(location.api_response) as _
+            Json(location.api_response.clone()) as _
         )
         .execute(pool.as_ref())
         .await
@@ -95,8 +95,16 @@ impl SaveAndSearchLocations {
         .fetch_one(pool.as_ref())
         .await
         .context("Failed to get inserted location")?;
-
-        Ok(record.id.into())
+        let id = record.id.into();
+        search_engine::save_primary_location::execute(
+            id,
+            location.name,
+            external_id.into(),
+            sanitized_address.to_string(),
+            location.api_response,
+        )
+        .await?;
+        Ok(id)
     }
 
     #[tracing::instrument(err, skip(self), level = "info")]
@@ -239,7 +247,7 @@ impl SaveAndSearchLocations {
             ",
             url.to_string(),
             primary_location.inner(),
-            Json(api_response) as _
+            Json(api_response.clone()) as _
         )
         .execute(pool.as_ref())
         .await
@@ -254,8 +262,14 @@ impl SaveAndSearchLocations {
         .fetch_one(pool.as_ref())
         .await
         .context("Failed to fetch the nearby_location by id")?;
-
-        Ok(record.id.into())
+        let nearby_location_id = record.id.into();
+        search_engine::save_nearby_location::execute(
+            primary_location,
+            api_response,
+            nearby_location_id,
+        )
+        .await?;
+        Ok(nearby_location_id)
     }
 
     #[tracing::instrument(err, skip(self), level = "info")]
@@ -455,6 +469,7 @@ mod directly_affected_location {
     use super::search_engine;
     use anyhow::anyhow;
 
+    #[tracing::instrument(err, skip(db), level = "info")]
     pub(super) async fn execute(
         db: &DbAccess,
         location_id: LocationId,
@@ -471,6 +486,7 @@ mod directly_affected_location {
         Ok(None)
     }
 
+    #[tracing::instrument(err, skip(db), level = "info")]
     async fn directly_affected_location(
         db: &DbAccess,
         location_id: LocationId,
@@ -530,6 +546,7 @@ mod directly_affected_location {
         }
         Ok(None)
     }
+    #[tracing::instrument(err, skip(db), level = "info")]
     async fn get_primary_location_search_result(
         location_id: LocationId,
         area_name: &AreaName,
@@ -589,6 +606,7 @@ mod potentially_affected_location {
     use entities::power_interruptions::location::AreaName;
     use itertools::Itertools;
 
+    #[tracing::instrument(err, skip(db), level = "info")]
     pub async fn execute(
         db: &DbAccess,
         location_id: LocationId,
@@ -606,6 +624,7 @@ mod potentially_affected_location {
         Ok(None)
     }
 
+    #[tracing::instrument(err, skip(db), level = "info")]
     async fn potentially_affected_location(
         db: &DbAccess,
         location_id: LocationId,
