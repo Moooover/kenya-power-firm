@@ -150,7 +150,7 @@ impl<'a> Scanner<'a> {
         ]);
         let token = match self.current_lexeme.as_ref() {
             "DATE:" | "DATE;" => Token::Date(self.date()),
-            "TIME" | "TIME:" | "TIME;" => Token::Time(self.time()),
+            "TIME" | "TIME:" | "TIME;" | "TIME." => Token::Time(self.time()),
             // ARERA: is a typo that came from this source https://www.kplc.co.ke/img/full/Interruption%20Notices%20-%2018.05.2022.pdf
             "AREA:" | "AREA;" | "ARERA:" => Token::Area(self.area()),
             END_OF_LOCATIONS => Token::Keyword(KeyWords::EndOfAreaLocations),
