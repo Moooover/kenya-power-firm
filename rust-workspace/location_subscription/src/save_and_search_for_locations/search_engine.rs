@@ -426,10 +426,10 @@ mod algolia_search_engine {
         }
     }
 
-    #[derive(Deserialize)]
+    #[derive(Deserialize, Debug)]
     struct PostResponse {
         #[serde(rename = "taskID")]
-        task_id: u32,
+        task_id: u64,
     }
 
     struct AlgoliaHeaders(HashMap<&'static str, String>);
@@ -520,44 +520,59 @@ mod algolia_search_engine {
                 })
                 .collect::<Result<Vec<_>, anyhow::Error>>()?;
 
-            #[derive(Deserialize)]
+            #[derive(Deserialize, Debug)]
             enum Status {
                 #[serde(rename = "published")]
                 Published,
                 #[serde(rename = "notPublished")]
                 NotPublished,
             }
-            #[derive(Deserialize)]
+            #[derive(Deserialize, Debug)]
             struct TaskResponse {
                 status: Status,
             }
             let mut errors = vec![];
             for url in urls {
-                loop {
-                    let response = HttpClient::get_json::<TaskResponse>(url.clone()).await;
+                println!("{url}");
+                let maybe_err = loop {
+                    let response = HttpClient::get_json_with_headers::<TaskResponse>(
+                        url.clone(),
+                        self.headers.inner(),
+                    )
+                    .await;
                     match response {
-                        Ok(data) if matches!(data.status, Status::Published) => return Ok(()),
+                        Ok(data) if matches!(data.status, Status::Published) => {
+                            break None;
+                        }
                         Ok(_) => {
                             continue;
                         }
                         Err(err) => {
                             error!("Error when checking status of task {}", &err);
-                            errors.push(err);
-                            break;
+                            break Some(err);
                         }
                     }
+                };
+                if let Some(err) = maybe_err {
+                    errors.push(err);
+                } else {
+                    break;
                 }
             }
 
-            error!(
-                "All errors {:?} from checking status of task = {:?}",
-                &errors, &index
-            );
-            bail!(
-                "Failed to get status of task {}. Errors {:?}",
-                &index,
-                &errors
-            )
+            if !errors.is_empty() {
+                error!(
+                    "All errors {:?} from checking status of task = {:?}",
+                    &errors, &index
+                );
+                bail!(
+                    "Failed to get status of task {}. Errors {:?}",
+                    &index,
+                    &errors
+                )
+            }
+
+            Ok(())
         }
 
         #[tracing::instrument(err, skip(self), level = "info")]

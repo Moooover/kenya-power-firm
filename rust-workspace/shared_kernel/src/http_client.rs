@@ -86,6 +86,23 @@ impl HttpClient {
         response.json::<DTO>().await.context(err_msg)
     }
 
+    pub async fn get_json_with_headers<DTO: DeserializeOwned>(
+        url: Url,
+        headers: HashMap<&'static str, String>,
+    ) -> anyhow::Result<DTO> {
+        let generator = HeadersMapGenerator::try_from(headers)?;
+        let header_map = generator.into_inner();
+
+        let response = CLIENT
+            .get(url.clone())
+            .headers(header_map)
+            .send()
+            .await
+            .with_context(|| format!("Failed to fetch request from {url}"))?;
+        let err_msg = format!("Failed to deserialize response {response:?}");
+        response.json::<DTO>().await.context(err_msg)
+    }
+
     pub async fn post_json<DTO: DeserializeOwned>(
         url: Url,
         headers: HashMap<&'static str, String>,
