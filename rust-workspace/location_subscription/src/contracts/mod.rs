@@ -11,6 +11,7 @@ pub mod get_currently_affected_subscribers;
 pub mod list_subscribed_locations;
 pub mod subscribe;
 pub mod unsubscribe;
+pub mod import_locations_to_search_engine;
 
 #[derive(Clone)]
 pub struct LocationSubscriptionSubSystem;

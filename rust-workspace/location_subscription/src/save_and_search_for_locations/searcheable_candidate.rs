@@ -210,6 +210,30 @@ impl SearcheableCandidateInner {
     }
 }
 
+pub struct SearcheableAreaName(Vec<String>);
+
+impl SearcheableAreaName {
+    pub fn new(area: &AreaName) -> Self {
+        let area_name = area.as_ref().replace("AREA", "");
+        // an areaName can have this format `MUTHAIGA & BALOZI ESTATE`  with amperstand
+        // or this format `SEWAGE, GITHUNGURI, EASTERN BYPASS` with comma;
+        if area_name.contains(',') {
+            return Self(
+                area_name
+                    .split(',')
+                    .map(|item| item.to_owned())
+                    .collect::<Vec<_>>(),
+            );
+        }
+
+        Self(area_name.split('&').map(|item| item.to_owned()).collect())
+    }
+
+    pub fn into_inner(self) -> Vec<String> {
+        self.0
+    }
+}
+
 #[derive(Debug, Eq, PartialEq, Hash, Clone)]
 pub struct SearcheableCandidates(SearcheableCandidateInner);
 
@@ -229,19 +253,11 @@ impl SearcheableCandidates {
 
 impl SearcheableCandidates {
     pub fn from_area_name(area: &AreaName) -> Vec<Self> {
-        let area_name = area.as_ref().replace("AREA", "");
-        // an areaName can have this format `MUTHAIGA & BALOZI ESTATE`  with amperstand
-        // or this format `SEWAGE, GITHUNGURI, EASTERN BYPASS` with comma;
-        if area_name.contains(',') {
-            return area_name
-                .split(',')
-                .map(SearcheableCandidates::from)
-                .collect_vec();
-        }
-
-        return area_name
-            .split('&')
-            .map(SearcheableCandidates::from)
+        let searcheable_area = SearcheableAreaName::new(area);
+        return searcheable_area
+            .into_inner()
+            .iter()
+            .map(|data| SearcheableCandidates::from(data.as_ref()))
             .collect_vec();
     }
 }
