@@ -10,6 +10,7 @@ use super::NearbyLocationId;
 
 #[derive(Debug, Deserialize, Serialize)]
 struct LocationDTO {
+    pub id: LocationId,
     #[serde(rename = "objectID")]
     pub object_id: LocationId,
     pub name: String,
@@ -20,6 +21,7 @@ struct LocationDTO {
 
 #[derive(Debug, Deserialize, Serialize)]
 struct NearbyLocationDTO {
+    pub id: NearbyLocationId,
     #[serde(rename = "objectID")]
     pub object_id: NearbyLocationId,
     pub location_id: LocationId,

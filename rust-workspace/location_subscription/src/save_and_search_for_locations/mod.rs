@@ -439,6 +439,8 @@ struct DbLocationSearchResults {
 }
 
 mod directly_affected_location {
+    use std::collections::HashMap;
+
     use crate::db_access::DbAccess;
     use crate::save_and_search_for_locations::{
         AffectedLocation, AffectedLocationGenerator, BareAffectedLine, DbLocationSearchResults,
@@ -449,6 +451,9 @@ mod directly_affected_location {
     use itertools::Itertools;
 
     use crate::save_and_search_for_locations::searcheable_candidate::SearcheableCandidates;
+
+    use super::search_engine;
+    use anyhow::anyhow;
 
     pub(super) async fn execute(
         db: &DbAccess,
@@ -476,9 +481,13 @@ mod directly_affected_location {
             .iter()
             .flat_map(|line| SearcheableCandidates::from(line.line.as_ref()).into_inner())
             .collect_vec();
-        let primary_location =
-            get_primary_location_search_result(location_id, area_name, db, searcheable_candidates)
-                .await?;
+        let primary_location = get_primary_location_search_result(
+            location_id,
+            area_name,
+            db,
+            searcheable_candidates.clone(),
+        )
+        .await?;
 
         if let Some(location) = primary_location {
             let affected_location = AffectedLocationGenerator { affected_lines }.generate(
@@ -489,6 +498,36 @@ mod directly_affected_location {
             return Ok(Some(affected_location));
         }
 
+        let search_engine = search_engine::directly_affected_area_locations::DirectlyAffectedLocationsSearchEngine::new(area_name.clone());
+        let mapping_of_original_candidate_to_searcheable_candidate = searcheable_candidates
+            .into_iter()
+            .map(|candidate| (candidate.clone(), format!("{candidate} {location_id}")))
+            .collect::<HashMap<_, _>>();
+
+        let searcheable_candidates = mapping_of_original_candidate_to_searcheable_candidate
+            .values()
+            .cloned()
+            .collect_vec();
+
+        let results = search_engine.search(searcheable_candidates).await?;
+        if let Some((search_query, location_id)) = results.into_iter().next() {
+            let original_candidate = mapping_of_original_candidate_to_searcheable_candidate
+                .get(&search_query)
+                .ok_or_else(|| {
+                    anyhow!(
+                        "Failed to find original candidate of search_query = {} from mapping {:?}",
+                        &search_query,
+                        &mapping_of_original_candidate_to_searcheable_candidate
+                    )
+                })
+                .cloned()?;
+            let affected_location = AffectedLocationGenerator { affected_lines }.generate(
+                original_candidate,
+                location_id,
+                true,
+            )?;
+            return Ok(Some(affected_location));
+        }
         Ok(None)
     }
     async fn get_primary_location_search_result(
@@ -536,11 +575,15 @@ mod directly_affected_location {
 }
 
 mod potentially_affected_location {
+    use std::collections::HashMap;
+
+    use super::search_engine;
     use crate::db_access::DbAccess;
     use crate::save_and_search_for_locations::searcheable_candidate::SearcheableCandidates;
     use crate::save_and_search_for_locations::{
         AffectedLocation, AffectedLocationGenerator, BareAffectedLine, DbLocationSearchResults,
     };
+    use anyhow::anyhow;
     use anyhow::Context;
     use entities::locations::LocationId;
     use entities::power_interruptions::location::AreaName;
@@ -577,13 +620,49 @@ mod potentially_affected_location {
             location_id,
             area_name,
             db,
-            searcheable_candidates,
+            searcheable_candidates.clone(),
         )
         .await?;
 
         if let Some(location) = potentially_affected_location {
             let affected_location = AffectedLocationGenerator { affected_lines }.generate(
                 location.search_query,
+                location_id,
+                true,
+            )?;
+            return Ok(Some(affected_location));
+        }
+
+        let search_engine =
+            search_engine::potentially_affected_area_locations::NearbyLocationsSearchEngine::new(
+                area_name.clone(),
+            );
+
+        let mapping_of_original_candidate_to_searcheable_candidate = searcheable_candidates
+            .into_iter()
+            .map(|candidate| (candidate.clone(), format!("{candidate} {location_id}")))
+            .collect::<HashMap<_, _>>();
+
+        let searcheable_candidates = mapping_of_original_candidate_to_searcheable_candidate
+            .values()
+            .cloned()
+            .collect_vec();
+
+        let results = search_engine.search(searcheable_candidates).await?;
+
+        if let Some((query, location_id)) = results.into_iter().next() {
+            let original_candidate = mapping_of_original_candidate_to_searcheable_candidate
+                .get(&query)
+                .ok_or_else(|| {
+                    anyhow!(
+                        "Failed to find original candidate of search_query = {} from mapping {:?}",
+                        &query,
+                        &mapping_of_original_candidate_to_searcheable_candidate
+                    )
+                })
+                .cloned()?;
+            let affected_location = AffectedLocationGenerator { affected_lines }.generate(
+                original_candidate,
                 location_id,
                 true,
             )?;
