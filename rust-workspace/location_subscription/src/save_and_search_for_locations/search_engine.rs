@@ -428,12 +428,8 @@ mod algolia_search_engine {
 
     #[derive(Deserialize)]
     struct PostResponse {
-        #[serde(rename = "updatedAt")]
-        updated_at: String,
         #[serde(rename = "taskID")]
         task_id: u32,
-        #[serde(rename = "objectID")]
-        object_id: String,
     }
 
     struct AlgoliaHeaders(HashMap<&'static str, String>);
@@ -453,7 +449,6 @@ mod algolia_search_engine {
     }
 
     pub struct AlgoliaClient {
-        client: HttpClient,
         hosts: Hosts,
         headers: AlgoliaHeaders,
     }
@@ -465,7 +460,6 @@ mod algolia_search_engine {
                 SETTINGS_CONFIG.search_engine.application_key.clone().into();
             let headers = AlgoliaHeaders::new(api_key, application_id.clone());
             Self {
-                client: HttpClient,
                 hosts: Hosts::new(application_id),
                 headers,
             }
@@ -670,6 +664,13 @@ mod algolia_search_engine {
 
             let mut errors = vec![];
 
+            #[derive(Deserialize)]
+            #[allow(dead_code)]
+            struct ImportResponse {
+                #[serde(rename = "objectIDs")]
+                object_ids: Vec<String>,
+            }
+
             for chunk in data.chunks(NUMBER_OF_ITEMS_PER_REQUEST) {
                 let request = RequestBody {
                     requests: chunk
@@ -682,15 +683,21 @@ mod algolia_search_engine {
                 };
                 let request = serde_json::to_value(request).context("Failed to convert to json")?;
                 for url in urls.iter() {
-                    let result = HttpClient::post_json::<Value>(
+                    let result = HttpClient::post_json::<ImportResponse>(
                         url.clone(),
                         self.headers.inner(),
                         request.clone(),
                     )
                     .await;
-                    if let Err(err) = result {
-                        warn!("failed to get response {err:?}");
-                        errors.push(err);
+                    match result {
+                        Ok(_) => {
+                            break;
+                        }
+                        Err(err) => {
+                            println!("{err:?}");
+                            warn!("failed to get response {err:?}");
+                            errors.push(err);
+                        }
                     }
                 }
             }

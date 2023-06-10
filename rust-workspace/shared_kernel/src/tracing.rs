@@ -1,3 +1,4 @@
+use anyhow::Context;
 use opentelemetry::global;
 
 use opentelemetry::sdk::trace::Tracer;
@@ -10,7 +11,9 @@ use std::collections::HashMap;
 use tracing_subscriber::prelude::*;
 
 fn init_tracer() -> Result<Tracer, TraceError> {
-    let key = std::env::var("HONEY_COMB_TEAM_KEY").unwrap();
+    let key = std::env::var("HONEY_COMB_TEAM_KEY")
+        .context("Failed to get team key")
+        .expect("HoneyComb Team Key should be provided");
     opentelemetry_otlp::new_pipeline()
         .tracing()
         .with_exporter(
