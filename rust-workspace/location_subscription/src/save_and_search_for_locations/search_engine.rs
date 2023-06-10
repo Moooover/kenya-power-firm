@@ -533,7 +533,6 @@ mod algolia_search_engine {
             }
             let mut errors = vec![];
             for url in urls {
-                println!("{url}");
                 let maybe_err = loop {
                     let response = HttpClient::get_json_with_headers::<TaskResponse>(
                         url.clone(),
