@@ -215,13 +215,6 @@ mod email_notification_sender {
         pub message: Message,
     }
 
-    impl Data {
-        fn as_json(&self) -> serde_json::Result<serde_json::Value> {
-            let as_str = serde_json::to_string(self)?;
-            serde_json::from_str(&as_str)
-        }
-    }
-
     #[tracing::instrument(skip(db), level = "debug")]
     pub async fn send(
         email: EmailNotification,
@@ -238,8 +231,7 @@ mod email_notification_sender {
 
         let headers = HashMap::from([("Authorization", bearer_token)]);
 
-        let body = body
-            .as_json()
+        let body = serde_json::to_value(body)
             .with_context(|| "Failed to convert the body to a valid json")?;
 
         #[derive(Deserialize, Debug)]

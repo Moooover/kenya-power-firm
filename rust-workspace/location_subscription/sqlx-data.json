@@ -27,6 +27,48 @@
     },
     "query": "DELETE FROM location.subscriber_locations \n            WHERE subscriber_id = $1 AND location_id = $2"
   },
+  "35627f18358ee8d30642f25e307057572417a930bbae40349feda10fc9801f7b": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "external_id",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "sanitized_address",
+          "ordinal": 3,
+          "type_info": "Text"
+        },
+        {
+          "name": "external_api_response",
+          "ordinal": 4,
+          "type_info": "Jsonb"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": []
+      }
+    },
+    "query": "\n            SELECT id, name, external_id, sanitized_address, external_api_response FROM location.locations\n            "
+  },
   "467992ee53af97d80919707996a62af6fcaafb022b1caedc58781bc294e4010e": {
     "describe": {
       "columns": [
@@ -118,6 +160,36 @@
       }
     },
     "query": "\n            SELECT id, external_api_response as \"value: Json<ResultWrapper>\" FROM location.locations WHERE external_id = $1\n            "
+  },
+  "cf900f8f7c56eadf687fb0410ef9467e050e9c8251dccba9b028670a6122a401": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "location_id",
+          "ordinal": 1,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "response",
+          "ordinal": 2,
+          "type_info": "Jsonb"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": []
+      }
+    },
+    "query": "\n            SELECT id, location_id, response FROM location.nearby_locations\n            "
   },
   "d7af0872915dd66e1b78020e4af139921b1a256bf74dda88ade18d9ec70cbd92": {
     "describe": {

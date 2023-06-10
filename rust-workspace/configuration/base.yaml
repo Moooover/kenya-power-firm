@@ -25,4 +25,7 @@ auth:
 external_api_rate_limits:
   email: 100
   location: 100
+search_engine:
+  api_key: ""
+  application_key: ""
 

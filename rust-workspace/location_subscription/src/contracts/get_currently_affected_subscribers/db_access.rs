@@ -1,6 +1,4 @@
-
 use crate::save_and_search_for_locations::{AffectedLocation, SaveAndSearchLocations};
-
 
 pub struct GetCurrentlyAffectedLocations {
     db: SaveAndSearchLocations,
