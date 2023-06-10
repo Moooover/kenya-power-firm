@@ -1,26 +1,169 @@
-use entities::locations::LocationId;
+use entities::locations::{ExternalLocationId, LocationId};
 use itertools::Itertools;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::Value;
-use std::collections::HashMap;
 use std::fmt::Debug;
 
 use self::algolia_search_engine::AlgoliaClient;
 
-pub struct DirectlyAffectedLocationsSearchEngine {
-    search_engine: SearchEngine,
+use super::NearbyLocationId;
+
+#[derive(Debug, Deserialize, Serialize)]
+struct LocationDTO {
+    #[serde(rename = "objectID")]
+    pub object_id: LocationId,
+    pub name: String,
+    pub external_id: ExternalLocationId,
+    pub address: String,
+    pub api_response: serde_json::Value,
 }
 
-impl DirectlyAffectedLocationsSearchEngine {
-    pub fn new() -> Self {
-        Self {
-            search_engine: SearchEngine::new(),
-        }
+#[derive(Debug, Deserialize, Serialize)]
+struct NearbyLocationDTO {
+    #[serde(rename = "objectID")]
+    pub object_id: NearbyLocationId,
+    pub location_id: LocationId,
+    pub api_response: serde_json::Value,
+}
+
+pub mod directly_affected_area_locations {
+    use std::collections::HashMap;
+
+    use entities::{locations::LocationId, power_interruptions::location::AreaName};
+    use futures::{stream::FuturesUnordered, StreamExt};
+    use itertools::Itertools;
+
+    use crate::save_and_search_for_locations::searcheable_candidate::SearcheableAreaName;
+
+    use super::{LocationDTO, SearchEngine as SearchEngineInner};
+    const PRIMARY_LOCATIONS_INDEX: &str = "primary_locations";
+
+    pub struct DirectlyAffectedLocationsSearchEngine {
+        search_engine: SearchEngineInner,
+        area_name: AreaName,
     }
 
-    #[tracing::instrument(err, skip(self), level = "info")]
-    pub async fn search(&self, items: Vec<String>) -> anyhow::Result<HashMap<String, LocationId>> {
-        todo!()
+    impl DirectlyAffectedLocationsSearchEngine {
+        pub fn new(area_name: AreaName) -> Self {
+            Self {
+                search_engine: SearchEngineInner::new(),
+                area_name,
+            }
+        }
+
+        #[tracing::instrument(err, skip(self), level = "info")]
+        pub async fn search(
+            &self,
+            items: Vec<String>,
+        ) -> anyhow::Result<HashMap<String, LocationId>> {
+            let searcheable_area_names = SearcheableAreaName::new(&self.area_name);
+            let searcheable_area_names = searcheable_area_names.into_inner();
+            let mapping_of_searcheable_item_to_item = searcheable_area_names
+                .into_iter()
+                .flat_map(|area| {
+                    items
+                        .iter()
+                        .map(move |item| (format!("{} {}", item, &area), item.to_owned()))
+                })
+                .collect::<HashMap<_, _>>();
+
+            let searcheable_items = mapping_of_searcheable_item_to_item
+                .keys()
+                .cloned()
+                .collect_vec();
+            let mut results = vec![];
+            let mut futures: FuturesUnordered<_> = searcheable_items
+                .into_iter()
+                .map(|query| {
+                    self.search_engine
+                        .search::<LocationDTO, String>(vec![PRIMARY_LOCATIONS_INDEX], query)
+                })
+                .collect();
+
+            while let Some(result) = futures.next().await {
+                results.push(result?);
+            }
+            let results = results
+                .into_iter()
+                .filter_map(|(query, data)| {
+                    mapping_of_searcheable_item_to_item
+                        .get(&query)
+                        .map(|item| (item.to_owned(), data.object_id))
+                })
+                .collect::<HashMap<_, _>>();
+            Ok(results)
+        }
+    }
+}
+
+pub mod potentially_affected_area_locations {
+    use std::collections::HashMap;
+
+    use entities::{locations::LocationId, power_interruptions::location::AreaName};
+    use futures::{stream::FuturesUnordered, StreamExt};
+    use itertools::Itertools;
+
+    use crate::save_and_search_for_locations::searcheable_candidate::SearcheableAreaName;
+
+    use super::{NearbyLocationDTO, SearchEngine as SearchEngineInner};
+
+    const NEARBY_LOCATIONS_INDEX: &str = "primary_locations";
+
+    pub struct NearbyLocationsSearchEngine {
+        search_engine: SearchEngineInner,
+        area_name: AreaName,
+    }
+
+    impl NearbyLocationsSearchEngine {
+        pub fn new(area_name: AreaName) -> Self {
+            Self {
+                search_engine: SearchEngineInner::new(),
+                area_name,
+            }
+        }
+
+        #[tracing::instrument(err, skip(self), level = "info")]
+        pub async fn search(
+            &self,
+            items: Vec<String>,
+        ) -> anyhow::Result<HashMap<String, LocationId>> {
+            let searcheable_area_names = SearcheableAreaName::new(&self.area_name);
+            let searcheable_area_names = searcheable_area_names.into_inner();
+            let mapping_of_searcheable_item_to_item = searcheable_area_names
+                .into_iter()
+                .flat_map(|area| {
+                    items
+                        .iter()
+                        .map(move |item| (format!("{} {}", item, &area), item.to_owned()))
+                })
+                .collect::<HashMap<_, _>>();
+
+            let searcheable_items = mapping_of_searcheable_item_to_item
+                .keys()
+                .cloned()
+                .collect_vec();
+            let mut results = vec![];
+            let mut futures: FuturesUnordered<_> = searcheable_items
+                .into_iter()
+                .map(|query| {
+                    self.search_engine
+                        .search::<NearbyLocationDTO, String>(vec![NEARBY_LOCATIONS_INDEX], query)
+                })
+                .collect();
+
+            while let Some(result) = futures.next().await {
+                results.push(result?);
+            }
+            let results = results
+                .into_iter()
+                .filter_map(|(query, data)| {
+                    mapping_of_searcheable_item_to_item
+                        .get(&query)
+                        .map(|item| (item.to_owned(), data.location_id))
+                })
+                .collect::<HashMap<_, _>>();
+            Ok(results)
+        }
     }
 }
 
@@ -45,13 +188,15 @@ impl SearchEngine {
     }
 
     #[tracing::instrument(err, skip(self), level = "info")]
-    pub async fn search<DTO: DeserializeOwned>(
+    pub async fn search<DTO: DeserializeOwned, Q: ToString + Debug>(
         &self,
         index: Vec<impl ToString + Debug>,
-        query: impl ToString + Debug,
-    ) -> anyhow::Result<DTO> {
+        query: Q,
+    ) -> anyhow::Result<(Q, DTO)> {
         let indexes = index.into_iter().map(|data| data.to_string()).collect_vec();
-        self.client.get(indexes, query.to_string()).await
+        let response = self.client.get::<DTO>(indexes, query.to_string()).await?;
+
+        Ok((query, response))
     }
 
     #[tracing::instrument(err, skip(self), level = "info")]
@@ -81,6 +226,8 @@ mod algolia_search_engine {
     string_key!(ApplicationId);
     non_empty_string!(IndexName);
     non_empty_string!(Query);
+
+    const NUMBER_OF_ITEMS_PER_REQUEST: usize = 100;
 
     //The primary hosts are {Application-ID}.algolia.net for write operations and {Application-ID}-dsn.algolia.net for read operations.
     // The *-dsn host guarantees high availability through automatic load balancing and also leverages the Distributed Search Network (if you subscribed that option).
@@ -285,7 +432,7 @@ mod algolia_search_engine {
 
             let mut errors = vec![];
 
-            for chunk in data.chunks(100) {
+            for chunk in data.chunks(NUMBER_OF_ITEMS_PER_REQUEST) {
                 let request = RequestBody {
                     requests: chunk
                         .iter()

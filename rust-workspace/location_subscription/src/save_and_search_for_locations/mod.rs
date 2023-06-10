@@ -653,6 +653,11 @@ mod affected_locations_in_an_area {
 
     use crate::save_and_search_for_locations::searcheable_candidate::SearcheableCandidates;
 
+    use super::search_engine::{
+        self, directly_affected_area_locations::DirectlyAffectedLocationsSearchEngine,
+        potentially_affected_area_locations::NearbyLocationsSearchEngine,
+    };
+
     #[derive(sqlx::FromRow)]
     struct DbLocationSearchResults {
         pub search_query: String,
@@ -705,8 +710,8 @@ mod affected_locations_in_an_area {
             .flat_map(|candidate| candidate.inner())
             .collect_vec();
 
-        let searcheable_area_names =
-            SearcheableCandidates::from_area_name(&AreaName::new(area.name.clone()));
+        let area_name = AreaName::new(area.name.clone());
+        let searcheable_area_names = SearcheableCandidates::from_area_name(&area_name);
 
         let mapping_of_searcheable_candidate_to_original_candidate =
             mapping_of_searcheable_location_candidate_to_candidate_copy
@@ -729,6 +734,9 @@ mod affected_locations_in_an_area {
                 })
                 .collect::<HashMap<_, _>>();
 
+        let directly_affected_search_engine =
+            search_engine::directly_affected_area_locations::DirectlyAffectedLocationsSearchEngine::new(area_name.clone());
+
         let directly_affected_locations = directly_affected_locations(
             db,
             &searcheable_area_names,
@@ -736,8 +744,14 @@ mod affected_locations_in_an_area {
             time_frame.clone(),
             &mapping_of_searcheable_candidate_to_candidate,
             source_url.clone(),
+            directly_affected_search_engine,
         )
         .await?;
+
+        let nearby_area_locations_search_engine =
+            search_engine::potentially_affected_area_locations::NearbyLocationsSearchEngine::new(
+                area_name,
+            );
 
         let potentially_affected_locations = potentially_affected_locations(
             db,
@@ -746,6 +760,7 @@ mod affected_locations_in_an_area {
             time_frame.clone(),
             &mapping_of_searcheable_candidate_to_candidate,
             source_url,
+            nearby_area_locations_search_engine,
         )
         .await?;
 
@@ -755,7 +770,7 @@ mod affected_locations_in_an_area {
         ))
     }
 
-    #[tracing::instrument(err, skip(db), level = "info")]
+    #[tracing::instrument(err, skip(db, search_engine), level = "info")]
     async fn directly_affected_locations(
         db: &DbAccess,
         searcheable_area_names: &[SearcheableCandidates],
@@ -763,6 +778,7 @@ mod affected_locations_in_an_area {
         time_frame: TimeFrame,
         mapping_of_searcheable_candidate_to_candidate: &HashMap<String, String>,
         source: Url,
+        search_engine: DirectlyAffectedLocationsSearchEngine,
     ) -> anyhow::Result<Vec<AffectedLocation>> {
         let pool = db.pool().await;
 
@@ -790,13 +806,35 @@ mod affected_locations_in_an_area {
         }
         let primary_locations = primary_locations.into_iter().flatten().collect_vec();
 
+        let candidates_not_found = searcheable_candidates
+            .iter()
+            .cloned()
+            .collect::<HashSet<_>>()
+            .difference(
+                &primary_locations
+                    .iter()
+                    .map(|location| location.search_query.clone())
+                    .collect(),
+            )
+            .filter_map(|candidate| {
+                mapping_of_searcheable_candidate_to_candidate
+                    .get(candidate)
+                    .cloned()
+            })
+            .collect_vec();
+
+        let locations_from_candidates_not_found =
+            search_engine.search(candidates_not_found).await?;
+
         let results = primary_locations
             .into_iter()
-            .filter_map(|location| {
+            .map(|data| (data.search_query, data.id.into()))
+            .chain(locations_from_candidates_not_found.into_iter())
+            .filter_map(|(search_query, location_id)| {
                 mapping_of_searcheable_candidate_to_candidate
-                    .get(&location.search_query)
+                    .get(&search_query)
                     .map(|original_candidate| AffectedLocation {
-                        location_id: location.id.into(),
+                        location_id,
                         line_matched: LineWithScheduledInterruptionTime {
                             line_name: original_candidate.to_string(),
                             from: time_frame.from.as_ref().clone(),
@@ -810,7 +848,7 @@ mod affected_locations_in_an_area {
         Ok(results)
     }
 
-    #[tracing::instrument(err, skip(db), level = "info")]
+    #[tracing::instrument(err, skip(db, nearby_area_locations_search_engine), level = "info")]
     async fn potentially_affected_locations(
         db: &DbAccess,
         searcheable_area_names: &[SearcheableCandidates],
@@ -818,6 +856,7 @@ mod affected_locations_in_an_area {
         time_frame: TimeFrame,
         mapping_of_searcheable_candidate_to_candidate: &HashMap<String, String>,
         source: Url,
+        nearby_area_locations_search_engine: NearbyLocationsSearchEngine,
     ) -> anyhow::Result<Vec<AffectedLocation>> {
         let searcheable_area_names = searcheable_area_names
             .iter()
@@ -851,21 +890,53 @@ mod affected_locations_in_an_area {
 
         let nearby_locations = nearby_locations.into_iter().flatten().collect_vec();
 
+        let candidates_not_found = searcheable_candidates
+            .iter()
+            .cloned()
+            .collect::<HashSet<_>>()
+            .difference(
+                &nearby_locations
+                    .iter()
+                    .map(|location| location.candidate.clone())
+                    .collect(),
+            )
+            .filter_map(|candidate| {
+                mapping_of_searcheable_candidate_to_candidate
+                    .get(candidate)
+                    .cloned()
+            })
+            .collect_vec();
+
+        let search_engine_nearby_locations_results = nearby_area_locations_search_engine
+            .search(candidates_not_found)
+            .await?;
+
         let location_ids_to_search_query = nearby_locations
             .iter()
             .map(|data| (data.location_id, data.candidate.clone()))
+            .chain(
+                search_engine_nearby_locations_results
+                    .iter()
+                    .map(|(candidate, location_id)| (location_id.inner(), candidate.to_owned())),
+            )
             .collect::<HashMap<_, _>>();
 
         let results = nearby_locations
             .iter()
-            .filter_map(|location| {
+            .map(|data| data.location_id)
+            .chain(
+                search_engine_nearby_locations_results
+                    .values()
+                    .map(|id| id.inner()),
+            )
+            .filter_map(|location_id| {
                 location_ids_to_search_query
-                    .get(&location.location_id)
+                    .get(&location_id)
                     .and_then(|candidate| {
                         mapping_of_searcheable_candidate_to_candidate
                             .get(candidate)
                             .cloned()
-                            .map(|line| (line, location.location_id))
+                            .map(|line| (line, location_id))
                     })
                     .map(|(line, location)| AffectedLocation {
                         location_id: location.into(),
