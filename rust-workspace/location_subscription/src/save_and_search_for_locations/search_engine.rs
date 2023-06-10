@@ -9,7 +9,7 @@ use self::algolia_search_engine::AlgoliaClient;
 use super::NearbyLocationId;
 
 #[derive(Debug, Deserialize, Serialize)]
-struct LocationDTO {
+pub struct LocationDTO {
     pub id: LocationId,
     #[serde(rename = "objectID")]
     pub object_id: LocationId,
@@ -17,6 +17,59 @@ struct LocationDTO {
     pub external_id: ExternalLocationId,
     pub address: String,
     pub api_response: serde_json::Value,
+}
+
+pub mod import_primary_locations {
+    use anyhow::anyhow;
+    use anyhow::Context;
+    use itertools::Itertools;
+
+    use crate::{
+        db_access::DbAccess,
+        save_and_search_for_locations::search_engine::{
+            save_primary_location::PRIMARY_LOCATIONS_INDEX, SearchEngine,
+        },
+    };
+
+    use super::LocationDTO;
+
+    #[tracing::instrument(err, level = "info")]
+    async fn fetch_all() -> anyhow::Result<Vec<LocationDTO>> {
+        let db = DbAccess;
+        let pool = db.pool().await;
+        let results = sqlx::query!(
+            "
+            SELECT id, name, external_id, sanitized_address, external_api_response FROM location.locations
+            "
+        ).fetch_all(pool.as_ref()).await.map_err(|err| {
+            anyhow!("Failed to fetch all locations {}", err)
+        })?;
+
+        let results = results
+            .into_iter()
+            .map(|data| LocationDTO {
+                id: data.id.into(),
+                object_id: data.id.into(),
+                name: data.name,
+                external_id: data.external_id.into(),
+                address: data.sanitized_address,
+                api_response: data.external_api_response,
+            })
+            .collect_vec();
+        Ok(results)
+    }
+
+    #[tracing::instrument(err, level = "info")]
+    pub async fn execute() -> anyhow::Result<()> {
+        let engine = SearchEngine::new();
+        let values = fetch_all()
+            .await?
+            .into_iter()
+            .map(|item| serde_json::to_value(item).context("Failed to convert to json"))
+            .collect::<Result<Vec<_>, _>>()?;
+
+        engine.import(PRIMARY_LOCATIONS_INDEX, values).await
+    }
 }
 
 pub mod save_primary_location {
@@ -122,6 +175,63 @@ pub mod directly_affected_area_locations {
     }
 }
 
+#[derive(Debug, Deserialize, Serialize)]
+struct NearbyLocationDTO {
+    pub id: NearbyLocationId,
+    #[serde(rename = "objectID")]
+    pub object_id: NearbyLocationId,
+    pub location_id: LocationId,
+    pub api_response: serde_json::Value,
+}
+
+pub mod import_nearby_locations {
+    use anyhow::Context;
+    use itertools::Itertools;
+
+    use crate::{
+        db_access::DbAccess, save_and_search_for_locations::search_engine::NearbyLocationDTO,
+    };
+
+    use super::{save_nearby_location::NEARBY_LOCATIONS_INDEX, SearchEngine};
+
+    async fn fetch_all() -> anyhow::Result<Vec<NearbyLocationDTO>> {
+        let db = DbAccess;
+        let pool = db.pool().await;
+
+        let results = sqlx::query!(
+            "
+            SELECT id, location_id, response FROM location.nearby_locations
+            "
+        )
+        .fetch_all(pool.as_ref())
+        .await
+        .context("Failed to fetch all records from nearby_locations")?;
+        let results = results
+            .into_iter()
+            .map(|result| NearbyLocationDTO {
+                id: result.id.into(),
+                object_id: result.id.into(),
+                location_id: result.location_id.into(),
+                api_response: result.response,
+            })
+            .collect_vec();
+
+        Ok(results)
+    }
+
+    #[tracing::instrument(err, level = "info")]
+    pub async fn execute() -> anyhow::Result<()> {
+        let engine = SearchEngine::new();
+        let values = fetch_all()
+            .await?
+            .into_iter()
+            .map(|item| serde_json::to_value(item).context("Failed to convert to json"))
+            .collect::<Result<Vec<_>, _>>()?;
+
+        engine.import(NEARBY_LOCATIONS_INDEX, values).await
+    }
+}
+
 pub mod save_nearby_location {
     use anyhow::Context;
     use entities::locations::LocationId;
@@ -152,14 +262,6 @@ pub mod save_nearby_location {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
-struct NearbyLocationDTO {
-    pub id: NearbyLocationId,
-    #[serde(rename = "objectID")]
-    pub object_id: NearbyLocationId,
-    pub location_id: LocationId,
-    pub api_response: serde_json::Value,
-}
 pub mod potentially_affected_area_locations {
     use std::collections::HashMap;
 

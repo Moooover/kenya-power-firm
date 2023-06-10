@@ -1,4 +1,4 @@
-mod search_engine;
+pub mod search_engine;
 mod searcheable_candidate;
 
 use crate::contracts::get_affected_subscribers_from_import::{

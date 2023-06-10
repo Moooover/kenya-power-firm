@@ -6,6 +6,12 @@ use std::collections::HashMap;
 
 pub struct CurrentlyAffectedSubscribersInteractor;
 
+impl Default for CurrentlyAffectedSubscribersInteractor {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl CurrentlyAffectedSubscribersInteractor {
     pub fn new() -> Self {
         Self {}
