@@ -1,5 +1,4 @@
 use entities::locations::{ExternalLocationId, LocationId};
-use itertools::Itertools;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::Value;
 use std::fmt::Debug;
@@ -134,7 +133,7 @@ pub mod directly_affected_area_locations {
         pub async fn search(
             &self,
             items: Vec<String>,
-        ) -> anyhow::Result<HashMap<String, LocationId>> {
+        ) -> anyhow::Result<HashMap<LocationId, String>> {
             let searcheable_area_names = SearcheableAreaName::new(&self.area_name);
             let searcheable_area_names = searcheable_area_names.into_inner();
             let mapping_of_searcheable_item_to_item = searcheable_area_names
@@ -155,7 +154,7 @@ pub mod directly_affected_area_locations {
                 .into_iter()
                 .map(|query| {
                     self.search_engine
-                        .search::<LocationDTO, String>(vec![PRIMARY_LOCATIONS_INDEX], query)
+                        .search::<LocationDTO, String>(PRIMARY_LOCATIONS_INDEX, query)
                 })
                 .collect();
 
@@ -165,10 +164,12 @@ pub mod directly_affected_area_locations {
             let results = results
                 .into_iter()
                 .filter_map(|(query, data)| {
-                    mapping_of_searcheable_item_to_item
-                        .get(&query)
-                        .map(|item| (item.to_owned(), data.object_id))
+                    mapping_of_searcheable_item_to_item.get(&query).map(|item| {
+                        data.into_iter()
+                            .map(|primary_location| (primary_location.id, item.clone()))
+                    })
                 })
+                .flatten()
                 .collect::<HashMap<_, _>>();
             Ok(results)
         }
@@ -293,7 +294,7 @@ pub mod potentially_affected_area_locations {
         pub async fn search(
             &self,
             items: Vec<String>,
-        ) -> anyhow::Result<HashMap<String, LocationId>> {
+        ) -> anyhow::Result<HashMap<LocationId, String>> {
             let searcheable_area_names = SearcheableAreaName::new(&self.area_name);
             let searcheable_area_names = searcheable_area_names.into_inner();
             let mapping_of_searcheable_item_to_item = searcheable_area_names
@@ -314,7 +315,7 @@ pub mod potentially_affected_area_locations {
                 .into_iter()
                 .map(|query| {
                     self.search_engine
-                        .search::<NearbyLocationDTO, String>(vec![NEARBY_LOCATIONS_INDEX], query)
+                        .search::<NearbyLocationDTO, String>(NEARBY_LOCATIONS_INDEX, query)
                 })
                 .collect();
 
@@ -324,10 +325,12 @@ pub mod potentially_affected_area_locations {
             let results = results
                 .into_iter()
                 .filter_map(|(query, data)| {
-                    mapping_of_searcheable_item_to_item
-                        .get(&query)
-                        .map(|item| (item.to_owned(), data.location_id))
+                    mapping_of_searcheable_item_to_item.get(&query).map(|item| {
+                        data.into_iter()
+                            .map(|nearby_location| (nearby_location.location_id, item.clone()))
+                    })
                 })
+                .flatten()
                 .collect::<HashMap<_, _>>();
             Ok(results)
         }
@@ -355,13 +358,15 @@ impl SearchEngine {
     }
 
     #[tracing::instrument(err, skip(self), level = "info")]
-    pub async fn search<DTO: DeserializeOwned, Q: ToString + Debug>(
+    pub async fn search<DTO: DeserializeOwned + Debug, Q: ToString + Debug>(
         &self,
-        index: Vec<impl ToString + Debug>,
+        index: impl ToString + Debug,
         query: Q,
-    ) -> anyhow::Result<(Q, DTO)> {
-        let indexes = index.into_iter().map(|data| data.to_string()).collect_vec();
-        let response = self.client.get::<DTO>(indexes, query.to_string()).await?;
+    ) -> anyhow::Result<(Q, Vec<DTO>)> {
+        let response = self
+            .client
+            .get::<DTO>(index.to_string(), query.to_string())
+            .await?;
 
         Ok((query, response))
     }
@@ -575,15 +580,12 @@ mod algolia_search_engine {
         }
 
         #[tracing::instrument(err, skip(self), level = "info")]
-        pub async fn get<DTO: DeserializeOwned>(
+        pub async fn get<DTO: DeserializeOwned + Debug>(
             &self,
-            indexes: Vec<String>,
+            index: impl TryInto<IndexName, Error = String> + Debug,
             query: impl TryInto<Query, Error = String> + Debug,
-        ) -> Result<DTO, anyhow::Error> {
-            let indexes = indexes
-                .into_iter()
-                .map(|data| IndexName::try_from(data).map_err(|err| anyhow!(err)))
-                .collect::<Result<Vec<_>, _>>()?;
+        ) -> Result<Vec<DTO>, anyhow::Error> {
+            let index = index.try_into().map_err(|err| anyhow!(err))?;
             let query = query.try_into().map_err(|err| anyhow!(err))?;
 
             let urls = self
@@ -592,42 +594,28 @@ mod algolia_search_engine {
                 .iter()
                 .map(|host| {
                     Url::parse_with_params(
-                        &format!("https://{}/1/indexes/*/queries", host),
+                        &format!("https://{}/1/indexes/{}", host, &index),
                         &[("query", query.clone())],
                     )
                     .context("Failed to parse url")
                 })
                 .collect::<Result<Vec<_>, anyhow::Error>>()?;
 
-            #[derive(Serialize, Deserialize, Debug)]
-
-            struct RequestIndexWithParam {
-                #[serde(rename = "indexName")]
-                index_name: String,
-                params: String,
-            }
-            #[derive(Serialize, Deserialize, Debug)]
-            struct RequestData {
-                requests: Vec<RequestIndexWithParam>,
-            }
-
-            let body = RequestData {
-                requests: indexes
-                    .iter()
-                    .map(|index_name| RequestIndexWithParam {
-                        index_name: index_name.to_string(),
-                        params: format!("query={}", query),
-                    })
-                    .collect_vec(),
-            };
-            let body = serde_json::to_value(body).context("Failed to turn to valid json")?;
             let mut errors = vec![];
 
+            #[derive(Deserialize, Debug)]
+            struct HitsResponse<DTO> {
+                hits: Vec<DTO>,
+            }
+
             for url in urls {
-                let result =
-                    HttpClient::post_json::<DTO>(url, self.headers.inner(), body.clone()).await;
+                let result = HttpClient::get_json_with_headers::<HitsResponse<DTO>>(
+                    url,
+                    self.headers.inner(),
+                )
+                .await;
                 match result {
-                    Ok(res) => return Ok(res),
+                    Ok(res) => return Ok(res.hits),
                     Err(err) => {
                         warn!("failed to get response {err:?}");
                         errors.push(err);
@@ -635,8 +623,8 @@ mod algolia_search_engine {
                 }
             }
             error!(
-                "Errors from indexes {:?} & query {} are {:?}",
-                &indexes, &query, errors
+                "Errors from index {:?} & query {} are {:?}",
+                &index, &query, errors
             );
             bail!("Failed to return response from algolia")
         }
