@@ -5,6 +5,12 @@ mod db_access;
 
 pub struct TextSearcher;
 
+impl Default for TextSearcher {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl TextSearcher {
     pub fn new() -> Self {
         TextSearcher

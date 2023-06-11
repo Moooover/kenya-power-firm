@@ -526,7 +526,7 @@ mod directly_affected_location {
             .collect_vec();
 
         let results = search_engine.search(searcheable_candidates).await?;
-        if let Some((search_query, location_id)) = results.into_iter().next() {
+        if let Some((location_id, search_query)) = results.into_iter().next() {
             let original_candidate = mapping_of_original_candidate_to_searcheable_candidate
                 .get(&search_query)
                 .ok_or_else(|| {
@@ -668,8 +668,7 @@ mod potentially_affected_location {
             .collect_vec();
 
         let results = search_engine.search(searcheable_candidates).await?;
-
-        if let Some((query, location_id)) = results.into_iter().next() {
+        if let Some((location_id, query)) = results.into_iter().next() {
             let original_candidate = mapping_of_original_candidate_to_searcheable_candidate
                 .get(&query)
                 .ok_or_else(|| {
@@ -927,7 +926,11 @@ mod affected_locations_in_an_area {
         let results = primary_locations
             .into_iter()
             .map(|data| (data.search_query, data.id.into()))
-            .chain(locations_from_candidates_not_found.into_iter())
+            .chain(
+                locations_from_candidates_not_found
+                    .into_iter()
+                    .map(|(location_id, query)| (query, location_id)),
+            )
             .filter_map(|(search_query, location_id)| {
                 mapping_of_searcheable_candidate_to_candidate
                     .get(&search_query)
@@ -1015,7 +1018,7 @@ mod affected_locations_in_an_area {
             .chain(
                 search_engine_nearby_locations_results
                     .iter()
-                    .map(|(candidate, location_id)| (location_id.inner(), candidate.to_owned())),
+                    .map(|(location_id, candidate)| (location_id.inner(), candidate.to_owned())),
             )
             .collect::<HashMap<_, _>>();
 
@@ -1024,7 +1027,7 @@ mod affected_locations_in_an_area {
             .map(|data| data.location_id)
             .chain(
                 search_engine_nearby_locations_results
-                    .values()
+                    .keys()
                     .map(|id| id.inner()),
             )
             .filter_map(|location_id| {
