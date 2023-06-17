@@ -19,10 +19,8 @@ impl PdfReader {
     pub async fn extract(&self, links: Vec<Url>) -> anyhow::Result<HashMap<Url, Vec<Region>>> {
         let number_of_links = links.len();
 
-        let mut futures: FuturesUnordered<_> = links
-            .into_iter()
-            .map(|url| fetch_and_extract::execute(url))
-            .collect();
+        let mut futures: FuturesUnordered<_> =
+            links.into_iter().map(fetch_and_extract::execute).collect();
 
         let mut errors = vec![];
         let mut results = HashMap::with_capacity(number_of_links);
@@ -59,7 +57,7 @@ mod fetch_and_extract {
         let file_bytes = HttpClient::get_bytes(url.clone()).await?;
         let text = extract_text_from_mem(&file_bytes).context("Failed to extract pdf to text")?;
         let regions = extract(text)?;
-        return Ok((url, regions));
+        Ok((url, regions))
     }
 }
 

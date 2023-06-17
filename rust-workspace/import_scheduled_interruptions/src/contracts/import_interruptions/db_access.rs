@@ -14,7 +14,7 @@ impl ImportPowerInterruptionsDbAccess {
 
     #[tracing::instrument(skip(self), level = "debug")]
     pub(crate) async fn import(&self, data: &ImportInput) -> anyhow::Result<()> {
-        let counties = counties::get_counties(&self).await?;
+        let counties = counties::get_counties(self).await?;
         let mut transaction = self
             .db
             .pool()
