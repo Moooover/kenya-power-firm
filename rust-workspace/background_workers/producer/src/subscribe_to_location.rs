@@ -1,8 +1,8 @@
 use crate::producer::Producer;
 use anyhow::Context;
 use async_trait::async_trait;
-use entities::locations::ExternalLocationId;
 use entities::subscriptions::SubscriberId;
+use shared_kernel::location_ids::ExternalLocationId;
 use std::str::FromStr;
 use tasks::{
     subscribe_to_location::fetch_and_subscribe_to_location,

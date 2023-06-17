@@ -2,9 +2,9 @@ use crate::authentication::subscriber_authentication::SubscriberResolverInteract
 use crate::{actor::Actor, search_for_locations::Status};
 
 use async_trait::async_trait;
-use entities::locations::ExternalLocationId;
-use entities::locations::LocationId;
 use entities::subscriptions::SubscriberId;
+use shared_kernel::location_ids::ExternalLocationId;
+use shared_kernel::location_ids::LocationId;
 use shared_kernel::string_key;
 use std::sync::Arc;
 

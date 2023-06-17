@@ -8,7 +8,6 @@ use crate::data_transfer::LineWithScheduledInterruptionTime;
 use crate::db_access::DbAccess;
 use crate::save_and_search_for_locations::searcheable_candidate::NonAcronymString;
 use anyhow::{anyhow, Context};
-use entities::locations::{ExternalLocationId, LocationId};
 use futures::{stream::FuturesUnordered, StreamExt};
 use itertools::Itertools;
 use searcheable_candidate::SearcheableCandidates;
@@ -18,6 +17,7 @@ use shared_kernel::date_time::nairobi_date_time::{
     FutureOrCurrentNairobiTZDateTime, NairobiTZDateTime,
 };
 use shared_kernel::date_time::time_frame::TimeFrame;
+use shared_kernel::location_ids::{ExternalLocationId, LocationId};
 use shared_kernel::uuid_key;
 use sqlx::types::chrono::{DateTime, Utc};
 use sqlx::types::Json;
@@ -462,9 +462,9 @@ mod directly_affected_location {
         AffectedLocation, AffectedLocationGenerator, BareAffectedLine, DbLocationSearchResults,
     };
     use anyhow::Context;
-    use entities::locations::LocationId;
     use itertools::Itertools;
     use shared_kernel::area_name::AreaName;
+    use shared_kernel::location_ids::LocationId;
 
     use crate::save_and_search_for_locations::searcheable_candidate::SearcheableCandidates;
 
@@ -604,9 +604,9 @@ mod potentially_affected_location {
     };
     use anyhow::anyhow;
     use anyhow::Context;
-    use entities::locations::LocationId;
     use itertools::Itertools;
     use shared_kernel::area_name::AreaName;
+    use shared_kernel::location_ids::LocationId;
 
     #[tracing::instrument(err, skip(db), level = "info")]
     pub async fn execute(

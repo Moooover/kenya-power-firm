@@ -4,7 +4,8 @@ use crate::{
     actor::Actor, authentication::subscriber_authentication::SubscriberResolverInteractor,
 };
 use async_trait::async_trait;
-use entities::{locations::LocationId, subscriptions::SubscriberId};
+use entities::subscriptions::SubscriberId;
+use shared_kernel::location_ids::LocationId;
 
 #[async_trait]
 pub trait DeleteLocationsSubscribedToInteractor {

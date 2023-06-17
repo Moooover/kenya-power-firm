@@ -1,6 +1,6 @@
 use async_trait::async_trait;
-use entities::locations::LocationId;
 use entities::subscriptions::SubscriberId;
+use shared_kernel::location_ids::LocationId;
 use use_cases::subscriber_locations::delete_locations_subscribed_to::DeleteSubscribedLocationOp;
 use use_cases::subscriber_locations::list_subscribed_locations::{
     ListSubscribedLocationsOp, LocationWithId,
@@ -8,10 +8,10 @@ use use_cases::subscriber_locations::list_subscribed_locations::{
 
 pub mod get_affected_subscribers_from_import;
 pub mod get_currently_affected_subscribers;
+pub mod import_locations_to_search_engine;
 pub mod list_subscribed_locations;
 pub mod subscribe;
 pub mod unsubscribe;
-pub mod import_locations_to_search_engine;
 
 #[derive(Clone)]
 pub struct LocationSubscriptionSubSystem;

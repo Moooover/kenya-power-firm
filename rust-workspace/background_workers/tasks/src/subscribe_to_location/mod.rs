@@ -1,6 +1,6 @@
 use celery::export::async_trait;
 use celery::prelude::*;
-use entities::locations::ExternalLocationId;
+use shared_kernel::location_ids::ExternalLocationId;
 
 use entities::subscriptions::SubscriberId;
 

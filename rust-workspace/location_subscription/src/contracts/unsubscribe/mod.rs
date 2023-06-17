@@ -1,7 +1,7 @@
 mod db_access;
 
-use entities::locations::LocationId;
 use entities::subscriptions::SubscriberId;
+use shared_kernel::location_ids::LocationId;
 
 pub struct UnsubscribeFromLocationInteractor;
 
