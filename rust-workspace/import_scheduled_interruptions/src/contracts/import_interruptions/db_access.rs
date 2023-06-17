@@ -41,13 +41,14 @@ mod save_data {
     use crate::contracts::import_interruptions::db_access::counties::{DbCounty, DbCountyId};
     use anyhow::Context;
     use entities::power_interruptions::location::{
-        Area, AreaName, FutureOrCurrentNairobiTZDateTime, NairobiTZDateTime, Region,
+        Area, AreaName, FutureOrCurrentNairobiTZDateTime, Region,
     };
     use sqlx::query;
     use std::collections::{HashMap, HashSet};
     use std::iter;
     use url::Url;
     use uuid::Uuid;
+    use shared_kernel::nairobi_date_time::NairobiTZDateTime;
 
     pub struct BlackoutSchedule {
         pub id: Uuid,

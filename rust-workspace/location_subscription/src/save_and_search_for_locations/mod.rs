@@ -10,7 +10,7 @@ use crate::save_and_search_for_locations::searcheable_candidate::NonAcronymStrin
 use anyhow::{anyhow, Context};
 use entities::locations::{ExternalLocationId, LocationId};
 use entities::power_interruptions::location::{
-    AreaName, FutureOrCurrentNairobiTZDateTime, NairobiTZDateTime, TimeFrame,
+    AreaName, FutureOrCurrentNairobiTZDateTime, TimeFrame,
 };
 use futures::{stream::FuturesUnordered, StreamExt};
 use itertools::Itertools;
@@ -23,6 +23,7 @@ use std::collections::HashMap;
 use tracing::error;
 use url::Url;
 use uuid::Uuid;
+use shared_kernel::nairobi_date_time::NairobiTZDateTime;
 
 uuid_key!(NearbyLocationId);
 

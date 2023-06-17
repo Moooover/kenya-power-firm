@@ -2,9 +2,9 @@ pub(crate) mod db_access;
 pub mod email;
 
 use entities::locations::LocationId;
-use entities::power_interruptions::location::NairobiTZDateTime;
 use entities::subscriptions::SubscriberId;
 use serde::{Deserialize, Serialize};
+use shared_kernel::nairobi_date_time::NairobiTZDateTime;
 use url::Url;
 
 #[derive(Clone, Serialize, Deserialize, Debug)]

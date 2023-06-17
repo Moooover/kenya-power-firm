@@ -20,6 +20,9 @@ serde = {  version= "1.0.152", features=["derive"] }
 serde_json = { version = "1.0.93" }
 thiserror = "1.0.40"
 tonic = "0.8.0"
+chrono = { version = "0.4.23", features = ["serde"] }
+chrono-tz = { version = "0.8.1", features = ["serde"] }
+
 
 tracing-subscriber = { version = "0.3.15", features = ["env-filter", "json"] }
 tracing-opentelemetry = "0.19.0"

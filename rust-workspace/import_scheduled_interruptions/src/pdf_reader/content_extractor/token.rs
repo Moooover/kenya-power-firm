@@ -1,4 +1,4 @@
-use entities::power_interruptions::location::NairobiTZDateTime;
+use shared_kernel::nairobi_date_time::NairobiTZDateTime;
 
 #[derive(Debug)]
 pub struct Area {
