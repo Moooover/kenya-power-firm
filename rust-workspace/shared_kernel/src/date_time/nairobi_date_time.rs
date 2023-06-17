@@ -43,3 +43,39 @@ impl TryFrom<NaiveDateTime> for NairobiTZDateTime {
             })
     }
 }
+
+#[derive(Debug, Clone)]
+pub struct FutureOrCurrentNairobiTZDateTime(NairobiTZDateTime);
+
+impl AsRef<NairobiTZDateTime> for FutureOrCurrentNairobiTZDateTime {
+    fn as_ref(&self) -> &NairobiTZDateTime {
+        &self.0
+    }
+}
+
+impl FutureOrCurrentNairobiTZDateTime {
+    pub fn to_date_time(&self) -> DateTime<Tz> {
+        self.0.to_date_time()
+    }
+}
+
+impl TryFrom<NairobiTZDateTime> for FutureOrCurrentNairobiTZDateTime {
+    type Error = String;
+
+    fn try_from(provided_date: NairobiTZDateTime) -> Result<Self, Self::Error> {
+        let today = NairobiTZDateTime::today();
+        if provided_date.date() < today.date() {
+            return Err(format!(
+                "The date provided already passed {:?}",
+                provided_date
+            ));
+        }
+        Ok(FutureOrCurrentNairobiTZDateTime(provided_date))
+    }
+}
+
+impl From<&FutureOrCurrentNairobiTZDateTime> for NairobiTZDateTime {
+    fn from(value: &FutureOrCurrentNairobiTZDateTime) -> Self {
+        value.0.clone()
+    }
+}

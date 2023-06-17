@@ -1,9 +1,7 @@
+use crate::pdf_reader::{Area as EntityArea, County as EntityCounty, Region as EntityRegion};
 use anyhow::anyhow;
-use entities::power_interruptions::location::{
-    Area as EntityArea, County as EntityCounty, FutureOrCurrentNairobiTZDateTime,
-    Region as EntityRegion,
-};
 use itertools::Itertools;
+use shared_kernel::date_time::nairobi_date_time::FutureOrCurrentNairobiTZDateTime;
 use shared_kernel::date_time::time_frame::TimeFrame;
 
 use crate::pdf_reader::content_extractor::token::{Area, County, Region};

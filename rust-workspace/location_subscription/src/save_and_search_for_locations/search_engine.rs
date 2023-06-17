@@ -105,9 +105,10 @@ pub mod save_primary_location {
 pub mod directly_affected_area_locations {
     use std::collections::HashMap;
 
-    use entities::{locations::LocationId, power_interruptions::location::AreaName};
+    use entities::locations::LocationId;
     use futures::{stream::FuturesUnordered, StreamExt};
     use itertools::Itertools;
+    use shared_kernel::area_name::AreaName;
 
     use crate::save_and_search_for_locations::searcheable_candidate::SearcheableAreaName;
 
@@ -266,9 +267,10 @@ pub mod save_nearby_location {
 pub mod potentially_affected_area_locations {
     use std::collections::HashMap;
 
-    use entities::{locations::LocationId, power_interruptions::location::AreaName};
+    use entities::locations::LocationId;
     use futures::{stream::FuturesUnordered, StreamExt};
     use itertools::Itertools;
+    use shared_kernel::area_name::AreaName;
 
     use crate::save_and_search_for_locations::searcheable_candidate::SearcheableAreaName;
 

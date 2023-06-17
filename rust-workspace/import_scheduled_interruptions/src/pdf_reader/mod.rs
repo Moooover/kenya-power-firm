@@ -1,9 +1,11 @@
 mod content_extractor;
 
 use anyhow::bail;
-use entities::power_interruptions::location::Region;
 use futures::stream::FuturesUnordered;
 use futures::StreamExt;
+use shared_kernel::area_name::AreaName;
+use shared_kernel::date_time::nairobi_date_time::FutureOrCurrentNairobiTZDateTime;
+use shared_kernel::date_time::time_frame::TimeFrame;
 use std::collections::HashMap;
 use tracing::error;
 use url::Url;
@@ -47,8 +49,8 @@ impl PdfReader {
 
 mod fetch_and_extract {
     use crate::pdf_reader::content_extractor::extract;
+    use crate::pdf_reader::Region;
     use anyhow::Context;
-    use entities::power_interruptions::location::Region;
     use shared_kernel::http_client::HttpClient;
     use url::Url;
 
@@ -75,5 +77,38 @@ mod tests {
         let pdf_reader = super::PdfReader::new();
         let result = pdf_reader.extract(urls).await.unwrap();
         println!("{:?}", result);
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct County<T> {
+    pub name: String,
+    pub areas: Vec<Area<T>>,
+}
+
+#[derive(Debug)]
+pub struct Region<T = FutureOrCurrentNairobiTZDateTime> {
+    pub region: String,
+    pub counties: Vec<County<T>>,
+}
+
+#[derive(Debug, Clone)]
+pub struct Area<T> {
+    pub name: AreaName,
+    pub time_frame: TimeFrame<T>,
+    pub locations: Vec<String>,
+}
+
+#[derive(Debug)]
+pub struct ImportInput(HashMap<Url, Vec<Region<FutureOrCurrentNairobiTZDateTime>>>);
+
+impl ImportInput {
+    pub fn new(data: HashMap<Url, Vec<Region<FutureOrCurrentNairobiTZDateTime>>>) -> Self {
+        Self(data)
+    }
+    pub fn iter(
+        &self,
+    ) -> impl Iterator<Item = (&Url, &Vec<Region<FutureOrCurrentNairobiTZDateTime>>)> {
+        self.0.iter()
     }
 }

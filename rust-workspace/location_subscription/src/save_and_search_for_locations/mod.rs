@@ -9,12 +9,14 @@ use crate::db_access::DbAccess;
 use crate::save_and_search_for_locations::searcheable_candidate::NonAcronymString;
 use anyhow::{anyhow, Context};
 use entities::locations::{ExternalLocationId, LocationId};
-use entities::power_interruptions::location::{AreaName, FutureOrCurrentNairobiTZDateTime};
 use futures::{stream::FuturesUnordered, StreamExt};
 use itertools::Itertools;
 use searcheable_candidate::SearcheableCandidates;
 use serde::Deserialize;
-use shared_kernel::date_time::nairobi_date_time::NairobiTZDateTime;
+use shared_kernel::area_name::AreaName;
+use shared_kernel::date_time::nairobi_date_time::{
+    FutureOrCurrentNairobiTZDateTime, NairobiTZDateTime,
+};
 use shared_kernel::date_time::time_frame::TimeFrame;
 use shared_kernel::uuid_key;
 use sqlx::types::chrono::{DateTime, Utc};
@@ -461,8 +463,8 @@ mod directly_affected_location {
     };
     use anyhow::Context;
     use entities::locations::LocationId;
-    use entities::power_interruptions::location::AreaName;
     use itertools::Itertools;
+    use shared_kernel::area_name::AreaName;
 
     use crate::save_and_search_for_locations::searcheable_candidate::SearcheableCandidates;
 
@@ -603,8 +605,8 @@ mod potentially_affected_location {
     use anyhow::anyhow;
     use anyhow::Context;
     use entities::locations::LocationId;
-    use entities::power_interruptions::location::AreaName;
     use itertools::Itertools;
+    use shared_kernel::area_name::AreaName;
 
     #[tracing::instrument(err, skip(db), level = "info")]
     pub async fn execute(
@@ -740,10 +742,10 @@ mod affected_locations_in_an_area {
     use crate::db_access::DbAccess;
     use crate::save_and_search_for_locations::AffectedLocation;
     use anyhow::Context;
-    use entities::power_interruptions::location::AreaName;
     use futures::stream::FuturesUnordered;
     use futures::StreamExt;
     use itertools::Itertools;
+    use shared_kernel::area_name::AreaName;
     use std::collections::{HashMap, HashSet};
     use url::Url;
     use uuid::Uuid;

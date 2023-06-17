@@ -1,6 +1,6 @@
 use crate::db_access::DbAccess;
+use crate::pdf_reader::ImportInput;
 use anyhow::Context;
-use entities::power_interruptions::location::ImportInput;
 
 pub struct ImportPowerInterruptionsDbAccess {
     pub(crate) db: DbAccess,
@@ -39,11 +39,12 @@ impl ImportPowerInterruptionsDbAccess {
 
 mod save_data {
     use crate::contracts::import_interruptions::db_access::counties::{DbCounty, DbCountyId};
+    use crate::pdf_reader::{Area, Region};
     use anyhow::Context;
-    use entities::power_interruptions::location::{
-        Area, AreaName, FutureOrCurrentNairobiTZDateTime, Region,
+    use shared_kernel::area_name::AreaName;
+    use shared_kernel::date_time::nairobi_date_time::{
+        FutureOrCurrentNairobiTZDateTime, NairobiTZDateTime,
     };
-    use shared_kernel::date_time::nairobi_date_time::NairobiTZDateTime;
     use sqlx::query;
     use std::collections::{HashMap, HashSet};
     use std::iter;
