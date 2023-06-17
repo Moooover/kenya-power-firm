@@ -1,7 +1,5 @@
-use crate::locations::LocationId;
 use chrono::DateTime;
 use chrono_tz::Tz;
-use serde::{Deserialize, Serialize};
 use shared_kernel::date_time::nairobi_date_time::NairobiTZDateTime;
 use shared_kernel::date_time::time_frame::TimeFrame;
 use shared_kernel::string_key;
@@ -78,12 +76,3 @@ impl ImportInput {
         self.0.iter()
     }
 }
-
-#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
-pub struct AffectedLine<T = DateTime<Tz>> {
-    pub line: String,
-    pub location_matched: LocationId,
-    pub time_frame: TimeFrame<T>,
-}
-
-string_key!(LocationName);
