@@ -9,14 +9,13 @@ use crate::db_access::DbAccess;
 use crate::save_and_search_for_locations::searcheable_candidate::NonAcronymString;
 use anyhow::{anyhow, Context};
 use entities::locations::{ExternalLocationId, LocationId};
-use entities::power_interruptions::location::{
-    AreaName, FutureOrCurrentNairobiTZDateTime, TimeFrame,
-};
+use entities::power_interruptions::location::{AreaName, FutureOrCurrentNairobiTZDateTime};
 use futures::{stream::FuturesUnordered, StreamExt};
 use itertools::Itertools;
 use searcheable_candidate::SearcheableCandidates;
 use serde::Deserialize;
 use shared_kernel::date_time::nairobi_date_time::NairobiTZDateTime;
+use shared_kernel::date_time::time_frame::TimeFrame;
 use shared_kernel::uuid_key;
 use sqlx::types::chrono::{DateTime, Utc};
 use sqlx::types::Json;
