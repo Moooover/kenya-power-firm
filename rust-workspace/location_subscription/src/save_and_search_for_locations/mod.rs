@@ -16,6 +16,7 @@ use futures::{stream::FuturesUnordered, StreamExt};
 use itertools::Itertools;
 use searcheable_candidate::SearcheableCandidates;
 use serde::Deserialize;
+use shared_kernel::date_time::nairobi_date_time::NairobiTZDateTime;
 use shared_kernel::uuid_key;
 use sqlx::types::chrono::{DateTime, Utc};
 use sqlx::types::Json;
@@ -23,7 +24,6 @@ use std::collections::HashMap;
 use tracing::error;
 use url::Url;
 use uuid::Uuid;
-use shared_kernel::nairobi_date_time::NairobiTZDateTime;
 
 uuid_key!(NearbyLocationId);
 

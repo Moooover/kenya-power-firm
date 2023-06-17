@@ -2,7 +2,7 @@ use entities::locations::LocationId;
 use entities::power_interruptions::location::LocationName;
 use entities::subscriptions::SubscriberId;
 use serde::{Deserialize, Serialize};
-use shared_kernel::nairobi_date_time::NairobiTZDateTime;
+use shared_kernel::date_time::nairobi_date_time::NairobiTZDateTime;
 use shared_kernel::uuid_key;
 use url::Url;
 

@@ -4,7 +4,7 @@ pub mod email;
 use entities::locations::LocationId;
 use entities::subscriptions::SubscriberId;
 use serde::{Deserialize, Serialize};
-use shared_kernel::nairobi_date_time::NairobiTZDateTime;
+use shared_kernel::date_time::nairobi_date_time::NairobiTZDateTime;
 use url::Url;
 
 #[derive(Clone, Serialize, Deserialize, Debug)]

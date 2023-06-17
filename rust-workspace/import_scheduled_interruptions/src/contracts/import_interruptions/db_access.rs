@@ -43,12 +43,12 @@ mod save_data {
     use entities::power_interruptions::location::{
         Area, AreaName, FutureOrCurrentNairobiTZDateTime, Region,
     };
+    use shared_kernel::date_time::nairobi_date_time::NairobiTZDateTime;
     use sqlx::query;
     use std::collections::{HashMap, HashSet};
     use std::iter;
     use url::Url;
     use uuid::Uuid;
-    use shared_kernel::nairobi_date_time::NairobiTZDateTime;
 
     pub struct BlackoutSchedule {
         pub id: Uuid,

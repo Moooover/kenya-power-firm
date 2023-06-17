@@ -2,7 +2,7 @@ use crate::locations::LocationId;
 use chrono::DateTime;
 use chrono_tz::Tz;
 use serde::{Deserialize, Serialize};
-use shared_kernel::nairobi_date_time::NairobiTZDateTime;
+use shared_kernel::date_time::nairobi_date_time::NairobiTZDateTime;
 use shared_kernel::string_key;
 use std::collections::HashMap;
 use url::Url;
