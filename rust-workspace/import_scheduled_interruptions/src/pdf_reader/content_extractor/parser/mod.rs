@@ -11,6 +11,7 @@ use crate::pdf_reader::content_extractor::token::{Area, County, Region};
 use anyhow::{anyhow, Context, Error};
 use chrono::{NaiveDate, NaiveTime};
 use lazy_static::lazy_static;
+use shared_kernel::date_time::time_frame::TimeFrame;
 
 mod filter_out_comments;
 
@@ -215,36 +216,46 @@ impl Parser {
             "Area".to_string()
         )?;
 
-        let date = consume_expected_token!(
-            self.tokens,
-            Token::Date(Date { date, .. }),
-            NaiveDate::parse_from_str(&date, "%d.%m.%Y")
-                .with_context(|| format!("Failed to parse the Date. {date:?}"))
-                .map_err(ParseError::ValidationError),
-            "Date".to_owned()
-        )??;
+        fn matches_date(token: Option<&Token>) -> bool {
+            matches!(token, Some(&Token::Date(_)))
+        }
 
-        let (start, end) = consume_expected_token!(
-            self.tokens,
-            Token::Time(time),
-            time.parse(),
-            "Time".to_owned()
-        )??;
+        let mut dates = vec![];
 
-        let from = date
-            .and_time(start)
-            .try_into()
-            .map_err(|err| ParseError::ValidationError(anyhow!("{err}")))?;
-        let to = date
-            .and_time(end)
-            .try_into()
-            .map_err(|err| ParseError::ValidationError(anyhow!("{err}")))?;
+        while matches_date(self.tokens.peek()) {
+            let date = consume_expected_token!(
+                self.tokens,
+                Token::Date(Date { date, .. }),
+                NaiveDate::parse_from_str(&date, "%d.%m.%Y")
+                    .with_context(|| format!("Failed to parse the Date. {date:?}"))
+                    .map_err(ParseError::ValidationError),
+                "Date".to_owned()
+            )??;
+
+            let (start, end) = consume_expected_token!(
+                self.tokens,
+                Token::Time(time),
+                time.parse(),
+                "Time".to_owned()
+            )??;
+
+            let from = date
+                .and_time(start)
+                .try_into()
+                .map_err(|err| ParseError::ValidationError(anyhow!("{err}")))?;
+            let to = date
+                .and_time(end)
+                .try_into()
+                .map_err(|err| ParseError::ValidationError(anyhow!("{err}")))?;
+
+            dates.push(TimeFrame { from, to })
+        }
+
         let pins = self.locations()?;
 
         Ok(Area {
             name,
-            to,
-            from,
+            time_frame: dates,
             locations: pins,
         })
     }

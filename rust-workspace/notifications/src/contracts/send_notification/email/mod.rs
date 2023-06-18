@@ -29,9 +29,9 @@ mod email_notification {
         AffectedSubscriber, AffectedSubscriberWithLocations, LocationMatchedAndLineSchedule,
     };
     use crate::db_access::DbNotificationIdempotencyKey;
-    use entities::locations::LocationId;
     use entities::subscriptions::SubscriberId;
     use itertools::Itertools;
+    use shared_kernel::location_ids::LocationId;
     use std::collections::{HashMap, HashSet};
     use url::Url;
 
@@ -266,7 +266,7 @@ mod email_notification_sender {
                 locations
                     .get(&affected_line.location_id)
                     .map(|location_details| {
-                        AffectedLocation::generate(affected_line, location_details.name.to_string())
+                        AffectedLocation::generate(affected_line, location_details.name.clone())
                     })
             })
             .collect::<Vec<_>>();

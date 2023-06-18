@@ -3,7 +3,7 @@ mod db_access;
 use crate::contracts::get_affected_subscribers_from_import::db_access::AffectedSubscribersDbAccess;
 use crate::data_transfer::{AffectedSubscriber, LocationMatchedAndLineSchedule};
 use crate::save_and_search_for_locations::AffectedLocation;
-use entities::power_interruptions::location::FutureOrCurrentNairobiTZDateTime;
+use shared_kernel::date_time::nairobi_date_time::FutureOrCurrentNairobiTZDateTime;
 use std::collections::HashMap;
 use url::Url;
 

@@ -1,6 +1,6 @@
-use entities::locations::{ExternalLocationId, LocationId};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::Value;
+use shared_kernel::location_ids::{ExternalLocationId, LocationId};
 use std::fmt::Debug;
 
 use self::algolia_search_engine::AlgoliaClient;
@@ -73,7 +73,7 @@ pub mod import_primary_locations {
 
 pub mod save_primary_location {
     use anyhow::Context;
-    use entities::locations::{ExternalLocationId, LocationId};
+    use shared_kernel::location_ids::{ExternalLocationId, LocationId};
 
     use crate::save_and_search_for_locations::search_engine::{LocationDTO, SearchEngine};
     pub const PRIMARY_LOCATIONS_INDEX: &str = "primary_locations";
@@ -105,9 +105,10 @@ pub mod save_primary_location {
 pub mod directly_affected_area_locations {
     use std::collections::HashMap;
 
-    use entities::{locations::LocationId, power_interruptions::location::AreaName};
     use futures::{stream::FuturesUnordered, StreamExt};
     use itertools::Itertools;
+    use shared_kernel::area_name::AreaName;
+    use shared_kernel::location_ids::LocationId;
 
     use crate::save_and_search_for_locations::searcheable_candidate::SearcheableAreaName;
 
@@ -235,7 +236,7 @@ pub mod import_nearby_locations {
 
 pub mod save_nearby_location {
     use anyhow::Context;
-    use entities::locations::LocationId;
+    use shared_kernel::location_ids::LocationId;
 
     use crate::save_and_search_for_locations::NearbyLocationId;
 
@@ -266,9 +267,10 @@ pub mod save_nearby_location {
 pub mod potentially_affected_area_locations {
     use std::collections::HashMap;
 
-    use entities::{locations::LocationId, power_interruptions::location::AreaName};
     use futures::{stream::FuturesUnordered, StreamExt};
     use itertools::Itertools;
+    use shared_kernel::area_name::AreaName;
+    use shared_kernel::location_ids::LocationId;
 
     use crate::save_and_search_for_locations::searcheable_candidate::SearcheableAreaName;
 

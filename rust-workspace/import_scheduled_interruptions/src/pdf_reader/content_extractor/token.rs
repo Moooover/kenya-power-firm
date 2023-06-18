@@ -1,10 +1,10 @@
-use entities::power_interruptions::location::NairobiTZDateTime;
+use shared_kernel::date_time::nairobi_date_time::NairobiTZDateTime;
+use shared_kernel::date_time::time_frame::TimeFrame;
 
 #[derive(Debug)]
 pub struct Area {
     pub name: String,
-    pub from: NairobiTZDateTime,
-    pub to: NairobiTZDateTime,
+    pub time_frame: Vec<TimeFrame<NairobiTZDateTime>>,
     pub locations: Vec<String>,
 }
 

@@ -1,23 +1,7 @@
-use crate::locations::LocationId;
 use chrono::{DateTime, NaiveDate, NaiveDateTime, TimeZone, Utc};
 use chrono_tz::Africa::Nairobi;
 use chrono_tz::Tz;
 use serde::{Deserialize, Serialize};
-use shared_kernel::string_key;
-use std::collections::HashMap;
-use url::Url;
-
-#[derive(Debug, Clone)]
-pub struct County<T> {
-    pub name: String,
-    pub areas: Vec<Area<T>>,
-}
-
-#[derive(Debug)]
-pub struct Region<T = FutureOrCurrentNairobiTZDateTime> {
-    pub region: String,
-    pub counties: Vec<County<T>>,
-}
 
 #[derive(Debug, Clone, Hash, Eq, PartialEq, Serialize, Deserialize)]
 /// NairobiTZDateTime stores the time as `DateTime<UTC>` for easier serialization
@@ -29,7 +13,7 @@ impl NairobiTZDateTime {
         NairobiTZDateTime(Utc::now())
     }
 
-    fn date(&self) -> NaiveDate {
+    pub fn date(&self) -> NaiveDate {
         self.0.date_naive()
     }
 
@@ -69,12 +53,6 @@ impl AsRef<NairobiTZDateTime> for FutureOrCurrentNairobiTZDateTime {
     }
 }
 
-impl From<&FutureOrCurrentNairobiTZDateTime> for NairobiTZDateTime {
-    fn from(value: &FutureOrCurrentNairobiTZDateTime) -> Self {
-        value.0.clone()
-    }
-}
-
 impl FutureOrCurrentNairobiTZDateTime {
     pub fn to_date_time(&self) -> DateTime<Tz> {
         self.0.to_date_time()
@@ -96,40 +74,8 @@ impl TryFrom<NairobiTZDateTime> for FutureOrCurrentNairobiTZDateTime {
     }
 }
 
-string_key!(AreaName);
-
-#[derive(Debug, Clone)]
-pub struct Area<T> {
-    pub name: AreaName,
-    pub time_frame: TimeFrame<T>,
-    pub locations: Vec<String>,
-}
-
-#[derive(Debug)]
-pub struct ImportInput(HashMap<Url, Vec<Region<FutureOrCurrentNairobiTZDateTime>>>);
-
-impl ImportInput {
-    pub fn new(data: HashMap<Url, Vec<Region<FutureOrCurrentNairobiTZDateTime>>>) -> Self {
-        Self(data)
-    }
-    pub fn iter(
-        &self,
-    ) -> impl Iterator<Item = (&Url, &Vec<Region<FutureOrCurrentNairobiTZDateTime>>)> {
-        self.0.iter()
+impl From<&FutureOrCurrentNairobiTZDateTime> for NairobiTZDateTime {
+    fn from(value: &FutureOrCurrentNairobiTZDateTime) -> Self {
+        value.0.clone()
     }
 }
-
-#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
-pub struct TimeFrame<T> {
-    pub from: T,
-    pub to: T,
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
-pub struct AffectedLine<T = DateTime<Tz>> {
-    pub line: String,
-    pub location_matched: LocationId,
-    pub time_frame: TimeFrame<T>,
-}
-
-string_key!(LocationName);

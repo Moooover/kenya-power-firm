@@ -1,9 +1,8 @@
+use crate::pdf_reader::{Area as EntityArea, County as EntityCounty, Region as EntityRegion};
 use anyhow::anyhow;
-use entities::power_interruptions::location::{
-    Area as EntityArea, County as EntityCounty, FutureOrCurrentNairobiTZDateTime,
-    Region as EntityRegion, TimeFrame,
-};
 use itertools::Itertools;
+use shared_kernel::date_time::nairobi_date_time::FutureOrCurrentNairobiTZDateTime;
+use shared_kernel::date_time::time_frame::TimeFrame;
 
 use crate::pdf_reader::content_extractor::token::{Area, County, Region};
 
@@ -33,8 +32,8 @@ impl From<County> for EntityCounty<FutureOrCurrentNairobiTZDateTime> {
         let areas = value
             .areas
             .into_iter()
-            .flat_map(TryFrom::try_from)
-            .collect();
+            .flat_map(|area| area.to_entity_areas())
+            .collect_vec();
         EntityCounty {
             name: value.name,
             areas,
@@ -42,16 +41,23 @@ impl From<County> for EntityCounty<FutureOrCurrentNairobiTZDateTime> {
     }
 }
 
-impl TryFrom<Area> for EntityArea<FutureOrCurrentNairobiTZDateTime> {
-    type Error = String;
-
-    fn try_from(value: Area) -> Result<Self, Self::Error> {
-        let from = FutureOrCurrentNairobiTZDateTime::try_from(value.from)?;
-        let to = FutureOrCurrentNairobiTZDateTime::try_from(value.to)?;
-        Ok(EntityArea {
-            name: value.name.into(),
-            time_frame: TimeFrame { from, to },
-            locations: value.locations,
-        })
+impl Area {
+    fn to_entity_areas(self) -> Vec<EntityArea<FutureOrCurrentNairobiTZDateTime>> {
+        self.time_frame
+            .into_iter()
+            .map(|time_frame| {
+                FutureOrCurrentNairobiTZDateTime::try_from(time_frame.from)
+                    .and_then(|from| {
+                        FutureOrCurrentNairobiTZDateTime::try_from(time_frame.to)
+                            .map(|to| TimeFrame { from, to })
+                    })
+                    .map(|time_frame| EntityArea {
+                        name: self.name.clone().into(),
+                        time_frame,
+                        locations: self.locations.clone(),
+                    })
+            })
+            .flatten()
+            .collect()
     }
 }

@@ -1,6 +1,6 @@
 mod db_access;
 
-use entities::locations::ExternalLocationId;
+use shared_kernel::location_ids::ExternalLocationId;
 
 use crate::contracts::subscribe::db_access::SubscriptionDbAccess;
 use crate::data_transfer::{
@@ -120,10 +120,10 @@ mod main_location_search_and_save {
     use crate::contracts::subscribe::search_utils::StatusCode;
     use crate::save_and_search_for_locations::{LocationInput, LocationWithCoordinates};
     use anyhow::{anyhow, bail, Context};
-    use entities::locations::ExternalLocationId;
     use secrecy::ExposeSecret;
     use serde::Deserialize;
     use shared_kernel::http_client::HttpClient;
+    use shared_kernel::location_ids::ExternalLocationId;
     use url::Url;
 
     fn generate_url(id: ExternalLocationId) -> anyhow::Result<Url> {

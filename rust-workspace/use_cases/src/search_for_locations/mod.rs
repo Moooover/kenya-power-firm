@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use entities::locations::ExternalLocationId;
+use shared_kernel::location_ids::ExternalLocationId;
 
 use crate::{
     actor::Actor, authentication::subscriber_authentication::SubscriberResolverInteractor,

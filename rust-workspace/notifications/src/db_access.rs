@@ -1,13 +1,13 @@
 use crate::config::SETTINGS_CONFIG;
 use anyhow::{anyhow, Context};
 use async_once::AsyncOnce;
-use entities::locations::{LocationDetails, LocationId, LocationName};
 use entities::subscriptions::details::{
     SubscriberDetails, SubscriberEmail, SubscriberExternalId, SubscriberName,
 };
 use entities::subscriptions::SubscriberId;
 use itertools::Itertools;
 use lazy_static::lazy_static;
+use shared_kernel::location_ids::LocationId;
 use shared_kernel::uuid_key;
 use sqlx_postgres::pool_manager::{PoolManager, PoolWrapper};
 use std::collections::{HashMap, HashSet};
@@ -98,7 +98,7 @@ impl DbAccess {
                     LocationId::from(record.id),
                     LocationDetails {
                         id: LocationId::from(record.id),
-                        name: LocationName::from(record.name),
+                        name: record.name,
                     },
                 )
             })
@@ -147,4 +147,10 @@ impl DbNotificationIdempotencyKey {
             })
             .collect())
     }
+}
+
+#[derive(Clone, PartialEq, Eq, Hash)]
+pub struct LocationDetails {
+    pub id: LocationId,
+    pub name: String,
 }

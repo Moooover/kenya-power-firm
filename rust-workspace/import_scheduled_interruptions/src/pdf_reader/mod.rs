@@ -1,9 +1,11 @@
 mod content_extractor;
 
 use anyhow::bail;
-use entities::power_interruptions::location::Region;
 use futures::stream::FuturesUnordered;
 use futures::StreamExt;
+use shared_kernel::area_name::AreaName;
+use shared_kernel::date_time::nairobi_date_time::FutureOrCurrentNairobiTZDateTime;
+use shared_kernel::date_time::time_frame::TimeFrame;
 use std::collections::HashMap;
 use tracing::error;
 use url::Url;
@@ -19,10 +21,8 @@ impl PdfReader {
     pub async fn extract(&self, links: Vec<Url>) -> anyhow::Result<HashMap<Url, Vec<Region>>> {
         let number_of_links = links.len();
 
-        let mut futures: FuturesUnordered<_> = links
-            .into_iter()
-            .map(|url| fetch_and_extract::execute(url))
-            .collect();
+        let mut futures: FuturesUnordered<_> =
+            links.into_iter().map(fetch_and_extract::execute).collect();
 
         let mut errors = vec![];
         let mut results = HashMap::with_capacity(number_of_links);
@@ -49,8 +49,8 @@ impl PdfReader {
 
 mod fetch_and_extract {
     use crate::pdf_reader::content_extractor::extract;
+    use crate::pdf_reader::Region;
     use anyhow::Context;
-    use entities::power_interruptions::location::Region;
     use shared_kernel::http_client::HttpClient;
     use url::Url;
 
@@ -59,7 +59,7 @@ mod fetch_and_extract {
         let file_bytes = HttpClient::get_bytes(url.clone()).await?;
         let text = extract_text_from_mem(&file_bytes).context("Failed to extract pdf to text")?;
         let regions = extract(text)?;
-        return Ok((url, regions));
+        Ok((url, regions))
     }
 }
 
@@ -69,13 +69,45 @@ mod tests {
 
     #[tokio::test]
     async fn test_pdf_reader() {
-        let url = Url::parse(
-            "https://www.kplc.co.ke/img/full/Interruption%20Notices%20-%2018.05.2022.pdf",
-        )
-        .unwrap();
+        let url =
+            Url::parse("https://kplc.co.ke/img/full/Interruption%20-%2015.06.2023.pdf").unwrap();
         let urls = vec![url];
         let pdf_reader = super::PdfReader::new();
         let result = pdf_reader.extract(urls).await.unwrap();
+
         println!("{:?}", result);
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct County<T> {
+    pub name: String,
+    pub areas: Vec<Area<T>>,
+}
+
+#[derive(Debug)]
+pub struct Region<T = FutureOrCurrentNairobiTZDateTime> {
+    pub region: String,
+    pub counties: Vec<County<T>>,
+}
+
+#[derive(Debug, Clone)]
+pub struct Area<T> {
+    pub name: AreaName,
+    pub time_frame: TimeFrame<T>,
+    pub locations: Vec<String>,
+}
+
+#[derive(Debug)]
+pub struct ImportInput(HashMap<Url, Vec<Region<FutureOrCurrentNairobiTZDateTime>>>);
+
+impl ImportInput {
+    pub fn new(data: HashMap<Url, Vec<Region<FutureOrCurrentNairobiTZDateTime>>>) -> Self {
+        Self(data)
+    }
+    pub fn iter(
+        &self,
+    ) -> impl Iterator<Item = (&Url, &Vec<Region<FutureOrCurrentNairobiTZDateTime>>)> {
+        self.0.iter()
     }
 }

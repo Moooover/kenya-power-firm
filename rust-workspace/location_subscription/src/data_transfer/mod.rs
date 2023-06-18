@@ -1,11 +1,12 @@
-use entities::locations::LocationId;
-use entities::power_interruptions::location::{LocationName, NairobiTZDateTime};
 use entities::subscriptions::SubscriberId;
 use serde::{Deserialize, Serialize};
-use shared_kernel::uuid_key;
+use shared_kernel::date_time::nairobi_date_time::NairobiTZDateTime;
+use shared_kernel::location_ids::LocationId;
+use shared_kernel::{string_key, uuid_key};
 use url::Url;
 
 uuid_key!(LineScheduleId);
+string_key!(LocationName);
 
 #[derive(Deserialize, Serialize, Debug, Eq, PartialEq, Hash, Clone, Copy)]
 pub enum AffectedSubscriber {
