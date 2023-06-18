@@ -69,13 +69,12 @@ mod tests {
 
     #[tokio::test]
     async fn test_pdf_reader() {
-        let url = Url::parse(
-            "https://www.kplc.co.ke/img/full/Interruption%20Notices%20-%2018.05.2022.pdf",
-        )
-        .unwrap();
+        let url =
+            Url::parse("https://kplc.co.ke/img/full/Interruption%20-%2015.06.2023.pdf").unwrap();
         let urls = vec![url];
         let pdf_reader = super::PdfReader::new();
         let result = pdf_reader.extract(urls).await.unwrap();
+
         println!("{:?}", result);
     }
 }
