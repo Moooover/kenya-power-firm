@@ -1,7 +1,7 @@
 use crate::contracts::import_interruptions::db_access::ImportPowerInterruptionsDbAccess;
+use crate::pdf_reader::ImportInput;
 use crate::pdf_reader::PdfReader;
 use crate::web_page_reader::WebPageReader;
-use entities::power_interruptions::location::ImportInput;
 
 mod db_access;
 

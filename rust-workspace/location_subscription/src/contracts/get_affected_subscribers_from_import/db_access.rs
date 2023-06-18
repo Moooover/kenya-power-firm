@@ -5,9 +5,9 @@ use crate::data_transfer::{
 use crate::db_access::DbAccess;
 use crate::save_and_search_for_locations::{AffectedLocation, SaveAndSearchLocations};
 use anyhow::Context;
-use entities::locations::LocationId;
 use entities::subscriptions::SubscriberId;
 use itertools::Itertools;
+use shared_kernel::location_ids::LocationId;
 use std::collections::HashMap;
 use std::iter;
 use url::Url;

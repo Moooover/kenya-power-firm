@@ -1,9 +1,9 @@
-use entities::power_interruptions::location::AreaName;
 use itertools::Itertools;
 use lazy_static::lazy_static;
 use regex::Captures;
 use regex::Regex;
 use regex::RegexBuilder;
+use shared_kernel::area_name::AreaName;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 

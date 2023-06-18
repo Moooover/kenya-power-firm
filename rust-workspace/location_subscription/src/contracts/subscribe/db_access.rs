@@ -4,8 +4,8 @@ use crate::save_and_search_for_locations::{
     SaveAndSearchLocations,
 };
 use anyhow::Context;
-use entities::locations::{ExternalLocationId, LocationId};
 use entities::subscriptions::SubscriberId;
+use shared_kernel::location_ids::{ExternalLocationId, LocationId};
 
 use url::Url;
 

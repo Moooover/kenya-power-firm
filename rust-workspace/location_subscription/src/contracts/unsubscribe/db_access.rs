@@ -1,7 +1,7 @@
 use crate::db_access::DbAccess;
 use anyhow::Context;
-use entities::locations::LocationId;
 use entities::subscriptions::SubscriberId;
+use shared_kernel::location_ids::LocationId;
 
 pub struct UnsubscribeDbAccess {
     db: DbAccess,

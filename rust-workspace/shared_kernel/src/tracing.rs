@@ -21,7 +21,7 @@ fn init_tracer() -> Result<Tracer, TraceError> {
                 .http()
                 .with_endpoint("https://api.honeycomb.io/v1/traces")
                 .with_http_client(reqwest::Client::default())
-                .with_headers(HashMap::from([("x-honeycomb-team".into(), key.into())]))
+                .with_headers(HashMap::from([("x-honeycomb-team".into(), key)]))
                 .with_timeout(std::time::Duration::from_secs(2)),
         )
         .install_batch(opentelemetry::runtime::TokioCurrentThread)
