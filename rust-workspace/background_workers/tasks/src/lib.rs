@@ -12,6 +12,7 @@ extern crate num_cpus;
 
 pub mod configuration;
 pub mod constants;
+pub mod producer;
 pub(crate) mod rate_limiting;
 pub mod tasks;
 pub mod utils;

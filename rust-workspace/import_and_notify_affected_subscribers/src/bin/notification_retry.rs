@@ -1,6 +1,5 @@
 use location_subscription::contracts::get_currently_affected_subscribers::CurrentlyAffectedSubscribersInteractor;
-use producer::producer::Producer;
-
+use tasks::producer::Producer;
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     shared_kernel::tracing::config_telemetry();

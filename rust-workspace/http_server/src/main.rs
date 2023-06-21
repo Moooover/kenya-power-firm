@@ -7,8 +7,8 @@ use actix_web::{http, web, App, HttpServer};
 
 use anyhow::{Context, Error};
 use location_subscription::contracts::LocationSubscriptionSubSystem;
-use producer::producer::Producer;
 use sqlx_postgres::repository::Repository;
+use tasks::producer::Producer;
 use tracing::info;
 use use_cases::AppImpl;
 

@@ -20,11 +20,11 @@ jsonwebtoken = "8.2.0"
 lazy_static = "1.4.0"
 ureq = { version = "2.6", features = ["json"] }
 url = { version = "2.3.1", features = ["serde"] }
-producer = { path = "../background_workers/producer" }
 use_cases = { path = "../use_cases" }
 sqlx_postgres = { path = "../storage/sqlx_postgres" }
 shared_kernel = { path = "../shared_kernel" }
 location_subscription = { path = "../location_subscription" }
+tasks = { path="../background_workers/tasks" }
 itertools = "0.10.5"
 
 

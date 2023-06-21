@@ -1,6 +1,10 @@
+mod notifications;
+mod subscribe_to_location;
+mod text_search;
+
+use crate::app;
 use celery::Celery;
 use std::sync::Arc;
-use tasks::app;
 
 #[derive(Clone)]
 pub struct Producer {

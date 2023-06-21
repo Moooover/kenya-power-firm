@@ -1,11 +1,11 @@
 use crate::producer::Producer;
+use crate::tasks::text_search::search_locations_by_text;
+use crate::utils::progress_tracking::{get_progress_status, set_progress_status, TaskStatus};
 use anyhow::Context;
 use async_trait::async_trait;
 use location_search::contracts::text_search::TextSearcher;
 use std::str::FromStr;
 use std::string::ToString;
-use tasks::tasks::text_search::search_locations_by_text;
-use tasks::utils::progress_tracking::{get_progress_status, set_progress_status, TaskStatus};
 use use_cases::search_for_locations::{
     LocationApiResponse, LocationResponseWithStatus, LocationSearchApi, Status,
 };
