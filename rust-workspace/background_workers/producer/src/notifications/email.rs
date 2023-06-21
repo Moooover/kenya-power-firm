@@ -7,7 +7,7 @@ use futures::stream::FuturesUnordered;
 use futures::StreamExt;
 use notifications::contracts::send_notification::AffectedSubscriberWithLocations;
 use std::sync::Arc;
-use tasks::send_notifications::email::send_email_notification;
+use tasks::tasks::send_notifications::email::send_email_notification;
 use tracing::error;
 
 pub struct EmailStrategy {

@@ -3,7 +3,7 @@ use celery::error::TaskError;
 use celery::prelude::Task;
 use celery::task::TaskResult;
 
-use crate::utils::rate_limiting::EmailAPIRateLimiter;
+use crate::rate_limiting::EmailAPIRateLimiter;
 use notifications::contracts::send_notification::AffectedSubscriberWithLocations;
 
 #[celery::task(max_retries = 200, bind=true, retry_for_unexpected = false, on_failure = failure_callback)]

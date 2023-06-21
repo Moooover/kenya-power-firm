@@ -5,7 +5,7 @@ use entities::subscriptions::SubscriberId;
 use shared_kernel::location_ids::ExternalLocationId;
 use std::str::FromStr;
 use tasks::{
-    subscribe_to_location::fetch_and_subscribe_to_location,
+    tasks::subscribe_to_location::fetch_and_subscribe_to_location,
     utils::progress_tracking::{get_progress_status, TaskStatus},
 };
 use use_cases::search_for_locations::Status;

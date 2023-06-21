@@ -4,7 +4,7 @@ use shared_kernel::location_ids::ExternalLocationId;
 
 use entities::subscriptions::SubscriberId;
 
-use crate::send_notifications::email::send_email_notification;
+use crate::tasks::send_notifications::email::send_email_notification;
 
 use notifications::contracts::send_notification::LocationMatchedAndLineSchedule as NotificationLocationMatchedAndLineSchedule;
 use notifications::contracts::send_notification::{
@@ -15,11 +15,11 @@ use location_subscription::contracts::subscribe::SubscribeToLocationError;
 use location_subscription::data_transfer::AffectedSubscriber;
 use notifications::contracts::send_notification::AffectedSubscriberWithLocations;
 
+use crate::rate_limiting::GoogleAPIRateLimiter;
 use use_cases::subscriber_locations::subscribe_to_location::TaskId;
 
 use crate::utils::callbacks::failure_callback;
 use crate::utils::progress_tracking::{set_progress_status, TaskStatus};
-use crate::utils::rate_limiting::GoogleAPIRateLimiter;
 
 #[tracing::instrument(skip(task), level = "debug")]
 #[celery::task(max_retries = 200, bind = true, retry_for_unexpected = false, on_failure = failure_callback)]
