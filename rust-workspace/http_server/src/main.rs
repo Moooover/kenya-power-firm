@@ -6,9 +6,9 @@ use actix_governor::{Governor, GovernorConfigBuilder};
 use actix_web::{http, web, App, HttpServer};
 
 use anyhow::{Context, Error};
+use background_workers::producer::Producer;
 use location_subscription::contracts::LocationSubscriptionSubSystem;
 use sqlx_postgres::repository::Repository;
-use tasks::producer::Producer;
 use tracing::info;
 use use_cases::AppImpl;
 

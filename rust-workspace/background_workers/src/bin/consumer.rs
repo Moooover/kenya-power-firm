@@ -1,5 +1,5 @@
 use anyhow::Context;
-use tasks::app;
+use background_workers::app;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
