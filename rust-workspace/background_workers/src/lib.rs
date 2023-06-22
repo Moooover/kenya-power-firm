@@ -1,20 +1,20 @@
-use crate::subscribe_to_location::fetch_and_subscribe_to_location;
+use tasks::send_notifications::email::send_email_notification;
+use tasks::subscribe_to_location::fetch_and_subscribe_to_location;
+use tasks::text_search::search_locations_by_text;
 
 use crate::configuration::SETTINGS_CONFIG;
-use crate::send_notifications::email::send_email_notification;
 use anyhow::Context;
 use celery::Celery;
 
 use std::sync::Arc;
-use text_search::search_locations_by_text;
 
 extern crate num_cpus;
 
 pub mod configuration;
 pub mod constants;
-pub mod send_notifications;
-pub mod subscribe_to_location;
-pub mod text_search;
+pub mod producer;
+pub(crate) mod rate_limiting;
+pub mod tasks;
 pub mod utils;
 
 const QUEUE_NAME: &str = "celery";

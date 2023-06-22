@@ -1,9 +1,9 @@
+use crate::rate_limiting::GoogleAPIRateLimiter;
 use celery::prelude::Task;
 use celery::{prelude::TaskError, task::TaskResult};
 use location_search::contracts::text_search::TextSearcher;
 
 use crate::utils::callbacks::failure_callback;
-use crate::utils::rate_limiting::GoogleAPIRateLimiter;
 
 #[celery::task(bind=true, max_retries = 200, retry_for_unexpected = false, on_failure = failure_callback)]
 pub async fn search_locations_by_text(task: &Self, text: String) -> TaskResult<()> {

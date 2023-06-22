@@ -1,13 +1,13 @@
-use crate::notifications::DeliveryStrategy;
+use crate::producer::notifications::DeliveryStrategy;
 use anyhow::bail;
 use async_trait::async_trait;
 use celery::Celery;
 
+use crate::tasks::send_notifications::email::send_email_notification;
 use futures::stream::FuturesUnordered;
 use futures::StreamExt;
 use notifications::contracts::send_notification::AffectedSubscriberWithLocations;
 use std::sync::Arc;
-use tasks::send_notifications::email::send_email_notification;
 use tracing::error;
 
 pub struct EmailStrategy {

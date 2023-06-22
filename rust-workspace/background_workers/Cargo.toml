@@ -1,5 +1,5 @@
 [package]
-name = "tasks"
+name = "background_workers"
 version = "0.1.0"
 edition = "2021"
 
@@ -30,13 +30,13 @@ futures = "0.3"
 strum = { version = "0.24", features = ["derive"] }
 strum_macros = "0.24"
 num_cpus = "1.15.0"
-entities = { path = "../../entities" }
-shared_kernel = { path = "../../shared_kernel" }
-use_cases = { path = "../../use_cases" }
-redis_client = { path = "../../storage/redis_client" }
-location_subscription = { path = "../../location_subscription" }
-notifications = { path = "../../notifications" }
-location_search = { path = "../../location_search" }
+entities = { path = "../entities" }
+shared_kernel = { path = "../shared_kernel" }
+use_cases = { path = "../use_cases" }
+redis_client = { path = "../storage/redis_client" }
+location_subscription = { path = "../location_subscription" }
+notifications = { path = "../notifications" }
+location_search = { path = "../location_search" }
 
 tracing.workspace = true
 tracing-log.workspace = true

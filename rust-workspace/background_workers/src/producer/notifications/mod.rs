@@ -1,4 +1,4 @@
-use crate::notifications::email::EmailStrategy;
+use crate::producer::notifications::email::EmailStrategy;
 use crate::producer::Producer;
 use notifications::contracts::send_notification::AffectedSubscriberWithLocations;
 

@@ -1,5 +1,5 @@
+use background_workers::producer::Producer;
 use location_subscription::contracts::get_currently_affected_subscribers::CurrentlyAffectedSubscribersInteractor;
-use producer::producer::Producer;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
