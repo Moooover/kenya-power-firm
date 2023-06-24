@@ -2,7 +2,7 @@ use itertools::Itertools;
 use location_subscription::data_transfer::{AffectedSubscriber, LocationMatchedAndLineSchedule};
 use notifications::contracts::send_notification::{
     AffectedSubscriber as NotificationAffectedSubscriber, AffectedSubscriberWithLocations,
-    LineWithScheduledInterruptionTime,
+    LineWithScheduledInterruptionTime, Location,
     LocationMatchedAndLineSchedule as NotificationLocationMatchedAndLineSchedule,
 };
 use std::collections::HashMap;
@@ -36,7 +36,10 @@ pub fn convert_data_to_producer_input(
                                 from: location.line_schedule.from,
                                 to: location.line_schedule.to,
                             },
-                            location_id: location.location_id,
+                            location: Location {
+                                location_id: location.location_id,
+                                name: location.location_name,
+                            },
                         })
                         .collect_vec(),
                 }

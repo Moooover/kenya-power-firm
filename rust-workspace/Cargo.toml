@@ -5,13 +5,13 @@ members = [
     "http_server",
     "entities",
     "shared_kernel",
-    "background_workers/*",
     "location_subscription",
     "location_search",
     "notifications",
     "import_and_notify_affected_subscribers",
-    "import_scheduled_interruptions",
-    "once_job"
+    "scheduled_interruptions",
+    "once_job",
+    "background_workers"
 ]
 
 [profile.dev.package.sqlx-macros]

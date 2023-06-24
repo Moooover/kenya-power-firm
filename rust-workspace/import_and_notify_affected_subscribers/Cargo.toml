@@ -20,10 +20,10 @@ itertools = "0.10.5"
 use_cases = { path = "../use_cases" }
 shared_kernel = { path = "../shared_kernel" }
 sqlx_postgres = { path = "../storage/sqlx_postgres" }
-producer = { path = "../background_workers/producer" }
+background_workers = { path = "../background_workers" }
 location_subscription = { path = "../location_subscription" }
 notifications = { path = "../notifications" }
-import_scheduled_interruptions = { path = "../import_scheduled_interruptions" }
+scheduled_interruptions = { path = "../scheduled_interruptions" }
 entities = { path = "../entities" }
 
 tracing.workspace = true

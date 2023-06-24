@@ -53,10 +53,8 @@ impl Repository {
             .await
             .expect("Failed to migrate the database");
 
-        let test_repo = Self {
+        Self {
             pg_pool: Arc::new(connection_pool),
-        };
-
-        test_repo
+        }
     }
 }
