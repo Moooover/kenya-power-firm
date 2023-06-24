@@ -1,4 +1,4 @@
-use import_scheduled_interruptions::contracts::import_interruptions::ImportInterruptions;
+use scheduled_interruptions::contracts::import_interruptions::ImportInterruptions;
 use itertools::Itertools;
 use location_subscription::contracts::get_affected_subscribers_from_import::AffectedSubscribersInteractor;
 use location_subscription::contracts::get_affected_subscribers_from_import::{
