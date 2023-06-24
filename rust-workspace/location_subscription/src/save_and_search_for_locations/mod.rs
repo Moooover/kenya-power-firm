@@ -10,16 +10,17 @@ use crate::save_and_search_for_locations::searcheable_candidate::NonAcronymStrin
 use anyhow::{anyhow, Context};
 use futures::{stream::FuturesUnordered, StreamExt};
 use itertools::Itertools;
+use scheduled_interruptions::contracts::{
+    future_affected_lines::BareAffectedLine, ScheduledInterruptionsContracts,
+};
 use searcheable_candidate::SearcheableCandidates;
 use serde::Deserialize;
-use shared_kernel::area_name::AreaName;
 use shared_kernel::date_time::nairobi_date_time::{
     FutureOrCurrentNairobiTZDateTime, NairobiTZDateTime,
 };
 use shared_kernel::date_time::time_frame::TimeFrame;
 use shared_kernel::location_ids::{ExternalLocationId, LocationId};
 use shared_kernel::uuid_key;
-use sqlx::types::chrono::{DateTime, Utc};
 use sqlx::types::Json;
 use std::collections::HashMap;
 use tracing::error;
@@ -276,7 +277,7 @@ impl SaveAndSearchLocations {
 
     #[tracing::instrument(err, skip(self), level = "info")]
     pub async fn currently_affected_locations(&self) -> anyhow::Result<Vec<AffectedLocation>> {
-        let bare_results = BareAffectedLine::lines_affected_in_the_future(&self.db_access).await?;
+        let bare_results = ScheduledInterruptionsContracts::lines_affected_in_the_future().await?;
         let mut results = vec![];
         for (area_name, lines) in bare_results.iter() {
             let first_line = lines.first();
@@ -300,67 +301,6 @@ impl SaveAndSearchLocations {
             }
         }
         Ok(results)
-    }
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
-pub struct BareAffectedLine {
-    pub line: String,
-    pub url: Url,
-    pub time_frame: TimeFrame<NairobiTZDateTime>,
-}
-
-impl BareAffectedLine {
-    pub(crate) async fn lines_affected_in_the_future(
-        db: &DbAccess,
-    ) -> anyhow::Result<HashMap<AreaName, Vec<Self>>> {
-        #[derive(sqlx::FromRow, Debug)]
-        struct DbAreaLine {
-            line_name: String,
-            area_name: String,
-            start_time: DateTime<Utc>,
-            end_time: DateTime<Utc>,
-            url: String,
-        }
-        let pool = db.pool().await;
-        let results = sqlx::query_as::<_, DbAreaLine>(
-            "
-                WITH upcoming_scheduled_blackouts AS (
-                  SELECT schedule.id, url, start_time, end_time FROM location.blackout_schedule schedule INNER JOIN  source ON  schedule.source_id = source.id WHERE end_time > now()
-                ), blackout_schedule_with_lines_and_areas AS (
-                  SELECT line_id, url, start_time, end_time, name, area_id FROM location.line_schedule INNER JOIN location.line ON line_schedule.line_id = location.line.id INNER JOIN upcoming_scheduled_blackouts ON line_schedule.schedule_id = upcoming_scheduled_blackouts.id
-                ),line_area_source_url AS (
-                  SELECT blackout_schedule_with_lines_and_areas.name as line_name, location.area.name as area_name, start_time, end_time , url FROM blackout_schedule_with_lines_and_areas INNER JOIN location.area ON blackout_schedule_with_lines_and_areas.area_id = location.area.id
-                )
-                SELECT * FROM line_area_source_url
-                "
-        )
-        .fetch_all(pool.as_ref())
-        .await
-        .context("Failed to get lines that will be affected")?;
-
-        let results = results
-            .into_iter()
-            .map(|data| {
-                let url_result = Url::parse(&data.url);
-                url_result.map(|url| {
-                    (
-                        data.area_name.into(),
-                        BareAffectedLine {
-                            line: data.line_name,
-                            url,
-                            time_frame: TimeFrame {
-                                from: NairobiTZDateTime::from(data.start_time),
-                                to: NairobiTZDateTime::from(data.end_time),
-                            },
-                        },
-                    )
-                })
-            })
-            .collect::<Result<Vec<_>, _>>()
-            .context("Failed to map urls")?;
-
-        Ok(results.into_iter().into_group_map())
     }
 }
 
@@ -458,15 +398,17 @@ mod directly_affected_location {
     use std::collections::HashMap;
 
     use crate::db_access::DbAccess;
+    use crate::save_and_search_for_locations::searcheable_candidate::SearcheableCandidates;
     use crate::save_and_search_for_locations::{
-        AffectedLocation, AffectedLocationGenerator, BareAffectedLine, DbLocationSearchResults,
+        AffectedLocation, AffectedLocationGenerator, DbLocationSearchResults,
     };
     use anyhow::Context;
     use itertools::Itertools;
+    use scheduled_interruptions::contracts::{
+        future_affected_lines::BareAffectedLine, ScheduledInterruptionsContracts,
+    };
     use shared_kernel::area_name::AreaName;
     use shared_kernel::location_ids::LocationId;
-
-    use crate::save_and_search_for_locations::searcheable_candidate::SearcheableCandidates;
 
     use super::search_engine;
     use anyhow::anyhow;
@@ -476,7 +418,7 @@ mod directly_affected_location {
         db: &DbAccess,
         location_id: LocationId,
     ) -> anyhow::Result<Option<AffectedLocation>> {
-        let results = BareAffectedLine::lines_affected_in_the_future(db).await?;
+        let results = ScheduledInterruptionsContracts::lines_affected_in_the_future().await?;
         for (area_name, affected_lines) in results.iter() {
             let affected_location =
                 directly_affected_location(db, location_id, area_name, affected_lines).await?;
@@ -605,6 +547,7 @@ mod potentially_affected_location {
     use anyhow::anyhow;
     use anyhow::Context;
     use itertools::Itertools;
+    use scheduled_interruptions::contracts::ScheduledInterruptionsContracts;
     use shared_kernel::area_name::AreaName;
     use shared_kernel::location_ids::LocationId;
 
@@ -613,7 +556,7 @@ mod potentially_affected_location {
         db: &DbAccess,
         location_id: LocationId,
     ) -> anyhow::Result<Option<AffectedLocation>> {
-        let results = BareAffectedLine::lines_affected_in_the_future(db).await?;
+        let results = ScheduledInterruptionsContracts::lines_affected_in_the_future().await?;
 
         for (area_name, affected_lines) in results.iter() {
             let affected_location =

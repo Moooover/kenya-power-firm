@@ -22,7 +22,7 @@ pub struct BareAffectedLine {
 
 impl ScheduledInterruptionsContracts {
     #[tracing::instrument(err, level = "info")]
-    async fn lines_affected_in_the_future(
+    pub async fn lines_affected_in_the_future(
     ) -> anyhow::Result<HashMap<AreaName, Vec<BareAffectedLine>>> {
         #[derive(sqlx::FromRow, Debug)]
         struct DbAreaLine {
