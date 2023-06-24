@@ -32,7 +32,7 @@ impl From<County> for EntityCounty<FutureOrCurrentNairobiTZDateTime> {
         let areas = value
             .areas
             .into_iter()
-            .flat_map(|area| area.to_entity_areas())
+            .flat_map(|area| area.into_entity_areas())
             .collect_vec();
         EntityCounty {
             name: value.name,
@@ -42,10 +42,10 @@ impl From<County> for EntityCounty<FutureOrCurrentNairobiTZDateTime> {
 }
 
 impl Area {
-    fn to_entity_areas(self) -> Vec<EntityArea<FutureOrCurrentNairobiTZDateTime>> {
+    fn into_entity_areas(self) -> Vec<EntityArea<FutureOrCurrentNairobiTZDateTime>> {
         self.time_frame
             .into_iter()
-            .map(|time_frame| {
+            .flat_map(|time_frame| {
                 FutureOrCurrentNairobiTZDateTime::try_from(time_frame.from)
                     .and_then(|from| {
                         FutureOrCurrentNairobiTZDateTime::try_from(time_frame.to)
@@ -57,7 +57,6 @@ impl Area {
                         locations: self.locations.clone(),
                     })
             })
-            .flatten()
             .collect()
     }
 }

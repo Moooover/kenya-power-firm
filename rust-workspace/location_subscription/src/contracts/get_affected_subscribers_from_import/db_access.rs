@@ -8,7 +8,7 @@ use anyhow::Context;
 use entities::subscriptions::SubscriberId;
 use itertools::Itertools;
 use shared_kernel::location_ids::LocationId;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::iter;
 use url::Url;
 
@@ -17,8 +17,8 @@ pub struct AffectedSubscribersDbAccess {
     db_access: DbAccess,
 }
 
-impl From<AffectedLocation> for LocationMatchedAndLineSchedule {
-    fn from(value: AffectedLocation) -> Self {
+impl From<(AffectedLocation, String)> for LocationMatchedAndLineSchedule {
+    fn from((value, location_name): (AffectedLocation, String)) -> Self {
         Self {
             line_schedule: LineWithScheduledInterruptionTime {
                 line_name: value.line_matched.line_name,
@@ -26,6 +26,7 @@ impl From<AffectedLocation> for LocationMatchedAndLineSchedule {
                 to: value.line_matched.to,
                 source_url: value.line_matched.source_url,
             },
+            location_name,
             location_id: value.location_id,
         }
     }
@@ -96,17 +97,61 @@ impl AffectedSubscribersDbAccess {
             })
             .collect::<HashMap<_, _>>();
 
+        let mapping_of_ids_to_names = {
+            let location_ids = result
+                .values()
+                .flat_map(|affected_locations| {
+                    affected_locations
+                        .iter()
+                        .map(|location| location.location_id)
+                })
+                .collect::<HashSet<_>>();
+            self.get_location_name_by_ids(location_ids).await?
+        };
+
         let result = result
             .into_iter()
             .map(|(subscriber, affected_locations)| {
+                let locations = affected_locations
+                    .into_iter()
+                    .filter_map(|location| {
+                        mapping_of_ids_to_names
+                            .get(&location.location_id)
+                            .map(|location_name| (location, location_name.to_owned()))
+                    })
+                    .collect_vec();
                 (
                     subscriber,
-                    affected_locations.into_iter().map(Into::into).collect_vec(),
+                    locations.into_iter().map(Into::into).collect_vec(),
                 )
             })
             .collect();
 
         Ok(result)
+    }
+
+    #[tracing::instrument(skip(self), level = "debug")]
+    pub async fn get_location_name_by_ids(
+        &self,
+        ids: HashSet<LocationId>,
+    ) -> anyhow::Result<HashMap<LocationId, String>> {
+        let pool = self.db_access.pool().await;
+        let ids = ids.into_iter().map(|id| id.inner()).collect_vec();
+        let results = sqlx::query!(
+            "
+            SELECT id, name FROM location.locations WHERE id = ANY($1)
+            ",
+            &ids[..]
+        )
+        .fetch_all(pool.as_ref())
+        .await
+        .context("Failed to fetch locations")?;
+
+        let results = results
+            .into_iter()
+            .map(|record| (LocationId::from(record.id), record.name))
+            .collect::<HashMap<_, _>>();
+        Ok(results)
     }
 
     async fn subscribers_subscribed_to_locations(

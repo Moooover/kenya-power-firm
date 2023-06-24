@@ -5,12 +5,11 @@ use entities::subscriptions::details::{
     SubscriberDetails, SubscriberEmail, SubscriberExternalId, SubscriberName,
 };
 use entities::subscriptions::SubscriberId;
-use itertools::Itertools;
 use lazy_static::lazy_static;
 use shared_kernel::location_ids::LocationId;
 use shared_kernel::uuid_key;
 use sqlx_postgres::pool_manager::{PoolManager, PoolWrapper};
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 use url::Url;
 use uuid::Uuid;
 
@@ -72,38 +71,6 @@ impl DbAccess {
             external_id,
         };
         Ok(subscriber)
-    }
-
-    #[tracing::instrument(skip(self), level = "debug")]
-    pub async fn get_locations_by_ids(
-        &self,
-        ids: HashSet<LocationId>,
-    ) -> anyhow::Result<HashMap<LocationId, LocationDetails>> {
-        let pool = self.pool().await;
-        let ids = ids.into_iter().map(|id| id.inner()).collect_vec();
-        let results = sqlx::query!(
-            "
-            SELECT id, name FROM location.locations WHERE id = ANY($1)
-            ",
-            &ids[..]
-        )
-        .fetch_all(pool.as_ref())
-        .await
-        .context("Failed to fetch locations")?;
-
-        let results = results
-            .into_iter()
-            .map(|record| {
-                (
-                    LocationId::from(record.id),
-                    LocationDetails {
-                        id: LocationId::from(record.id),
-                        name: record.name,
-                    },
-                )
-            })
-            .collect::<HashMap<_, _>>();
-        Ok(results)
     }
 }
 

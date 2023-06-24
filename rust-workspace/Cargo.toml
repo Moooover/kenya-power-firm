@@ -9,7 +9,7 @@ members = [
     "location_search",
     "notifications",
     "import_and_notify_affected_subscribers",
-    "import_scheduled_interruptions",
+    "scheduled_interruptions",
     "once_job",
     "background_workers"
 ]

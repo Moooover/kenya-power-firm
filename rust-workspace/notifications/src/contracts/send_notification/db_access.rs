@@ -68,7 +68,7 @@ impl SendNotificationsDbAccess {
                 directly_affected: is_directly_affected,
                 subscriber,
                 line: affected_line.line_schedule.line_name.clone(),
-                location_matched: affected_line.location_id.inner(),
+                location_matched: affected_line.location.location_id.inner(),
                 external_id: external_id.clone(),
                 strategy_id: strategy.inner(),
             })
