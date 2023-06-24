@@ -135,7 +135,7 @@
     },
     "query": "\n            SELECT id\n            FROM location.nearby_locations WHERE location_id = $1\n            "
   },
-  "b2eb8d013e30b9dbecf02f6e34f52e849519341d983d8b91e318563b277ed61c": {
+  "c28e22ba46a500f62f1de03b52e99c6a98a6b49824f757450aaa121f698ff78c": {
     "describe": {
       "columns": [
         {
@@ -144,12 +144,18 @@
           "type_info": "Uuid"
         },
         {
-          "name": "value: Json<ResultWrapper>",
+          "name": "name",
           "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "value: Json<ResultWrapper>",
+          "ordinal": 2,
           "type_info": "Jsonb"
         }
       ],
       "nullable": [
+        false,
         false,
         false
       ],
@@ -159,7 +165,33 @@
         ]
       }
     },
-    "query": "\n            SELECT id, external_api_response as \"value: Json<ResultWrapper>\" FROM location.locations WHERE external_id = $1\n            "
+    "query": "\n            SELECT id, name, external_api_response as \"value: Json<ResultWrapper>\" FROM location.locations WHERE external_id = $1\n            "
+  },
+  "cf434383b4f134f006bb5b9da0bf96938d17f33ca4fe572ef119a7df83265660": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "UuidArray"
+        ]
+      }
+    },
+    "query": "\n            SELECT id, name FROM location.locations WHERE id = ANY($1)\n            "
   },
   "cf900f8f7c56eadf687fb0410ef9467e050e9c8251dccba9b028670a6122a401": {
     "describe": {

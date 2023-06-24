@@ -50,6 +50,7 @@ pub struct AffectedLocation {
 
 pub struct LocationWithCoordinates {
     pub location_id: LocationId,
+    pub name: String,
     pub latitude: f64,
     pub longitude: f64,
 }
@@ -154,13 +155,14 @@ impl SaveAndSearchLocations {
         #[derive(Deserialize)]
         struct Row {
             id: Uuid,
+            name: String,
             value: Json<ResultWrapper>,
         }
         let pool = self.db_access.pool().await;
         let result = sqlx::query_as!(
             Row,
             r#"
-            SELECT id, external_api_response as "value: Json<ResultWrapper>" FROM location.locations WHERE external_id = $1
+            SELECT id, name, external_api_response as "value: Json<ResultWrapper>" FROM location.locations WHERE external_id = $1
             "#,
             location.inner()
         )
@@ -171,6 +173,7 @@ impl SaveAndSearchLocations {
 
         let result = result.map(|data| LocationWithCoordinates {
             location_id: data.id.into(),
+            name: data.name,
             latitude: data.value.result.geometry.location.lat,
             longitude: data.value.result.geometry.location.lng,
         });

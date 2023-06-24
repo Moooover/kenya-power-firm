@@ -72,16 +72,17 @@ impl SubscribeInteractor {
             .await
             .map_err(SubscribeToLocationError::InternalError)?;
 
-        let result = affected_location.map(|location| {
-            let affected_subscriber = match location.is_directly_affected {
+        let result = affected_location.map(|data| {
+            let affected_subscriber = match data.is_directly_affected {
                 true => AffectedSubscriber::DirectlyAffected(subscriber_id),
                 false => AffectedSubscriber::PotentiallyAffected(subscriber_id),
             };
             AffectedSubscriberWithLocationMatchedAndLineSchedule {
                 affected_subscriber,
                 location_matched: LocationMatchedAndLineSchedule {
-                    line_schedule: location.line_matched,
+                    line_schedule: data.line_matched,
                     location_id,
+                    location_name: location.name,
                 },
             }
         });

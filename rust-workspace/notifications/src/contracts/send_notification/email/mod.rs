@@ -31,7 +31,6 @@ mod email_notification {
     use crate::db_access::DbNotificationIdempotencyKey;
     use entities::subscriptions::SubscriberId;
     use itertools::Itertools;
-    use shared_kernel::location_ids::LocationId;
     use std::collections::{HashMap, HashSet};
     use url::Url;
 
@@ -55,13 +54,6 @@ mod email_notification {
     impl EmailNotification {
         pub(crate) fn subscriber_id(&self) -> SubscriberId {
             self.0.subscriber.id()
-        }
-        pub(crate) fn location_ids(&self) -> HashSet<LocationId> {
-            self.0
-                .locations
-                .iter()
-                .map(|location| location.location_id)
-                .collect()
         }
 
         #[tracing::instrument(skip(db_access), level = "debug")]
@@ -176,13 +168,13 @@ mod email_notification_sender {
     }
 
     impl AffectedLocation {
-        fn generate(data: &LocationMatchedAndLineSchedule, location: String) -> Self {
+        fn generate(data: &LocationMatchedAndLineSchedule) -> Self {
             let date_in_nairobi_time = data.line_schedule.from.to_date_time();
             let date = date_in_nairobi_time.format("%d/%m/%Y");
             let start_time = date_in_nairobi_time.format("%H:%M");
             let end_time = data.line_schedule.to.to_date_time().format("%H:%M");
             Self {
-                location,
+                location: data.location.name.to_owned(),
                 date: date.to_string(),
                 start_time: start_time.to_string(),
                 end_time: end_time.to_string(),
@@ -255,20 +247,10 @@ mod email_notification_sender {
             .find_subscriber_by_id(email.subscriber_id())
             .await?;
 
-        let locations = email.location_ids();
-
-        let locations = db.as_ref().get_locations_by_ids(locations).await?;
-
         let affected_locations = email
             .locations_matched()
             .iter()
-            .filter_map(|affected_line| {
-                locations
-                    .get(&affected_line.location_id)
-                    .map(|location_details| {
-                        AffectedLocation::generate(affected_line, location_details.name.clone())
-                    })
-            })
+            .map(AffectedLocation::generate)
             .collect::<Vec<_>>();
 
         let message = Data {

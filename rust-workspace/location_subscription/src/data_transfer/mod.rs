@@ -18,6 +18,7 @@ pub enum AffectedSubscriber {
 pub struct LocationMatchedAndLineSchedule {
     pub line_schedule: LineWithScheduledInterruptionTime,
     pub location_id: LocationId,
+    pub location_name: String,
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
