@@ -31,8 +31,8 @@ pub struct LineWithScheduledInterruptionTime {
 
 #[derive(Clone, Eq, PartialEq, Hash, Serialize, Deserialize, Debug)]
 pub struct Location {
-    location_id: LocationId,
-    name: String,
+    pub location_id: LocationId,
+    pub name: String,
 }
 
 #[derive(Clone, Eq, PartialEq, Hash, Serialize, Deserialize, Debug)]

@@ -6,9 +6,11 @@ use entities::subscriptions::SubscriberId;
 
 use crate::tasks::send_notifications::email::send_email_notification;
 
-use notifications::contracts::send_notification::LocationMatchedAndLineSchedule as NotificationLocationMatchedAndLineSchedule;
 use notifications::contracts::send_notification::{
     AffectedSubscriber as NotificationAffectedSubscriber, LineWithScheduledInterruptionTime,
+};
+use notifications::contracts::send_notification::{
+    Location, LocationMatchedAndLineSchedule as NotificationLocationMatchedAndLineSchedule,
 };
 
 use location_subscription::contracts::subscribe::SubscribeToLocationError;
@@ -85,7 +87,10 @@ pub async fn fetch_and_subscribe_to_location(
                     from: affected_subscriber.location_matched.line_schedule.from,
                     to: affected_subscriber.location_matched.line_schedule.to,
                 },
-                location_id: affected_subscriber.location_matched.location_id,
+                location: Location {
+                    location_id: affected_subscriber.location_matched.location_id,
+                    name: affected_subscriber.location_matched.location_name,
+                },
             }],
         };
 
