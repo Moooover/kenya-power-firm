@@ -8,7 +8,7 @@ use actix_web::{http, web, App, HttpServer};
 use anyhow::{Context, Error};
 use background_workers::producer::Producer;
 use location_subscription::contracts::LocationSubscriptionSubSystem;
-use sqlx_postgres::repository::Repository;
+use sqlx_postgres::migrations::MigrationManager;
 use tracing::info;
 use use_cases::AppImpl;
 
@@ -26,7 +26,11 @@ async fn main() -> anyhow::Result<()> {
 }
 
 async fn start() -> Result<(), Error> {
-    let repository = Repository::new().await?;
+    {
+        let migration_manager = MigrationManager::new().await?;
+        migration_manager.migrate().await?;
+    }
+
     let producer = Producer::new().await?;
     let host = env::var("HOST").unwrap_or_else(|_| "0.0.0.0".to_string());
     let port = env::var("PORT").unwrap_or_else(|_| 8080.to_string());
@@ -50,7 +54,7 @@ async fn start() -> Result<(), Error> {
                 http::header::CONTENT_TYPE,
             ]);
         let location_subscription = LocationSubscriptionSubSystem;
-        let app = AppImpl::new(repository.clone(), producer.clone(), location_subscription);
+        let app = AppImpl::new(producer.clone(), location_subscription);
         let app_container = UseCaseAppContainer::new(app);
         App::new()
             .wrap(cors)

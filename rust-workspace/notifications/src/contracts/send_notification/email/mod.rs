@@ -6,7 +6,7 @@ use crate::contracts::send_notification::AffectedSubscriberWithLocations;
 pub struct EmailNotificationInteractor;
 
 impl EmailNotificationInteractor {
-    #[tracing::instrument(skip(self), level = "debug")]
+    #[tracing::instrument(skip(self), level = "info")]
     pub async fn send(
         &self,
         subscriber_with_locations: AffectedSubscriberWithLocations,
@@ -29,8 +29,8 @@ mod email_notification {
         AffectedSubscriber, AffectedSubscriberWithLocations, LocationMatchedAndLineSchedule,
     };
     use crate::db_access::DbNotificationIdempotencyKey;
-    use entities::subscriptions::SubscriberId;
     use itertools::Itertools;
+    use shared_kernel::subscriber_id::SubscriberId;
     use std::collections::{HashMap, HashSet};
     use url::Url;
 
@@ -212,7 +212,7 @@ mod email_notification_sender {
         email: EmailNotification,
         db: &EmailNotificationsDbAccess,
     ) -> anyhow::Result<()> {
-        let body = generate_email_body(&email, db).await?;
+        let body = generate_email_body(&email).await?;
 
         let settings = &SETTINGS_CONFIG.email;
         let url = Url::parse(&settings.host)
@@ -237,15 +237,10 @@ mod email_notification_sender {
             .await
     }
 
-    #[tracing::instrument(skip(db), level = "debug")]
-    async fn generate_email_body(
-        email: &EmailNotification,
-        db: &EmailNotificationsDbAccess,
-    ) -> anyhow::Result<Data> {
-        let subscriber = db
-            .as_ref()
-            .find_subscriber_by_id(email.subscriber_id())
-            .await?;
+    #[tracing::instrument(level = "debug")]
+    async fn generate_email_body(email: &EmailNotification) -> anyhow::Result<Data> {
+        use subscribers::contracts::SubscriberContracts;
+        let subscriber = SubscriberContracts::find_by_subscriber_id(email.subscriber_id()).await?;
 
         let affected_locations = email
             .locations_matched()

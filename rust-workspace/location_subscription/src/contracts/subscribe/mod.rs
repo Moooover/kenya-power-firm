@@ -8,7 +8,7 @@ use crate::data_transfer::{
     LocationMatchedAndLineSchedule,
 };
 
-use entities::subscriptions::SubscriberId;
+use shared_kernel::subscriber_id::SubscriberId;
 
 use thiserror::Error;
 

@@ -1,10 +1,10 @@
 pub(crate) mod db_access;
 pub mod email;
 
-use entities::subscriptions::SubscriberId;
 use serde::{Deserialize, Serialize};
 use shared_kernel::date_time::nairobi_date_time::NairobiTZDateTime;
 use shared_kernel::location_ids::LocationId;
+use shared_kernel::subscriber_id::SubscriberId;
 use url::Url;
 
 #[derive(Clone, Serialize, Deserialize, Debug)]

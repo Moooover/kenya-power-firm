@@ -1,0 +1,87 @@
+{
+  "db": "PostgreSQL",
+  "4cb191d7ba6ea49126490d63e16a39cf7862337666f55b6c810f3120b5630e12": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Varchar",
+          "Varchar"
+        ]
+      }
+    },
+    "query": "\n        INSERT INTO public.subscriber (name, email, external_id) \n        VALUES ($1, $2, $3) \n        ON CONFLICT (external_id) \n        DO UPDATE SET name = EXCLUDED.name, email = EXCLUDED.email, last_login = now();\n        "
+  },
+  "76d653989592ac763cd84e17ee5b2f093a3e8b3350b7e5fd54838059bf1119db": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "email",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "external_id",
+          "ordinal": 3,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 4,
+          "type_info": "Timestamptz"
+        },
+        {
+          "name": "last_login",
+          "ordinal": 5,
+          "type_info": "Timestamptz"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      }
+    },
+    "query": "\n            SELECT * FROM public.subscriber WHERE id = $1\n            "
+  },
+  "fb902a1af28ca72f0f6f3617384874897e3e807f12f907e3ceb6de5bdc889d85": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\n            SELECT id FROM public.subscriber WHERE external_id = $1\n            "
+  }
+}

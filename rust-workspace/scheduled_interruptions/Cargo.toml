@@ -32,7 +32,7 @@ itertools = "0.10.5"
 multipeek = "0.1.2"
 
 
-entities = { path = "../entities" }
+subscribers = { path = "../subscribers" }
 shared_kernel = { path = "../shared_kernel" }
 sqlx_postgres = { path = "../storage/sqlx_postgres" }
 

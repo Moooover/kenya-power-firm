@@ -14,14 +14,12 @@ use subscriber_locations::{
 };
 
 use crate::authentication::{AuthenticationInteractor, AuthenticationInteractorImpl};
-use crate::repositories::Repository;
 use crate::subscriber_locations::delete_locations_subscribed_to::DeleteSubscribedLocationOp;
 use crate::subscriber_locations::list_subscribed_locations::ListSubscribedLocationsOp;
 use std::sync::Arc;
 
 pub mod actor;
 pub mod authentication;
-mod repositories;
 pub mod search_for_locations;
 pub mod subscriber_locations;
 
@@ -76,16 +74,13 @@ impl<T> LocationSubscriptionOperations for T where
 }
 
 impl AppImpl {
-    pub fn new<R: Repository + 'static, L: LocationsApi + 'static>(
-        repo: R,
+    pub fn new<L: LocationsApi + 'static>(
         location_api: L,
         location_subscription_operations: impl LocationSubscriptionOperations + 'static,
     ) -> Self {
-        let repository = Arc::new(repo);
         let location_api = Arc::new(location_api);
-        let subscriber_authentication_checker =
-            Arc::new(SubscriberResolverInteractorImpl::new(repository.clone()));
-        let authentication_interactor = AuthenticationInteractorImpl::new(repository);
+        let subscriber_authentication_checker = Arc::new(SubscriberResolverInteractorImpl::new());
+        let authentication_interactor = AuthenticationInteractorImpl::new();
         let location_searcher_interactor = LocationSearchInteractorImpl::new(
             location_api.clone(),
             subscriber_authentication_checker.clone(),

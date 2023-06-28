@@ -2,7 +2,7 @@ mod db_access;
 
 use crate::contracts::list_subscribed_locations::db_access::SubscribedLocationsAccess;
 use crate::data_transfer::LocationDetails;
-use entities::subscriptions::SubscriberId;
+use shared_kernel::subscriber_id::SubscriberId;
 
 pub struct ListSubscribedLocationsInteractor;
 
