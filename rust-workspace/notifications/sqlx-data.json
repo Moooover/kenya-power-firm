@@ -59,56 +59,6 @@
     },
     "query": "SELECT source_id, subscriber_id, line, strategy_id FROM communication.notifications \n            WHERE source_id = $1 AND subscriber_id = $2 AND line = ANY($3) AND strategy_id = $4"
   },
-  "76d653989592ac763cd84e17ee5b2f093a3e8b3350b7e5fd54838059bf1119db": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "name",
-          "ordinal": 1,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "email",
-          "ordinal": 2,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "external_id",
-          "ordinal": 3,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "created_at",
-          "ordinal": 4,
-          "type_info": "Timestamptz"
-        },
-        {
-          "name": "last_login",
-          "ordinal": 5,
-          "type_info": "Timestamptz"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "Uuid"
-        ]
-      }
-    },
-    "query": "\n            SELECT * FROM public.subscriber WHERE id = $1\n            "
-  },
   "80d5fe3abd56cd212bc5ced8310cba0762b633c75e904710a65d7653e02a908d": {
     "describe": {
       "columns": [
@@ -148,31 +98,5 @@
       }
     },
     "query": "SELECT id FROM public.source WHERE url = $1"
-  },
-  "cf434383b4f134f006bb5b9da0bf96938d17f33ca4fe572ef119a7df83265660": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "name",
-          "ordinal": 1,
-          "type_info": "Text"
-        }
-      ],
-      "nullable": [
-        false,
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "UuidArray"
-        ]
-      }
-    },
-    "query": "\n            SELECT id, name FROM location.locations WHERE id = ANY($1)\n            "
   }
 }
