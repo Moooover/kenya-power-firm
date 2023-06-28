@@ -4,9 +4,9 @@ use async_once::AsyncOnce;
 use entities::subscriptions::details::{
     SubscriberDetails, SubscriberEmail, SubscriberExternalId, SubscriberName,
 };
-use entities::subscriptions::SubscriberId;
 use lazy_static::lazy_static;
 use shared_kernel::location_ids::LocationId;
+use shared_kernel::subscriber_id::SubscriberId;
 use shared_kernel::uuid_key;
 use sqlx_postgres::pool_manager::{PoolManager, PoolWrapper};
 use std::collections::HashSet;

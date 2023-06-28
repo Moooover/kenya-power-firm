@@ -5,4 +5,5 @@ pub mod http_client;
 pub mod ids;
 pub mod location_ids;
 pub mod non_empty_string;
+pub mod subscriber_id;
 pub mod tracing;

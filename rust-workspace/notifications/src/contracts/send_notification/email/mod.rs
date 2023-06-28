@@ -29,8 +29,8 @@ mod email_notification {
         AffectedSubscriber, AffectedSubscriberWithLocations, LocationMatchedAndLineSchedule,
     };
     use crate::db_access::DbNotificationIdempotencyKey;
-    use entities::subscriptions::SubscriberId;
     use itertools::Itertools;
+    use shared_kernel::subscriber_id::SubscriberId;
     use std::collections::{HashMap, HashSet};
     use url::Url;
 

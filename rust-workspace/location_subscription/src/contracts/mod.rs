@@ -1,6 +1,6 @@
 use async_trait::async_trait;
-use entities::subscriptions::SubscriberId;
 use shared_kernel::location_ids::LocationId;
+use shared_kernel::subscriber_id::SubscriberId;
 use use_cases::subscriber_locations::delete_locations_subscribed_to::DeleteSubscribedLocationOp;
 use use_cases::subscriber_locations::list_subscribed_locations::{
     ListSubscribedLocationsOp, LocationWithId,

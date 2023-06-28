@@ -1,6 +1,6 @@
 use crate::actor::Actor;
 use async_trait::async_trait;
-use entities::subscriptions::SubscriberId;
+use shared_kernel::subscriber_id::SubscriberId;
 use std::sync::Arc;
 
 #[async_trait]

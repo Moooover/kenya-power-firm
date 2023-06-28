@@ -2,10 +2,10 @@ use crate::authentication::subscriber_authentication::SubscriberResolverInteract
 use crate::{actor::Actor, search_for_locations::Status};
 
 use async_trait::async_trait;
-use entities::subscriptions::SubscriberId;
 use shared_kernel::location_ids::ExternalLocationId;
 use shared_kernel::location_ids::LocationId;
 use shared_kernel::string_key;
+use shared_kernel::subscriber_id::SubscriberId;
 use std::sync::Arc;
 
 string_key!(TaskId);

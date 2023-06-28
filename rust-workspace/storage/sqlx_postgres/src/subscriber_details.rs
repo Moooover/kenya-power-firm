@@ -1,8 +1,9 @@
 use crate::repository::Repository;
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
+use entities::subscriptions::details::SubscriberExternalId;
 use entities::subscriptions::details::{SubscriberDetails, SubscriberEmail, SubscriberName};
-use entities::subscriptions::{details::SubscriberExternalId, SubscriberId};
+use shared_kernel::subscriber_id::SubscriberId;
 use use_cases::{actor::Actor, authentication::subscriber_authentication::SubscriberResolverRepo};
 
 #[async_trait]

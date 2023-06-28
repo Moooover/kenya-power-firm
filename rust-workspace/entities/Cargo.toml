@@ -17,6 +17,4 @@ serde = "1.0.154"
 shared_kernel = { path = "../shared_kernel" }
 
 
-[dependencies.uuid]
-version = "1.3.0"
-features = ["v4", "serde"]
+uuid.workspace = true

@@ -2,7 +2,7 @@ use celery::export::async_trait;
 use celery::prelude::*;
 use shared_kernel::location_ids::ExternalLocationId;
 
-use entities::subscriptions::SubscriberId;
+use shared_kernel::subscriber_id::SubscriberId;
 
 use crate::tasks::send_notifications::email::send_email_notification;
 
