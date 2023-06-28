@@ -1,7 +1,7 @@
-use entities::subscriptions::SubscriberId;
 use serde::{Deserialize, Serialize};
 use shared_kernel::date_time::nairobi_date_time::NairobiTZDateTime;
 use shared_kernel::location_ids::LocationId;
+use shared_kernel::subscriber_id::SubscriberId;
 use shared_kernel::{string_key, uuid_key};
 use url::Url;
 

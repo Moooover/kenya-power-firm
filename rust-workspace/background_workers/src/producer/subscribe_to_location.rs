@@ -5,8 +5,8 @@ use crate::{
 };
 use anyhow::Context;
 use async_trait::async_trait;
-use entities::subscriptions::SubscriberId;
 use shared_kernel::location_ids::ExternalLocationId;
+use shared_kernel::subscriber_id::SubscriberId;
 use std::str::FromStr;
 use use_cases::search_for_locations::Status;
 use use_cases::subscriber_locations::subscribe_to_location::{LocationSubscriber, TaskId};

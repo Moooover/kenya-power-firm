@@ -1,8 +1,8 @@
 use anyhow::anyhow;
-use entities::subscriptions::details::SubscriberExternalId as SubscriberExternalIdInner;
 #[cfg(test)]
 use mockall::automock;
 use serde::Deserialize;
+use subscribers::contracts::find_subscriber::SubscriberExternalId as SubscriberExternalIdInner;
 
 use std::collections::HashSet;
 use std::fmt::Debug;
@@ -62,6 +62,12 @@ impl From<String> for ExternalId {
 
 #[derive(Debug, Clone)]
 pub struct SubscriberExternalId(SubscriberExternalIdInner);
+
+impl SubscriberExternalId {
+    pub fn into_inner(self) -> SubscriberExternalIdInner {
+        self.0
+    }
+}
 
 impl From<SubscriberExternalId> for SubscriberExternalIdInner {
     fn from(value: SubscriberExternalId) -> Self {

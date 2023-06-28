@@ -24,7 +24,7 @@ background_workers = { path = "../background_workers" }
 location_subscription = { path = "../location_subscription" }
 notifications = { path = "../notifications" }
 scheduled_interruptions = { path = "../scheduled_interruptions" }
-entities = { path = "../entities" }
+subscribers = { path = "../subscribers" }
 
 tracing.workspace = true
 tracing-log.workspace = true

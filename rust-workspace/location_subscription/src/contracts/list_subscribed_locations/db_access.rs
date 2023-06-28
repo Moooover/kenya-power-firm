@@ -1,8 +1,8 @@
 use crate::data_transfer::LocationDetails;
 use crate::db_access::DbAccess;
 use anyhow::Context;
-use entities::subscriptions::SubscriberId;
 use itertools::Itertools;
+use shared_kernel::subscriber_id::SubscriberId;
 use std::collections::HashMap;
 
 pub struct SubscribedLocationsAccess {
