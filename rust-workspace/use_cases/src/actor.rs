@@ -63,6 +63,12 @@ impl From<String> for ExternalId {
 #[derive(Debug, Clone)]
 pub struct SubscriberExternalId(SubscriberExternalIdInner);
 
+impl SubscriberExternalId {
+    pub fn into_inner(self) -> SubscriberExternalIdInner {
+        self.0
+    }
+}
+
 impl From<SubscriberExternalId> for SubscriberExternalIdInner {
     fn from(value: SubscriberExternalId) -> Self {
         value.0

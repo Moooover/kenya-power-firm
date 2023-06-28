@@ -14,7 +14,16 @@ url = { version = "2.3.1", features = ["serde"] }
 validator = "0.16.0"
 serde_json = "1.0.94"
 serde = "1.0.154"
+itertools = "0.10.5"
+sqlx = { version = "0.6", features = [ "offline", "runtime-tokio-native-tls" , "postgres", "uuid", "time", "chrono", "json" ] }
+async_once = "0.2.6"
+lazy_static = "1.4.0"
+
 shared_kernel = { path = "../shared_kernel" }
+
+sqlx_postgres = { path = "../storage/sqlx_postgres" }
 
 
 uuid.workspace = true
+tracing.workspace = true
+tracing-log.workspace = true

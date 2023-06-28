@@ -9,6 +9,7 @@ database:
   notification_connections: 10
   search_connections: 10
   import_scheduled_interrupts_connections: 20
+  subscriber_connections: 20
 location:
   host: "https://maps.googleapis.com/maps/api"
   api_key: ""

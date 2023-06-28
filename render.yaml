@@ -251,38 +251,6 @@ services:
       - key: VITE_AUTH_AUDIENCE
         sync: false
 
-  - type: worker
-    name: migrations
-    region: frankfurt
-    env: rust
-    buildCommand: cargo build --release --bin migrations
-    startCommand: cargo run --release --bin migrations
-    rootDir: ./rust-workspace
-    autoDeploy: true
-    envVars:
-      - key: APP_DATABASE__HOST
-        fromDatabase:
-          name: prod
-          property: host
-      - key: APP_DATABASE__PORT
-        fromDatabase:
-          name: prod
-          property: port
-      - key: APP_DATABASE__USERNAME
-        fromDatabase:
-          name: prod
-          property: user
-      - key: APP_DATABASE__PASSWORD
-        fromDatabase:
-          name: prod
-          property: password
-      - key: APP_DATABASE__DATABASE_NAME
-        fromDatabase:
-          name: prod
-          property: database
-      - key: APP_DATABASE__REQUIRE_SSL
-        value: true
-
 databases:
   - name: prod
     region: frankfurt

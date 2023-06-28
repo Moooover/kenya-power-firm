@@ -6,7 +6,7 @@ use crate::contracts::send_notification::AffectedSubscriberWithLocations;
 pub struct EmailNotificationInteractor;
 
 impl EmailNotificationInteractor {
-    #[tracing::instrument(skip(self), level = "debug")]
+    #[tracing::instrument(skip(self), level = "info")]
     pub async fn send(
         &self,
         subscriber_with_locations: AffectedSubscriberWithLocations,
