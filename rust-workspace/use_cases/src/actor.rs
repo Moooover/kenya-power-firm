@@ -1,8 +1,8 @@
 use anyhow::anyhow;
-use entities::subscriptions::details::SubscriberExternalId as SubscriberExternalIdInner;
 #[cfg(test)]
 use mockall::automock;
 use serde::Deserialize;
+use subscribers::contracts::find_subscriber::SubscriberExternalId as SubscriberExternalIdInner;
 
 use std::collections::HashSet;
 use std::fmt::Debug;

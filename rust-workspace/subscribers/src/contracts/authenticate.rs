@@ -1,6 +1,5 @@
 use crate::contracts::SubscriberContracts;
-use crate::find_subscriber::FindSubscriber;
-use crate::subscriptions::details::SubscriberExternalId;
+use crate::find_subscriber::{FindSubscriber, SubscriberExternalId};
 use shared_kernel::subscriber_id::SubscriberId;
 use std::fmt::Debug;
 

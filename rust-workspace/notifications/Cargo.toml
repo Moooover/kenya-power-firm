@@ -21,7 +21,7 @@ regex = "1.7.1"
 futures = "0.3"
 
 shared_kernel = { path = "../shared_kernel" }
-entities = { path = "../entities" }
+subscribers = { path = "../subscribers" }
 sqlx_postgres = { path = "../storage/sqlx_postgres" }
 
 

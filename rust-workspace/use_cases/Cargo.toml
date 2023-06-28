@@ -11,7 +11,7 @@ async-trait = "0.1.64"
 chrono = "0.4.23"
 chrono-tz = "0.8.1"
 thiserror = "1.0.38"
-entities = { path = "../entities" }
+subscribers = { path = "../subscribers" }
 url = "2.3.1"
 futures = "0.3"
 serde = {  version= "1.0.152", features=["derive"] }

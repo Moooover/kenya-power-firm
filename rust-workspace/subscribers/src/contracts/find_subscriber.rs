@@ -1,7 +1,10 @@
 use crate::contracts::SubscriberContracts;
 use crate::find_subscriber::FindSubscriber;
-use crate::subscriptions::details::{SubscriberDetails, SubscriberExternalId};
+
 use shared_kernel::subscriber_id::SubscriberId;
+
+pub use crate::find_subscriber::SubscriberDetails;
+pub use crate::find_subscriber::SubscriberExternalId;
 
 impl SubscriberContracts {
     #[tracing::instrument(err, level = "info")]

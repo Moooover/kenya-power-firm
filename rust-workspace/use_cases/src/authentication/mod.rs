@@ -1,14 +1,9 @@
 pub mod subscriber_authentication;
 
 use crate::actor::Actor;
-use anyhow::anyhow;
 use async_trait::async_trait;
-use entities::contracts::create_or_update_subscriber::SubscriberInput;
-use entities::contracts::SubscriberContracts;
-use entities::subscriptions::details::{SubscriberDetails, SubscriberExternalId};
-#[cfg(test)]
-use mockall::automock;
-use std::sync::Arc;
+use subscribers::contracts::create_or_update_subscriber::SubscriberInput;
+use subscribers::contracts::SubscriberContracts;
 
 #[derive(Debug)]
 pub struct SubscriberDetailsInput {

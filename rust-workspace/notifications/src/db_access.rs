@@ -1,9 +1,6 @@
 use crate::config::SETTINGS_CONFIG;
-use anyhow::{anyhow, Context};
+use anyhow::Context;
 use async_once::AsyncOnce;
-use entities::subscriptions::details::{
-    SubscriberDetails, SubscriberEmail, SubscriberExternalId, SubscriberName,
-};
 use lazy_static::lazy_static;
 use shared_kernel::location_ids::LocationId;
 use shared_kernel::subscriber_id::SubscriberId;
@@ -43,34 +40,6 @@ impl DbAccess {
         .context("Failed to get source")?;
 
         Ok(source.id.into())
-    }
-
-    #[tracing::instrument(skip(self), level = "debug")]
-    pub async fn find_subscriber_by_id(
-        &self,
-        id: SubscriberId,
-    ) -> anyhow::Result<SubscriberDetails> {
-        let id = id.inner();
-        let pool = self.pool().await;
-        let result = sqlx::query!(
-            "
-            SELECT * FROM public.subscriber WHERE id = $1
-            ",
-            id
-        )
-        .fetch_one(pool.as_ref())
-        .await
-        .context("Failed to fetch subscriber details")?;
-        let name = SubscriberName::try_from(result.name).map_err(|err| anyhow::anyhow!(err))?;
-        let email = SubscriberEmail::try_from(result.email).map_err(|err| anyhow!(err))?;
-        let external_id =
-            SubscriberExternalId::try_from(result.external_id).map_err(|err| anyhow!(err))?;
-        let subscriber = SubscriberDetails {
-            name,
-            email,
-            external_id,
-        };
-        Ok(subscriber)
     }
 }
 

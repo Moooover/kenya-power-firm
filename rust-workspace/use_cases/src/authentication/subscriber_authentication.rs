@@ -1,8 +1,7 @@
 use crate::actor::Actor;
 use async_trait::async_trait;
-use entities::contracts::SubscriberContracts;
 use shared_kernel::subscriber_id::SubscriberId;
-use std::sync::Arc;
+use subscribers::contracts::SubscriberContracts;
 
 #[async_trait]
 pub trait SubscriberResolverInteractor: Send + Sync {

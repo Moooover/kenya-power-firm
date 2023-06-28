@@ -1,8 +1,7 @@
 use crate::contracts::SubscriberContracts;
-use crate::subscriptions::details::{
+use crate::find_subscriber::{
     SubscriberDetails, SubscriberEmail, SubscriberExternalId, SubscriberName,
 };
-use anyhow::Context;
 
 #[derive(Debug)]
 pub struct SubscriberInput {
@@ -31,7 +30,7 @@ impl SubscriberContracts {
 
 mod create_or_update_subscriber {
     use crate::db_access::DbAccess;
-    use crate::subscriptions::details::SubscriberDetails;
+    use crate::find_subscriber::SubscriberDetails;
     use anyhow::Context;
 
     #[tracing::instrument(err, level = "info")]

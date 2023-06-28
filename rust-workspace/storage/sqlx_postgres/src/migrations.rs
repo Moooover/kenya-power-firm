@@ -13,8 +13,6 @@ impl MigrationManager {
         self.pg_pool.as_ref()
     }
     pub async fn new() -> anyhow::Result<Self> {
-        use anyhow::Context;
-
         let pg_connection = Settings::with_db()?;
         let pg_pool = PgPool::connect_with(pg_connection)
             .await

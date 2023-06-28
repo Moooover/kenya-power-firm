@@ -3,7 +3,7 @@ members = [
     "use_cases",
     "storage/*",
     "http_server",
-    "entities",
+    "subscribers",
     "shared_kernel",
     "location_subscription",
     "location_search",

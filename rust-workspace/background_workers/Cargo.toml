@@ -30,7 +30,7 @@ futures = "0.3"
 strum = { version = "0.24", features = ["derive"] }
 strum_macros = "0.24"
 num_cpus = "1.15.0"
-entities = { path = "../entities" }
+subscribers = { path = "../subscribers" }
 shared_kernel = { path = "../shared_kernel" }
 use_cases = { path = "../use_cases" }
 redis_client = { path = "../storage/redis_client" }
