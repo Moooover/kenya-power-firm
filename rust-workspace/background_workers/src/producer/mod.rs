@@ -1,6 +1,4 @@
-mod notifications;
-mod subscribe_to_location;
-mod text_search;
+pub mod contracts;
 
 use crate::app;
 use celery::Celery;

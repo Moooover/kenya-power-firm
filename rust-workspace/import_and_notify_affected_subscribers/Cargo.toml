@@ -17,10 +17,9 @@ config = "0.13.3"
 lazy_static = "1.4.0"
 itertools = "0.10.5"
 
-use_cases = { path = "../use_cases" }
 shared_kernel = { path = "../shared_kernel" }
 sqlx_postgres = { path = "../storage/sqlx_postgres" }
-background_workers = { path = "../background_workers" }
+background_workers = { path = "../background_workers", features=["internal_contracts"] }
 location_subscription = { path = "../location_subscription" }
 notifications = { path = "../notifications" }
 scheduled_interruptions = { path = "../scheduled_interruptions" }

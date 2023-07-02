@@ -1,12 +1,10 @@
 use actix_web::{web, HttpRequest};
+use background_workers::producer::contracts::text_search::{LocationApiResponse, Status};
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
-use use_cases::search_for_locations::{LocationApiResponse, Status};
 
-use crate::{
-    authentication::AuthenticatedUserInfo, errors::ApiError,
-    use_case_app_container::UseCaseAppContainer,
-};
+use crate::app_container::Application;
+use crate::{authentication::AuthenticatedUserInfo, errors::ApiError};
 
 #[derive(Deserialize, Debug)]
 struct Request {
@@ -58,19 +56,27 @@ impl From<LocationApiResponse> for Location {
 #[tracing::instrument(err, skip(app), level = "info")]
 async fn search_for_location(
     data: web::Query<Request>,
-    app: web::Data<UseCaseAppContainer>,
+    app: web::Data<Application>,
     req: HttpRequest,
 ) -> Result<web::Json<LocationSearchResponse>, ApiError> {
     let user: AuthenticatedUserInfo = (&req).try_into()?;
-    let interactor = app.get_client().location_searcher();
-    let results = interactor
-        .search(&user, data.into_inner().term)
+    let _ = app
+        .subscribers
+        .authenticate(user.external_id.as_ref())
         .await
         .map_err(ApiError::InternalServerError)?;
-    let items = results.responses.into_iter().map_into().collect();
+    let search_results = app
+        .producer
+        .search_for_location(&data.term)
+        .await
+        .map_err(ApiError::InternalServerError)?;
     Ok(web::Json(LocationSearchResponse {
-        items,
-        status: results.status.into(),
+        items: search_results
+            .responses
+            .into_iter()
+            .map_into()
+            .collect_vec(),
+        status: search_results.status.into(),
     }))
 }
 

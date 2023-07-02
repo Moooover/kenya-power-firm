@@ -1,11 +1,12 @@
-use crate::contracts::SubscriberContracts;
+use crate::contracts::SubscribersSubsystem;
 use crate::find_subscriber::{FindSubscriber, SubscriberExternalId};
 use shared_kernel::subscriber_id::SubscriberId;
 use std::fmt::Debug;
 
-impl SubscriberContracts {
-    #[tracing::instrument(err, level = "info")]
+impl SubscribersSubsystem {
+    #[tracing::instrument(err, skip(self), level = "info")]
     pub async fn authenticate(
+        &self,
         external_id: impl AsRef<str> + Debug,
     ) -> anyhow::Result<SubscriberId> {
         let external_id = SubscriberExternalId::try_from(external_id.as_ref().to_owned())

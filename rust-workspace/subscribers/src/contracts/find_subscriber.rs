@@ -1,4 +1,4 @@
-use crate::contracts::SubscriberContracts;
+use crate::contracts::SubscribersSubsystem;
 use crate::find_subscriber::FindSubscriber;
 
 use shared_kernel::subscriber_id::SubscriberId;
@@ -6,9 +6,10 @@ use shared_kernel::subscriber_id::SubscriberId;
 pub use crate::find_subscriber::SubscriberDetails;
 pub use crate::find_subscriber::SubscriberExternalId;
 
-impl SubscriberContracts {
-    #[tracing::instrument(err, level = "info")]
+impl SubscribersSubsystem {
+    #[tracing::instrument(err, skip(self), level = "info")]
     pub async fn find_by_subscriber_id(
+        &self,
         subscriber_id: SubscriberId,
     ) -> anyhow::Result<SubscriberDetails> {
         let subscriber_finder = FindSubscriber::new();

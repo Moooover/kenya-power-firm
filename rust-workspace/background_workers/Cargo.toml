@@ -5,6 +5,10 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[features]
+contracts = []
+internal_contracts = []
+
 [dependencies]
 anyhow = "1.0.69"
 celery = "0.5.3"
@@ -32,7 +36,6 @@ strum_macros = "0.24"
 num_cpus = "1.15.0"
 subscribers = { path = "../subscribers" }
 shared_kernel = { path = "../shared_kernel" }
-use_cases = { path = "../use_cases" }
 redis_client = { path = "../storage/redis_client" }
 location_subscription = { path = "../location_subscription" }
 notifications = { path = "../notifications" }

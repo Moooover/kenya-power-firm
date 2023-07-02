@@ -1,8 +1,9 @@
-use crate::producer::notifications::email::EmailStrategy;
 use crate::producer::Producer;
 use notifications::contracts::send_notification::AffectedSubscriberWithLocations;
 
+use crate::producer::contracts::notifications::email::EmailStrategy;
 use async_trait::async_trait;
+
 pub mod email;
 
 #[async_trait]

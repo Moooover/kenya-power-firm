@@ -2,18 +2,38 @@ use crate::producer::Producer;
 use crate::tasks::text_search::search_locations_by_text;
 use crate::utils::progress_tracking::{get_progress_status, set_progress_status, TaskStatus};
 use anyhow::Context;
-use async_trait::async_trait;
+
 use location_search::contracts::text_search::TextSearcher;
+use shared_kernel::location_ids::ExternalLocationId;
 use std::str::FromStr;
 use std::string::ToString;
-use use_cases::search_for_locations::{
-    LocationApiResponse, LocationResponseWithStatus, LocationSearchApi, Status,
-};
 
-#[async_trait]
-impl LocationSearchApi for Producer {
-    async fn search(&self, text: String) -> anyhow::Result<LocationResponseWithStatus> {
+#[derive(Copy, Clone)]
+pub enum Status {
+    Pending,
+    Success,
+    Failure,
+    NotFound,
+}
+
+pub struct LocationApiResponse {
+    pub id: ExternalLocationId,
+    pub name: String,
+    pub address: String,
+}
+
+pub struct LocationResponseWithStatus {
+    pub responses: Vec<LocationApiResponse>,
+    pub status: Status,
+}
+
+impl Producer {
+    pub async fn search_for_location(
+        &self,
+        text: impl AsRef<str>,
+    ) -> anyhow::Result<LocationResponseWithStatus> {
         let text_searcher = TextSearcher::new();
+        let text = text.as_ref().to_owned();
         let cached_response = text_searcher.cache_search(text.clone()).await?;
 
         if let Some(response) = cached_response {
