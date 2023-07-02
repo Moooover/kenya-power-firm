@@ -7,7 +7,7 @@ use actix_web::{http, web, App, HttpServer};
 
 use anyhow::{Context, Error};
 use background_workers::producer::Producer;
-use location_subscription::contracts::LocationSubscriptionSubSystem;
+
 use sqlx_postgres::migrations::MigrationManager;
 use tracing::info;
 

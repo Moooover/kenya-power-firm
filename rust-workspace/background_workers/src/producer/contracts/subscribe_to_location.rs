@@ -6,7 +6,7 @@ use crate::{
     utils::progress_tracking::{get_progress_status, TaskStatus},
 };
 use anyhow::Context;
-use async_trait::async_trait;
+
 use shared_kernel::location_ids::ExternalLocationId;
 use shared_kernel::subscriber_id::SubscriberId;
 use std::str::FromStr;
