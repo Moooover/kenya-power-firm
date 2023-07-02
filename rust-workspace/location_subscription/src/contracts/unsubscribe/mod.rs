@@ -1,13 +1,13 @@
 mod db_access;
 
+use crate::contracts::LocationSubscriptionSubSystem;
 use shared_kernel::location_ids::LocationId;
 use shared_kernel::subscriber_id::SubscriberId;
 
-pub struct UnsubscribeFromLocationInteractor;
-
-impl UnsubscribeFromLocationInteractor {
-    #[tracing::instrument(err, level = "info")]
+impl LocationSubscriptionSubSystem {
+    #[tracing::instrument(err, skip(self), level = "info")]
     pub async fn unsubscribe_from_location(
+        &self,
         subscriber_id: SubscriberId,
         location_id: LocationId,
     ) -> anyhow::Result<()> {

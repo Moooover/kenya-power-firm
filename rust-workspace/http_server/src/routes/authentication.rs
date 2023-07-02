@@ -1,9 +1,9 @@
+use crate::app_container::Application;
 use crate::authentication::AuthenticatedUserInfo;
 use crate::errors::ApiError;
-use crate::use_case_app_container::UseCaseAppContainer;
 use actix_web::{web, HttpRequest, HttpResponse};
 use serde::{Deserialize, Serialize};
-use use_cases::authentication::SubscriberDetailsInput;
+use subscribers::contracts::create_or_update_subscriber::SubscriberInput;
 
 #[derive(Serialize, Deserialize, Debug)]
 struct UserRequest {
@@ -14,15 +14,17 @@ struct UserRequest {
 #[tracing::instrument(err, skip(app), level = "info")]
 async fn authentication(
     user_details: web::Json<UserRequest>,
-    app: web::Data<UseCaseAppContainer>,
+    app: web::Data<Application>,
     req: HttpRequest,
 ) -> Result<HttpResponse, ApiError> {
     let user: AuthenticatedUserInfo = (&req).try_into()?;
-
-    let UserRequest { name, email } = user_details.into_inner();
-    let auth_interactor = app.get_client().authentication();
-    auth_interactor
-        .authenticate(&user, SubscriberDetailsInput { name, email })
+    let _ = app
+        .subscribers
+        .create_or_update_subscriber(SubscriberInput {
+            name: user_details.name.clone(),
+            email: user_details.email.clone(),
+            external_id: user.external_id.to_string(),
+        })
         .await
         .map_err(ApiError::InternalServerError)?;
 

@@ -1,4 +1,4 @@
-use crate::contracts::SubscriberContracts;
+use crate::contracts::SubscribersSubsystem;
 use crate::find_subscriber::{
     SubscriberDetails, SubscriberEmail, SubscriberExternalId, SubscriberName,
 };
@@ -10,9 +10,9 @@ pub struct SubscriberInput {
     pub external_id: String,
 }
 
-impl SubscriberContracts {
-    #[tracing::instrument(err, level = "info")]
-    pub async fn create_or_update_subscriber(input: SubscriberInput) -> anyhow::Result<()> {
+impl SubscribersSubsystem {
+    #[tracing::instrument(err, skip(self), level = "info")]
+    pub async fn create_or_update_subscriber(&self, input: SubscriberInput) -> anyhow::Result<()> {
         let external_id = SubscriberExternalId::try_from(input.external_id)
             .map_err(|err| anyhow::anyhow!(err))?;
         let name = SubscriberName::try_from(input.name).map_err(|err| anyhow::anyhow!(err))?;

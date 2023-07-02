@@ -18,7 +18,7 @@ use location_subscription::data_transfer::AffectedSubscriber;
 use notifications::contracts::send_notification::AffectedSubscriberWithLocations;
 
 use crate::rate_limiting::GoogleAPIRateLimiter;
-use use_cases::subscriber_locations::subscribe_to_location::TaskId;
+use crate::tasks::TaskId;
 
 use crate::utils::callbacks::failure_callback;
 use crate::utils::progress_tracking::{set_progress_status, TaskStatus};
@@ -32,7 +32,7 @@ pub async fn fetch_and_subscribe_to_location(
     task_id: TaskId,
 ) -> TaskResult<()> {
     set_progress_status(
-        task_id.as_ref(),
+        &task_id.to_string(),
         TaskStatus::Pending.to_string(),
         |_| Ok(()),
     )
@@ -60,7 +60,7 @@ pub async fn fetch_and_subscribe_to_location(
         })?;
 
     set_progress_status(
-        task_id.as_ref(),
+        &task_id.to_string(),
         TaskStatus::Success.to_string(),
         |_| Ok(()),
     )

@@ -239,8 +239,12 @@ mod email_notification_sender {
 
     #[tracing::instrument(level = "debug")]
     async fn generate_email_body(email: &EmailNotification) -> anyhow::Result<Data> {
-        use subscribers::contracts::SubscriberContracts;
-        let subscriber = SubscriberContracts::find_by_subscriber_id(email.subscriber_id()).await?;
+        use subscribers::contracts::SubscribersSubsystem;
+        let subscriber = SubscribersSubsystem::find_by_subscriber_id(
+            &SubscribersSubsystem,
+            email.subscriber_id(),
+        )
+        .await?;
 
         let affected_locations = email
             .locations_matched()

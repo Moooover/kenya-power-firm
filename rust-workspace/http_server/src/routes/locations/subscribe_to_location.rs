@@ -1,10 +1,8 @@
 use actix_web::{web, HttpRequest};
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    authentication::AuthenticatedUserInfo, errors::ApiError,
-    use_case_app_container::UseCaseAppContainer,
-};
+use crate::app_container::Application;
+use crate::{authentication::AuthenticatedUserInfo, errors::ApiError};
 
 use super::search_locations::StatusResponse;
 
@@ -21,20 +19,23 @@ struct SubscribeToLocationResponse {
 #[tracing::instrument(err, skip(app), level = "info")]
 async fn subscribe_to_location(
     data: web::Json<LocationSubscriptionRequest>,
-    app: web::Data<UseCaseAppContainer>,
+    app: web::Data<Application>,
     req: HttpRequest,
 ) -> Result<web::Json<SubscribeToLocationResponse>, ApiError> {
-    let interactor = app.get_client().subscribe_to_location();
     let user: AuthenticatedUserInfo = (&req).try_into()?;
-
-    let data = data.into_inner();
-    let id = interactor
-        .subscribe(&user, data.location)
+    let subscriber = app
+        .subscribers
+        .authenticate(user.external_id.as_ref())
+        .await
+        .map_err(ApiError::InternalServerError)?;
+    let task_id = app
+        .producer
+        .subscribe_to_location(data.into_inner().location.as_ref(), subscriber)
         .await
         .map_err(ApiError::InternalServerError)?;
 
     Ok(web::Json(SubscribeToLocationResponse {
-        task_id: id.to_string(),
+        task_id: task_id.to_string(),
     }))
 }
 
@@ -45,15 +46,19 @@ struct StatusWrapper {
 
 #[tracing::instrument(err, skip(app), level = "info")]
 async fn get_progress_status(
-    app: web::Data<UseCaseAppContainer>,
+    app: web::Data<Application>,
     task_id: web::Path<String>,
     req: HttpRequest,
 ) -> Result<web::Json<StatusWrapper>, ApiError> {
-    let interactor = app.get_client().subscribe_to_location();
     let user: AuthenticatedUserInfo = (&req).try_into()?;
-    let task_id = task_id.into_inner().into();
-    let result = interactor
-        .progress(&user, task_id)
+    let _ = app
+        .subscribers
+        .authenticate(user.external_id.as_ref())
+        .await
+        .map_err(ApiError::InternalServerError)?;
+    let result = app
+        .producer
+        .location_subscription_progress(task_id.into_inner())
         .await
         .map_err(ApiError::InternalServerError)?;
     Ok(web::Json(StatusWrapper {

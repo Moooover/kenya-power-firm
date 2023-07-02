@@ -30,9 +30,4 @@ shared_kernel = { path = "../../shared_kernel" }
 
 tracing.workspace = true
 tracing-log.workspace = true
-
-[dependencies.uuid]
-version = "1.3.0"
-features = [
-    "v4"
-]
+uuid.workspace = true

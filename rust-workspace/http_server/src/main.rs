@@ -1,7 +1,7 @@
 use actix_cors::Cors;
 use std::env;
 
-use crate::use_case_app_container::UseCaseAppContainer;
+use crate::app_container::Application;
 use actix_governor::{Governor, GovernorConfigBuilder};
 use actix_web::{http, web, App, HttpServer};
 
@@ -10,12 +10,11 @@ use background_workers::producer::Producer;
 use location_subscription::contracts::LocationSubscriptionSubSystem;
 use sqlx_postgres::migrations::MigrationManager;
 use tracing::info;
-use use_cases::AppImpl;
 
+mod app_container;
 mod authentication;
 mod errors;
 mod routes;
-mod use_case_app_container;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -31,7 +30,6 @@ async fn start() -> Result<(), Error> {
         migration_manager.migrate().await?;
     }
 
-    let producer = Producer::new().await?;
     let host = env::var("HOST").unwrap_or_else(|_| "0.0.0.0".to_string());
     let port = env::var("PORT").unwrap_or_else(|_| 8080.to_string());
     let binding_address = format!("{host}:{port}");
@@ -41,6 +39,8 @@ async fn start() -> Result<(), Error> {
         .burst_size(5)
         .finish()
         .context("Failed to build governor config")?;
+    let producer = Producer::new().await?;
+
     HttpServer::new(move || {
         let cors = Cors::default()
             .allowed_origin("http://localhost:5173")
@@ -53,16 +53,15 @@ async fn start() -> Result<(), Error> {
                 http::header::ACCEPT,
                 http::header::CONTENT_TYPE,
             ]);
-        let location_subscription = LocationSubscriptionSubSystem;
-        let app = AppImpl::new(producer.clone(), location_subscription);
-        let app_container = UseCaseAppContainer::new(app);
+
+        let application = Application::new(producer.clone());
         App::new()
             .wrap(cors)
             .wrap(actix_web_opentelemetry::RequestTracing::new())
             .wrap(tracing_actix_web::TracingLogger::default())
             .wrap(Governor::new(&governor_conf))
             .configure(routes::config)
-            .app_data(web::Data::new(app_container))
+            .app_data(web::Data::new(application))
     })
     .bind(binding_address)?
     .run()
