@@ -1,8 +1,8 @@
-use crate::producer::notifications::DeliveryStrategy;
 use anyhow::bail;
 use async_trait::async_trait;
 use celery::Celery;
 
+use crate::producer::contracts::notifications::DeliveryStrategy;
 use crate::tasks::send_notifications::email::send_email_notification;
 use futures::stream::FuturesUnordered;
 use futures::StreamExt;

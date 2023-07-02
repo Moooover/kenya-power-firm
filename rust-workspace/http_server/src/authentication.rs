@@ -10,7 +10,7 @@ use lazy_static::lazy_static;
 use serde::Deserialize;
 use serde::Serialize;
 use shared_kernel::configuration::config;
-use use_cases::actor::{Actor, Permissions, SubscriberExternalId};
+use subscribers::contracts::find_subscriber::SubscriberExternalId;
 
 #[derive(Deserialize)]
 struct AuthSettings {
@@ -62,8 +62,9 @@ struct Claims {
 
 #[derive(Debug)]
 pub struct AuthenticatedUserInfo {
+    #[allow(dead_code)]
     permissions: Vec<String>,
-    external_id: SubscriberExternalId,
+    pub(crate) external_id: SubscriberExternalId,
 }
 
 impl TryFrom<&HttpRequest> for AuthenticatedUserInfo {
@@ -126,16 +127,5 @@ impl TryFrom<&HttpRequest> for AuthenticatedUserInfo {
             permissions: claims.permissions,
             external_id,
         })
-    }
-}
-
-impl Actor for AuthenticatedUserInfo {
-    fn permissions(&self) -> Permissions {
-        let permissions = &self.permissions[..];
-        permissions.into()
-    }
-
-    fn external_id(&self) -> SubscriberExternalId {
-        self.external_id.clone()
     }
 }

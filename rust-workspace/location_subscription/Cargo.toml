@@ -5,6 +5,12 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+
+[features]
+default = ["internal_contracts"]
+contracts= []
+internal_contracts = []
+
 [dependencies]
 thiserror = "1.0.40"
 anyhow = "1.0.70"
@@ -24,7 +30,6 @@ futures = "0.3"
 shared_kernel = { path = "../shared_kernel" }
 subscribers = { path = "../subscribers" }
 sqlx_postgres = { path = "../storage/sqlx_postgres" }
-use_cases = { path = "../use_cases" }
 scheduled_interruptions = { path = "../scheduled_interruptions", features=["future_affected_lines"] }
 
 tracing.workspace = true

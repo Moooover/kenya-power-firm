@@ -2,8 +2,8 @@ use redis::{FromRedisValue, ToRedisArgs};
 use redis_client::client::CLIENT;
 use std::fmt::Debug;
 
+use crate::producer::contracts::text_search::Status;
 use strum_macros::{Display, EnumString};
-use use_cases::search_for_locations::Status;
 
 const PROGRESS_TRACKING_PREFIX: &str = "progress";
 

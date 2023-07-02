@@ -38,8 +38,4 @@ sqlx_postgres = { path = "../storage/sqlx_postgres" }
 
 tracing.workspace = true
 tracing-log.workspace = true
-
-
-[dependencies.uuid]
-version = "1.3.0"
-features = ["v4"]
+uuid.workspace = true
