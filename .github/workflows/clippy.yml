@@ -10,9 +10,9 @@ jobs:
           toolchain: nightly
           components: clippy
           override: true
+          working-directory: ./rust-workspace
       - uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           args: --all-features
-
-          
+          working-directory: ./rust-workspace
