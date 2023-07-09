@@ -32,7 +32,7 @@ pub async fn fetch_and_subscribe_to_location(
     task_id: TaskId,
 ) -> TaskResult<()> {
     set_progress_status(
-        &task_id.to_string(),
+        task_id.as_ref(),
         TaskStatus::Pending.to_string(),
         |_| Ok(()),
     )
@@ -60,7 +60,7 @@ pub async fn fetch_and_subscribe_to_location(
         })?;
 
     set_progress_status(
-        &task_id.to_string(),
+        task_id.as_ref(),
         TaskStatus::Success.to_string(),
         |_| Ok(()),
     )

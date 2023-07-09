@@ -88,7 +88,6 @@ impl AffectedSubscribersDbAccess {
                     AffectedSubscriber::DirectlyAffected(subscriber),
                     directly_affected,
                 ))
-                .into_iter()
                 .chain(iter::once((
                     AffectedSubscriber::PotentiallyAffected(subscriber),
                     potentially_affected,

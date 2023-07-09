@@ -315,13 +315,11 @@ impl Parser {
         if PHASE.is_match(&location) {
             let phase_name = PHASE_NAME
                 .captures_iter(&location)
-                .into_iter()
                 .map(|capture| (capture[0]).to_string())
                 .collect::<String>();
 
             return PHASE_NUMBERS
                 .captures_iter(&location)
-                .into_iter()
                 .map(|capture| format!("{} {}", &phase_name.trim(), &capture[0].trim()))
                 .collect::<Vec<_>>();
         }

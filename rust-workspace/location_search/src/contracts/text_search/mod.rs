@@ -55,20 +55,20 @@ pub(crate) mod search {
     pub enum StatusCode {
         OK,
         #[serde(rename = "ZERO_RESULTS")]
-        ZERORESULTS,
+        ZeroResults,
         #[serde(rename = "INVALID_REQUEST")]
-        INVALIDREQUEST,
+        InvalidRequest,
         #[serde(rename = "OVER_QUERY_LIMIT")]
-        OVERQUERYLIMIT,
+        OverQueryLimit,
         #[serde(rename = "REQUEST_DENIED")]
-        REQUESTDENIED,
+        RequestDenied,
         #[serde(rename = "UNKNOWN_ERROR")]
-        UNKNOWNERROR,
+        UnknownError,
     }
 
     impl StatusCode {
         pub fn is_cacheable(&self) -> bool {
-            matches!(self, StatusCode::OK | StatusCode::ZERORESULTS)
+            matches!(self, StatusCode::OK | StatusCode::ZeroResults)
         }
     }
 

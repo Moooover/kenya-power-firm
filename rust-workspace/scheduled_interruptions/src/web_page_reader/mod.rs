@@ -55,7 +55,6 @@ mod get_pdf_links {
         let page_content = get_page_contents().await?;
         let urls = PDF_LINKS_REGEX
             .find_iter(&page_content)
-            .into_iter()
             .map(|a_match| {
                 let link = a_match.as_str().replace('\"', "");
                 Url::parse(link.as_str())

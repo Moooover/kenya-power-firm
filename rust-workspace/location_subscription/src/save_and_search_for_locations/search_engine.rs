@@ -417,7 +417,6 @@ mod algolia_search_engine {
     impl Hosts {
         fn new(application_id: ApplicationId) -> Self {
             let fallback_hosts = (1..=3)
-                .into_iter()
                 .map(|item| format!("{}-{item}.algolianet.com", &application_id))
                 .collect_vec();
             let primary_read_host = format!("{}-dsn.algolia.net", &application_id);

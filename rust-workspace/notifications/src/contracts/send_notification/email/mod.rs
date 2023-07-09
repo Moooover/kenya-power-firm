@@ -101,7 +101,6 @@ mod email_notification {
 
             let difference = keys
                 .difference(&already_sent)
-                .into_iter()
                 .filter_map(|key| {
                     mapping_of_idempotency_key_to_affected_location
                         .get(key)

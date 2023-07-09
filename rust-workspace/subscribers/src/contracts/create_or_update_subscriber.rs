@@ -1,7 +1,8 @@
-use crate::contracts::SubscribersSubsystem;
 use crate::find_subscriber::{
     SubscriberDetails, SubscriberEmail, SubscriberExternalId, SubscriberName,
 };
+use crate::{contracts::SubscribersSubsystem, db_access::DbAccess};
+use anyhow::Context;
 
 #[derive(Debug)]
 pub struct SubscriberInput {
@@ -24,17 +25,6 @@ impl SubscribersSubsystem {
             external_id,
         };
 
-        create_or_update_subscriber::execute(details).await
-    }
-}
-
-mod create_or_update_subscriber {
-    use crate::db_access::DbAccess;
-    use crate::find_subscriber::SubscriberDetails;
-    use anyhow::Context;
-
-    #[tracing::instrument(err, level = "info")]
-    pub async fn execute(subscriber: SubscriberDetails) -> anyhow::Result<()> {
         let db = DbAccess {};
         let pool = db.pool().await;
         sqlx::query!(
@@ -44,9 +34,9 @@ mod create_or_update_subscriber {
         ON CONFLICT (external_id) 
         DO UPDATE SET name = EXCLUDED.name, email = EXCLUDED.email, last_login = now();
         "#,
-            subscriber.name.as_ref(),
-            subscriber.email.as_ref(),
-            subscriber.external_id.as_ref()
+            details.name.as_ref(),
+            details.email.as_ref(),
+            details.external_id.as_ref()
         )
         .execute(pool.as_ref())
         .await
