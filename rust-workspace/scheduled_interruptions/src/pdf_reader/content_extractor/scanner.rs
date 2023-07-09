@@ -51,12 +51,12 @@ pub struct Scanner<'a> {
 }
 
 fn is_digit(c: char) -> bool {
-    ('0'..='9').contains(&c)
+    c.is_ascii_digit()
 }
 
 fn is_alpha(c: char) -> bool {
-    ('a'..='z').contains(&c)
-        || ('A'..='Z').contains(&c)
+    c.is_ascii_lowercase()
+        || c.is_ascii_uppercase()
         || ['.', '-', '_', '&', ':', ';', '(', ')', '’', '\''].contains(&c)
 }
 

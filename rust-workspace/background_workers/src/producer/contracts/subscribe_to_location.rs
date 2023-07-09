@@ -42,7 +42,7 @@ impl Producer {
         task_id: impl Into<TaskId>,
     ) -> anyhow::Result<Status> {
         let task_id = task_id.into();
-        let progress = get_progress_status::<String, _>(&task_id.to_string(), |val| {
+        let progress = get_progress_status::<String, _>(task_id.as_ref(), |val| {
             val.map(|value| {
                 TaskStatus::from_str(&value)
                     .with_context(|| format!("Failed to convert to TaskStatus {value}"))
