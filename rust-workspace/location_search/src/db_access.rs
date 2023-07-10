@@ -16,7 +16,7 @@ lazy_static! {
 #[cfg(test)]
 lazy_static! {
     static ref POOL_MANAGER: AsyncOnce<PoolManager> = AsyncOnce::new(async {
-        PoolManager::new()
+        PoolManager::new(1)
             .await
             .expect("PoolManager not initialized")
     });

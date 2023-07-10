@@ -201,6 +201,7 @@ pub(crate) mod search {
         use std::vec;
 
         use httpmock::Method::GET;
+        use itertools::Itertools;
         use serde_json::json;
 
         use crate::contracts::text_search::{
@@ -210,10 +211,10 @@ pub(crate) mod search {
 
         #[tokio::test]
         async fn test_that_searcher_gets_results_from_cache_if_request_was_made_previously() {
-            let searcher = TextSearcher::new();
-
-            let mock = SERVER.mock(|when, then| {
-                when.method(GET).path("/place/autocomplete/json");
+            let mut mock = SERVER.mock(|when, then| {
+                when.method(GET)
+                    .query_param("input", "text")
+                    .path("/place/autocomplete/json");
                 let predictions: Vec<LocationSearchApiResponsePrediction> = vec![];
                 then.status(200)
                     .header("content-type", "application/json")
@@ -222,6 +223,7 @@ pub(crate) mod search {
                     );
             });
 
+            let searcher = TextSearcher::new();
             let search_text = "text";
             let result = searcher.api_search(search_text.to_string()).await;
             assert!(result.is_ok());
@@ -229,6 +231,40 @@ pub(crate) mod search {
             assert!(result_2.is_ok());
             // only 1 request was made to the api
             mock.assert_hits(1);
+            mock.delete();
+        }
+
+        #[tokio::test]
+        async fn test_an_error_is_thown_if_status_is_not_cacheable() {
+            let query_to_status_code = [
+                ("query1", StatusCode::OverQueryLimit),
+                ("query2", StatusCode::RequestDenied),
+                ("query3", StatusCode::UnknownError),
+            ];
+            let mut mocks = query_to_status_code
+                .iter()
+                .map(|(query, status_code)| {
+                    SERVER.mock(|when, then| {
+                        when.method(GET)
+                            .query_param("input", *query)
+                            .path("/place/autocomplete/json");
+                        let predictions: Vec<LocationSearchApiResponsePrediction> = vec![];
+                        then.status(200)
+                            .header("content-type", "application/json")
+                            .json_body(
+                                json!({ "status":  status_code, "predictions": predictions  }),
+                            );
+                    })
+                })
+                .collect_vec();
+
+            let searcher = TextSearcher::new();
+            for (idx, (query, _)) in query_to_status_code.iter().enumerate() {
+                let result = searcher.api_search(query.to_string()).await;
+                assert!(result.is_err());
+                mocks[idx].assert();
+                mocks[idx].delete();
+            }
         }
     }
 }
