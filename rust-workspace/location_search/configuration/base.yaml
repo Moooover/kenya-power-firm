@@ -1,0 +1,32 @@
+database:
+  host: "127.0.0.1"
+  port: 5432
+  username: "postgres"
+  password: "postgres"
+  database_name: "blackout"
+  require_ssl: false
+  location_connections: 20
+  notification_connections: 10
+  search_connections: 10
+  import_scheduled_interrupts_connections: 20
+  subscriber_connections: 20
+location:
+  host: "https://maps.googleapis.com/maps/api"
+  api_key: ""
+email:
+  host: "https://api.courier.com/send"
+  auth_token: ""
+  template_id: ""
+redis:
+  host: "redis://127.0.0.1:6379/"
+auth:
+  jwks: "kplc-alerts-staging.eu.auth0.com"
+  authorities: "kplc-alerts-staging.eu.auth0.com"
+  audiences: "https://kplc-alerts.staging.co.ke, https://kplc-alerts-staging.eu.auth0.com/userinfo"
+external_api_rate_limits:
+  email: 100
+  location: 100
+search_engine:
+  api_key: ""
+  application_key: ""
+

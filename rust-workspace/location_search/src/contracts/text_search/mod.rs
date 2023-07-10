@@ -31,6 +31,7 @@ impl TextSearcher {
 
 string_key!(ExternalLocationId);
 
+#[derive(Debug)]
 pub struct LocationDetails {
     pub id: ExternalLocationId,
     pub name: String,
@@ -42,6 +43,7 @@ pub(crate) mod search {
     use crate::contracts::text_search::db_access::TextSearchDbAccess;
     use crate::contracts::text_search::LocationDetails;
     use anyhow::{anyhow, Context};
+    use lazy_static::lazy_static;
     use secrecy::ExposeSecret;
     use serde::Deserialize;
     use serde::Serialize;
@@ -49,6 +51,21 @@ pub(crate) mod search {
     use shared_kernel::non_empty_string;
     use std::fmt::Debug;
     use url::Url;
+
+    #[cfg(test)]
+    use httpmock::prelude::*;
+
+    #[cfg(not(test))]
+    lazy_static! {
+        static ref HOST: String = SETTINGS_CONFIG.location.host.clone();
+    }
+
+    #[cfg(test)]
+    lazy_static! {
+        static ref SERVER: MockServer = MockServer::start();
+        static ref HOST: String = format!("http://{}", SERVER.address().to_string());
+    }
+
     non_empty_string!(LocationSearchText);
 
     #[derive(Deserialize, Serialize, Debug, Clone)]
@@ -123,7 +140,8 @@ pub(crate) mod search {
 
     pub fn generate_search_url(text: String) -> anyhow::Result<Url> {
         let path_details = "/place/autocomplete/json";
-        let host_with_path = &format!("{}{}", SETTINGS_CONFIG.location.host, path_details);
+        println!("{}", *HOST);
+        let host_with_path = &format!("{}{}", *HOST, path_details);
         Url::parse_with_params(
             host_with_path,
             &[
@@ -176,5 +194,41 @@ pub(crate) mod search {
             .map_err(|err| anyhow!("Cannot search for location with empty text. Error: {}", err))?;
         let url = generate_search_url(text.inner())?;
         db.get_cached_text_search_response(&url).await
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use std::vec;
+
+        use httpmock::Method::GET;
+        use serde_json::json;
+
+        use crate::contracts::text_search::{
+            search::{LocationSearchApiResponsePrediction, StatusCode, SERVER},
+            TextSearcher,
+        };
+
+        #[tokio::test]
+        async fn test_that_searcher_gets_results_from_cache_if_request_was_made_previously() {
+            let searcher = TextSearcher::new();
+
+            let mock = SERVER.mock(|when, then| {
+                when.method(GET).path("/place/autocomplete/json");
+                let predictions: Vec<LocationSearchApiResponsePrediction> = vec![];
+                then.status(200)
+                    .header("content-type", "application/json")
+                    .json_body(
+                        json!({ "status":  StatusCode::ZeroResults, "predictions": predictions  }),
+                    );
+            });
+
+            let search_text = "text";
+            let result = searcher.api_search(search_text.to_string()).await;
+            assert!(result.is_ok());
+            let result_2 = searcher.api_search(search_text.to_string()).await;
+            assert!(result_2.is_ok());
+            // only 1 request was made to the api
+            mock.assert_hits(1);
+        }
     }
 }
