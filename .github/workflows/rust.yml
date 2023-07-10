@@ -20,6 +20,7 @@ jobs:
         # Provide the password for postgres
         env:
           POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: kplc_alerts
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -43,3 +44,4 @@ jobs:
           APP_DATABASE__PORT: 5432
           APP_DATABASE__USERNAME: postgres
           APP_DATABASE__PASSWORD: postgres
+          APP_DATABASE__DATABASE_NAME: kplc_alerts
