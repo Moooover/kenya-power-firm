@@ -23,7 +23,7 @@ jobs:
           POSTGRES_DB: kplc_alerts
           POSTGRES_USER: postgres
         options: >-
-          --health-cmd pg_isready -d kplc_alerts -U postgres
+          --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
