@@ -159,7 +159,7 @@ pub(crate) mod search {
             .try_into()
             .map_err(|err| anyhow!("Cannot search for location with empty text. Error: {}", err))?;
         let url = generate_search_url(text.inner())?;
-
+        println!("url --- {url}");
         let cached_response = db.get_cached_text_search_response(&url).await?;
         if let Some(response) = cached_response {
             return Ok(response);
