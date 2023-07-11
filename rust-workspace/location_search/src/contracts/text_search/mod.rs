@@ -43,7 +43,6 @@ pub(crate) mod search {
     use crate::contracts::text_search::db_access::TextSearchDbAccess;
     use crate::contracts::text_search::LocationDetails;
     use anyhow::{anyhow, Context};
-    use lazy_static::lazy_static;
     use secrecy::ExposeSecret;
     use serde::Deserialize;
     use serde::Serialize;
@@ -54,16 +53,12 @@ pub(crate) mod search {
 
     #[cfg(test)]
     use httpmock::prelude::*;
-
-    #[cfg(not(test))]
-    lazy_static! {
-        static ref HOST: String = SETTINGS_CONFIG.location.host.clone();
-    }
+    #[cfg(test)]
+    use lazy_static::lazy_static;
 
     #[cfg(test)]
     lazy_static! {
-        static ref SERVER: MockServer = MockServer::start();
-        static ref HOST: String = format!("http://{}", SERVER.address().to_string());
+        static ref SERVER: MockServer = MockServer::connect(&SETTINGS_CONFIG.location.host);
     }
 
     non_empty_string!(LocationSearchText);
@@ -140,8 +135,7 @@ pub(crate) mod search {
 
     pub fn generate_search_url(text: String) -> anyhow::Result<Url> {
         let path_details = "/place/autocomplete/json";
-        println!("{}", *HOST);
-        let host_with_path = &format!("{}{}", *HOST, path_details);
+        let host_with_path = &format!("{}{}", SETTINGS_CONFIG.location.host, path_details);
         Url::parse_with_params(
             host_with_path,
             &[
