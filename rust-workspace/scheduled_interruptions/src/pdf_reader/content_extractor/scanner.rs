@@ -314,21 +314,12 @@ mod tests {
 
     #[test]
     fn test_alphanumeric() {
-        println!("{}", is_alphanumeric('&'))
-    }
-
-    #[test]
-    fn test_scanned_text() {
-        let text = r"Interruption";
-
-        let result = scan(text);
-
-        println!("{:?}", result)
+        assert!(is_alphanumeric('&'))
     }
 
     #[test]
     fn test_white_space() {
-        println!("{}", is_whitespace('\n'))
+        assert!(is_whitespace('\n'))
     }
 
     #[test]
@@ -718,7 +709,6 @@ www.kplc.co.ke
         ";
 
         let result = scan(r);
-
-        println!("{result:?}")
+        assert!(!result.is_empty());
     }
 }

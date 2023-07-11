@@ -10,9 +10,30 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
+  build-test-job:
     runs-on: ubuntu-latest
-
+    services:
+      # Label used to access the service container
+      postgres:
+        # Docker Hub image
+        image: postgres
+        # Provide the password for postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: kplc_alerts
+          POSTGRES_USER: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
+      http_mock:
+        image: alexliesenfeld/httpmock
+        ports:
+          - 5000:5000
     steps:
       - uses: actions/checkout@v3
       - name: Build
@@ -21,3 +42,14 @@ jobs:
       - name: Run tests
         working-directory: ./rust-workspace
         run: cargo test --verbose
+        env:
+          # The hostname used to communicate with the PostgreSQL service container
+          APP_DATABASE__HOST: localhost
+          # The default PostgreSQL port
+          APP_DATABASE__PORT: 5432
+          APP_DATABASE__USERNAME: postgres
+          APP_DATABASE__PASSWORD: postgres
+          APP_DATABASE__DATABASE_NAME: kplc_alerts
+          APP_LOCATION__HOST: http://localhost:5000
+          HTTPMOCK_HOST: 127.0.0.1
+          HTTPMOCK_PORT: 5000

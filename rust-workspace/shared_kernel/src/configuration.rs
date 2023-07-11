@@ -4,7 +4,7 @@ use serde::de::DeserializeOwned;
 pub fn config<Settings: DeserializeOwned>() -> anyhow::Result<Settings> {
     let base_path = std::env::current_dir().context("Failed to determine the current directory")?;
     let configuration_directory = base_path.join("configuration");
-    let file = "base.yaml";
+    let file = if cfg!(test) { "test.yaml" } else { "base.yaml" };
     let settings = config::Config::builder()
         .add_source(config::File::from(configuration_directory.join(file)))
         .add_source(
