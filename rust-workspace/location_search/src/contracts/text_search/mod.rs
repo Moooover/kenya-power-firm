@@ -58,7 +58,7 @@ pub(crate) mod search {
 
     #[cfg(test)]
     lazy_static! {
-        static ref SERVER: MockServer = MockServer::connect(&SETTINGS_CONFIG.location.host);
+        static ref SERVER: MockServer = MockServer::connect_from_env();
     }
 
     non_empty_string!(LocationSearchText);
@@ -159,6 +159,7 @@ pub(crate) mod search {
             .try_into()
             .map_err(|err| anyhow!("Cannot search for location with empty text. Error: {}", err))?;
         let url = generate_search_url(text.inner())?;
+
         let cached_response = db.get_cached_text_search_response(&url).await?;
         if let Some(response) = cached_response {
             return Ok(response);
