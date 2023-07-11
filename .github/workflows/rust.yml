@@ -49,6 +49,6 @@ jobs:
           APP_DATABASE__USERNAME: postgres
           APP_DATABASE__PASSWORD: postgres
           APP_DATABASE__DATABASE_NAME: kplc_alerts
-          APP_LOCATION__HOST: http://0.0.0.0:5000
+          APP_LOCATION__HOST: http://localhost:5000
           HTTPMOCK_HOST: 127.0.0.1
           HTTPMOCK_PORT: 5000
