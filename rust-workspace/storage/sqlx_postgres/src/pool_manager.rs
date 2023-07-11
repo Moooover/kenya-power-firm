@@ -1,7 +1,7 @@
 use crate::configuration::Settings;
-#[cfg(test)]
+#[cfg(any(test, feature = "testing"))]
 use crate::migrations::MigrationManager;
-#[cfg(test)]
+#[cfg(any(test, feature = "testing"))]
 use sqlx::Executor;
 
 use sqlx::postgres::{PgPool, PgPoolOptions};
@@ -22,7 +22,6 @@ impl<'a> AsRef<PgPool> for PoolWrapper<'a> {
 }
 
 impl PoolManager {
-    #[cfg(not(test))]
     pub async fn new(max_connections: u32) -> anyhow::Result<Self> {
         let pg_connection = Settings::with_db()?;
 
@@ -39,8 +38,8 @@ impl PoolManager {
         PoolWrapper(self.pg_pool.as_ref())
     }
 
-    #[cfg(test)]
-    pub async fn new(max_connections: u32) -> anyhow::Result<Self> {
+    #[cfg(any(test, feature = "testing"))]
+    pub async fn new_test_pool_manager() -> anyhow::Result<Self> {
         let (options, _) = Settings::without_db()?;
 
         let pool = PgPoolOptions::new().connect_with(options.clone()).await?;
@@ -49,12 +48,11 @@ impl PoolManager {
             .execute(format!(r#"CREATE DATABASE "{}";"#, test_db_name).as_str())
             .await;
         let pool = PgPoolOptions::new()
-            .max_connections(max_connections)
             .connect_with(options.database(&test_db_name.to_string()))
             .await
             .map(Arc::new)?;
 
-        let migration_manager = MigrationManager::new(Arc::clone(&pool));
+        let migration_manager = MigrationManager::new_test_manager(Arc::clone(&pool));
         migration_manager.migrate().await?;
 
         Ok(Self { pg_pool: pool })

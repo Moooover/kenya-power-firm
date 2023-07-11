@@ -1,4 +1,3 @@
-#[cfg(not(test))]
 use crate::configuration::Settings;
 use anyhow::Context;
 use sqlx::postgres::PgPool;
@@ -13,7 +12,6 @@ impl MigrationManager {
     pub fn pool(&self) -> &PgPool {
         self.pg_pool.as_ref()
     }
-    #[cfg(not(test))]
     pub async fn new() -> anyhow::Result<Self> {
         let pg_connection = Settings::with_db()?;
         let pg_pool = PgPool::connect_with(pg_connection)
@@ -24,8 +22,8 @@ impl MigrationManager {
         Ok(Self { pg_pool })
     }
 
-    #[cfg(test)]
-    pub fn new(pool: Arc<PgPool>) -> Self {
+    #[cfg(any(test, feature = "testing"))]
+    pub fn new_test_manager(pool: Arc<PgPool>) -> Self {
         Self { pg_pool: pool }
     }
 

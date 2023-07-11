@@ -29,3 +29,5 @@ uuid.workspace = true
 
 [dev-dependencies]
 httpmock = "0.6"
+sqlx_postgres = { path = "../storage/sqlx_postgres", features=["testing"] }
+
