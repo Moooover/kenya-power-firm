@@ -1,4 +1,9 @@
 use crate::configuration::Settings;
+#[cfg(any(test, feature = "testing"))]
+use crate::migrations::MigrationManager;
+#[cfg(any(test, feature = "testing"))]
+use sqlx::Executor;
+
 use sqlx::postgres::{PgPool, PgPoolOptions};
 use std::sync::Arc;
 
@@ -31,5 +36,30 @@ impl PoolManager {
 
     pub fn pool(&self) -> PoolWrapper {
         PoolWrapper(self.pg_pool.as_ref())
+    }
+
+    #[cfg(any(test, feature = "testing"))]
+    pub async fn new_test_pool_manager() -> anyhow::Result<Self> {
+        let (options, _) = Settings::without_db()?;
+
+        let pool = PgPoolOptions::new()
+            .max_connections(2)
+            .connect_with(options.clone())
+            .await?;
+        let test_db_name = uuid::Uuid::new_v4();
+        let _ = pool
+            .execute(format!(r#"CREATE DATABASE "{}";"#, test_db_name).as_str())
+            .await;
+        let pool = PgPoolOptions::new()
+            .max_connections(50)
+            .min_connections(40)
+            .connect_with(options.database(&test_db_name.to_string()))
+            .await
+            .map(Arc::new)?;
+
+        let migration_manager = MigrationManager::new_test_manager(Arc::clone(&pool));
+        migration_manager.migrate().await?;
+
+        Ok(Self { pg_pool: pool })
     }
 }

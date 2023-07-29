@@ -51,12 +51,12 @@ pub struct Scanner<'a> {
 }
 
 fn is_digit(c: char) -> bool {
-    ('0'..='9').contains(&c)
+    c.is_ascii_digit()
 }
 
 fn is_alpha(c: char) -> bool {
-    ('a'..='z').contains(&c)
-        || ('A'..='Z').contains(&c)
+    c.is_ascii_lowercase()
+        || c.is_ascii_uppercase()
         || ['.', '-', '_', '&', ':', ';', '(', ')', '’', '\''].contains(&c)
 }
 
@@ -314,21 +314,12 @@ mod tests {
 
     #[test]
     fn test_alphanumeric() {
-        println!("{}", is_alphanumeric('&'))
-    }
-
-    #[test]
-    fn test_scanned_text() {
-        let text = r"Interruption";
-
-        let result = scan(text);
-
-        println!("{:?}", result)
+        assert!(is_alphanumeric('&'))
     }
 
     #[test]
     fn test_white_space() {
-        println!("{}", is_whitespace('\n'))
+        assert!(is_whitespace('\n'))
     }
 
     #[test]
@@ -718,7 +709,6 @@ www.kplc.co.ke
         ";
 
         let result = scan(r);
-
-        println!("{result:?}")
+        assert!(!result.is_empty());
     }
 }

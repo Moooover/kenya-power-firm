@@ -1,7 +1,7 @@
-use anyhow::Context;
 use secrecy::{ExposeSecret, Secret};
 use serde::Deserialize;
 use serde_aux::field_attributes::deserialize_number_from_string;
+use shared_kernel::configuration::config;
 use sqlx::postgres::{PgConnectOptions, PgSslMode};
 
 #[derive(Debug, Deserialize)]
@@ -23,27 +23,7 @@ pub struct DbSettings {
 
 impl Settings {
     fn parse() -> anyhow::Result<Self> {
-        let base_path =
-            std::env::current_dir().context("Failed to determine the current directory")?;
-        let configuration_directory = base_path.join("configuration");
-        let file = if cfg!(test) || cfg!(feature = "testing") {
-            "test.yaml"
-        } else {
-            "base.yaml"
-        };
-        let settings = config::Config::builder()
-            .add_source(config::File::from(configuration_directory.join(file)))
-            .add_source(
-                config::Environment::with_prefix("APP")
-                    .prefix_separator("_")
-                    .separator("__"),
-            )
-            .build()
-            .context("Failed to build configuration")?;
-
-        settings
-            .try_deserialize::<Settings>()
-            .context("Failed to deserialize settings to db settings")
+        config::<Settings>()
     }
     pub fn without_db() -> anyhow::Result<(PgConnectOptions, DbName)> {
         let config = Self::parse()?.database;
@@ -67,4 +47,6 @@ impl Settings {
         let (options, database_name) = Self::without_db()?;
         Ok(options.database(&database_name))
     }
+
+    
 }

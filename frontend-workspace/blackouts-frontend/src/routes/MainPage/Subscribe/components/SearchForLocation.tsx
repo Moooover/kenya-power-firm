@@ -1,4 +1,4 @@
-import SearchBox from "../../../../components/SearchBox";
+import SearchBox from "./SearchBox";
 import useSWR from "swr";
 import React from "react";
 import { useDebounce } from "../../../../hooks/useDebounce";

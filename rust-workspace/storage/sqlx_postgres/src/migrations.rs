@@ -22,6 +22,11 @@ impl MigrationManager {
         Ok(Self { pg_pool })
     }
 
+    #[cfg(any(test, feature = "testing"))]
+    pub fn new_test_manager(pool: Arc<PgPool>) -> Self {
+        Self { pg_pool: pool }
+    }
+
     pub async fn migrate(&self) -> anyhow::Result<()> {
         let pool = self.pool();
         sqlx::migrate!()

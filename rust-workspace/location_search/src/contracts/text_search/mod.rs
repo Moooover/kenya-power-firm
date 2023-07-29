@@ -31,6 +31,7 @@ impl TextSearcher {
 
 string_key!(ExternalLocationId);
 
+#[derive(Debug)]
 pub struct LocationDetails {
     pub id: ExternalLocationId,
     pub name: String,
@@ -49,26 +50,37 @@ pub(crate) mod search {
     use shared_kernel::non_empty_string;
     use std::fmt::Debug;
     use url::Url;
+
+    #[cfg(test)]
+    use httpmock::prelude::*;
+    #[cfg(test)]
+    use lazy_static::lazy_static;
+
+    #[cfg(test)]
+    lazy_static! {
+        static ref SERVER: MockServer = MockServer::connect_from_env();
+    }
+
     non_empty_string!(LocationSearchText);
 
     #[derive(Deserialize, Serialize, Debug, Clone)]
     pub enum StatusCode {
         OK,
         #[serde(rename = "ZERO_RESULTS")]
-        ZERORESULTS,
+        ZeroResults,
         #[serde(rename = "INVALID_REQUEST")]
-        INVALIDREQUEST,
+        InvalidRequest,
         #[serde(rename = "OVER_QUERY_LIMIT")]
-        OVERQUERYLIMIT,
+        OverQueryLimit,
         #[serde(rename = "REQUEST_DENIED")]
-        REQUESTDENIED,
+        RequestDenied,
         #[serde(rename = "UNKNOWN_ERROR")]
-        UNKNOWNERROR,
+        UnknownError,
     }
 
     impl StatusCode {
         pub fn is_cacheable(&self) -> bool {
-            matches!(self, StatusCode::OK | StatusCode::ZERORESULTS)
+            matches!(self, StatusCode::OK | StatusCode::ZeroResults)
         }
     }
 
@@ -176,5 +188,114 @@ pub(crate) mod search {
             .map_err(|err| anyhow!("Cannot search for location with empty text. Error: {}", err))?;
         let url = generate_search_url(text.inner())?;
         db.get_cached_text_search_response(&url).await
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use std::vec;
+
+        use httpmock::{Method::GET, MockServer};
+        use serde_json::json;
+
+        use crate::contracts::text_search::{
+            search::{LocationSearchApiResponsePrediction, StatusCode},
+            TextSearcher,
+        };
+
+        #[tokio::test]
+        async fn test_that_searcher_gets_results_from_cache_if_request_was_made_previously() {
+            let server = MockServer::connect_from_env();
+
+            let mut mock = server.mock(|when, then| {
+                when.method(GET)
+                    .query_param("input", "text")
+                    .path("/place/autocomplete/json");
+                let predictions: Vec<LocationSearchApiResponsePrediction> = vec![];
+                then.status(200)
+                    .header("content-type", "application/json")
+                    .json_body(
+                        json!({ "status":  StatusCode::ZeroResults, "predictions": predictions  }),
+                    );
+            });
+
+            let searcher = TextSearcher::new();
+            let search_text = "text";
+            let result = searcher.api_search(search_text.to_string()).await;
+            println!("{result:?}");
+            assert!(result.is_ok());
+            let result_2 = searcher.api_search(search_text.to_string()).await;
+            assert!(result_2.is_ok());
+            // only 1 request was made to the api
+            mock.assert_hits(1);
+            mock.delete();
+        }
+
+        #[tokio::test]
+        async fn test_an_error_is_thown_if_status_is_not_cacheable() {
+            let searcher = TextSearcher::new();
+
+            {
+                let server = MockServer::connect_from_env();
+
+                let query_1 = "query1";
+
+                let mut mock_query_1 = server.mock(|when, then| {
+                when.method(GET)
+                    .query_param("input", query_1)
+                    .path("/place/autocomplete/json");
+                let predictions: Vec<LocationSearchApiResponsePrediction> = vec![];
+                then.status(200)
+                    .header("content-type", "application/json")
+                    .json_body(
+                        json!({ "status":  StatusCode::OverQueryLimit, "predictions": predictions  }),
+                    );
+            });
+                let result = searcher.api_search(query_1.to_string()).await;
+                assert!(result.is_err());
+                mock_query_1.assert();
+                mock_query_1.delete();
+            }
+
+            {
+                let server = MockServer::connect_from_env();
+                let query_2 = "query2";
+
+                let mut mock_query_2 = server.mock(|when, then| {
+                when.method(GET)
+                    .query_param("input", query_2)
+                    .path("/place/autocomplete/json");
+                let predictions: Vec<LocationSearchApiResponsePrediction> = vec![];
+                then.status(200)
+                    .header("content-type", "application/json")
+                    .json_body(
+                        json!({ "status":  StatusCode::RequestDenied, "predictions": predictions  }),
+                    );
+            });
+                let result = searcher.api_search(query_2.to_string()).await;
+                assert!(result.is_err());
+                mock_query_2.assert();
+                mock_query_2.delete();
+            }
+
+            {
+                let server = MockServer::connect_from_env();
+                let query_3 = "query3";
+                let mut mock_query_3 = server.mock(|when, then| {
+                    when.method(GET)
+                        .query_param("input", query_3)
+                        .path("/place/autocomplete/json");
+                    let predictions: Vec<LocationSearchApiResponsePrediction> = vec![];
+                    then.status(200)
+                    .header("content-type", "application/json")
+                    .json_body(
+                        json!({ "status":  StatusCode::UnknownError, "predictions": predictions  }),
+                    );
+                });
+                let result = searcher.api_search(query_3.to_string()).await;
+                assert!(result.is_err());
+                mock_query_3.assert();
+                mock_query_3.delete();
+            }
+        }
     }
 }

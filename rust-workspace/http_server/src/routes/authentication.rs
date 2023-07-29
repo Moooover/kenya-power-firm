@@ -18,8 +18,7 @@ async fn authentication(
     req: HttpRequest,
 ) -> Result<HttpResponse, ApiError> {
     let user: AuthenticatedUserInfo = (&req).try_into()?;
-    let _ = app
-        .subscribers
+    app.subscribers
         .create_or_update_subscriber(SubscriberInput {
             name: user_details.name.clone(),
             email: user_details.email.clone(),
