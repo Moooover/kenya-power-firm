@@ -81,7 +81,7 @@ impl Parser {
         let comments_remover = CommentsRemover::new();
         let tokens = comments_remover.remove_comments(tokens);
         Self {
-            tokens: multipeek(tokens.into_iter()),
+            tokens: multipeek(tokens),
         }
     }
 

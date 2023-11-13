@@ -36,7 +36,7 @@ impl Filter {
 
     fn remove_comments(&self, tokens: Vec<Token>) -> Vec<Token> {
         let reset = tokens.clone();
-        let mut tokens = multipeek(tokens.into_iter());
+        let mut tokens = multipeek(tokens);
 
         let mut result = vec![];
         while tokens.peek().is_some() {
