@@ -12,7 +12,7 @@ The platform is no longer hosted, but the code is now public.
 ## Overall structure
 
 - frontend-workspace -> Contains Frontend react code.
-- rust-workspace -> Contains Rust backend services.
+- rust-workspace -> Contains Rust backend code.
 
 ## Backend structure:
 
