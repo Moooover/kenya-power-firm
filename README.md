@@ -2,9 +2,9 @@
 
 system for extracting and notifying subscribers of kplc planned power interruptions.
 
-## Why I built this ?
+## Why I built this:
 
-1. I wanted to challenge myself into building an entire system, frontend, backend, DB;
+1. I wanted to challenge myself into building an entire system, frontend, backend, DB, cron jobs, etc.
 2. This is a service that I actually needed because KPLC does not properly target consumers this way. One has to keep checking the website / their X account if their area of work / home will be affected by planned power interruptions.
 
 The platform is no longer hosted, but the code is now public.
