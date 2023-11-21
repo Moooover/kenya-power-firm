@@ -1020,7 +1020,7 @@ mod affected_locations_in_an_area {
 
         directly_affected_locations
             .into_iter()
-            .chain(potentially_affected_locations.into_iter())
+            .chain(potentially_affected_locations)
             .collect_vec()
     }
 }

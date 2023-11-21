@@ -426,7 +426,7 @@ mod algolia_search_engine {
                     .chain(fallback_hosts.iter().cloned())
                     .collect_vec(),
                 write_hosts: iter::once(primary_write_host)
-                    .chain(fallback_hosts.into_iter())
+                    .chain(fallback_hosts)
                     .collect_vec(),
             }
         }

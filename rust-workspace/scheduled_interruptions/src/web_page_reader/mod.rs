@@ -31,7 +31,7 @@ mod get_pdf_links {
         let manually_added_links = db.get_manually_added_source_files().await?;
         let pdf_links = pdf_links
             .into_iter()
-            .chain(manually_added_links.into_iter())
+            .chain(manually_added_links)
             .unique()
             .collect();
         db.return_unprocessed_files(pdf_links).await
